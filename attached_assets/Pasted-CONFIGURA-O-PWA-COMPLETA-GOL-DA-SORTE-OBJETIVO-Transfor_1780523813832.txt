@@ -1,0 +1,137 @@
+CONFIGURAÇÃO PWA COMPLETA - GOL DA SORTE
+
+OBJETIVO
+
+Transformar o projeto Gol da Sorte em um Progressive Web App (PWA) profissional, totalmente instalável em dispositivos Android, preparado para domínio próprio e futura publicação na Google Play Store.
+
+REQUISITOS OBRIGATÓRIOS
+
+1. Criar e configurar corretamente o arquivo manifest.json.
+2. Configurar o nome do aplicativo como:
+
+Gol da Sorte
+
+3. Configurar o short_name como:
+
+Gol da Sorte
+
+4. Configurar ícones oficiais do aplicativo em todos os tamanhos recomendados pelo Google, incluindo obrigatoriamente:
+
+* 72x72
+* 96x96
+* 128x128
+* 144x144
+* 152x152
+* 192x192
+* 384x384
+* 512x512
+
+5. Configurar corretamente o tema visual:
+
+* theme_color
+* background_color
+
+6. Configurar splash screen de abertura.
+7. Configurar display como:
+
+standalone
+
+8. Configurar start_url corretamente.
+9. Implementar Service Worker funcional.
+10. Registrar automaticamente o Service Worker na aplicação.
+11. Implementar cache dos arquivos essenciais para melhor desempenho.
+12. Garantir funcionamento offline das páginas principais quando possível.
+13. Garantir compatibilidade com:
+
+* Google Chrome Android
+* Samsung Internet
+* Edge Mobile
+
+14. Garantir funcionamento correto da instalação através da opção:
+
+“Adicionar à tela inicial”
+
+15. Corrigir automaticamente qualquer erro que impeça a instalação como PWA.
+16. Validar todos os requisitos exigidos pelo Google Chrome para instalação.
+17. Preparar a estrutura para utilização com domínio próprio.
+18. Preparar a estrutura para futura publicação na Google Play Store utilizando tecnologia PWA.
+19. Verificar se todos os ícones estão sendo carregados corretamente.
+20. Verificar se o aplicativo abre sem interface de navegador.
+21. Verificar se o aplicativo abre em tela cheia no Android.
+22. Verificar se o ícone aparece corretamente na tela inicial após a instalação.
+23. Verificar se não existem erros de Manifest.
+24. Verificar se não existem erros de Service Worker.
+25. Verificar se não existem erros que impeçam a instalação do aplicativo.
+
+TESTES OBRIGATÓRIOS
+
+Executar testes completos de:
+
+* Manifest
+* Service Worker
+* Instalação PWA
+* Cache
+* Ícones
+* Splash Screen
+* Modo Standalone
+* Compatibilidade Android
+
+RELATÓRIO FINAL OBRIGATÓRIO
+
+Ao finalizar, gerar um relatório contendo:
+
+STATUS DO MANIFEST
+
+* Aprovado ou Reprovado
+
+STATUS DO SERVICE WORKER
+
+* Aprovado ou Reprovado
+
+STATUS DOS ÍCONES
+
+* Aprovado ou Reprovado
+
+STATUS DA SPLASH SCREEN
+
+* Aprovado ou Reprovado
+
+STATUS DO CACHE
+
+* Aprovado ou Reprovado
+
+STATUS DA INSTALAÇÃO PWA
+
+* Aprovado ou Reprovado
+
+STATUS DO MODO STANDALONE
+
+* Aprovado ou Reprovado
+
+STATUS DA COMPATIBILIDADE ANDROID
+
+* Aprovado ou Reprovado
+
+STATUS PARA DOMÍNIO PRÓPRIO
+
+* Aprovado ou Reprovado
+
+STATUS PARA FUTURA PUBLICAÇÃO NA GOOGLE PLAY STORE
+
+* Aprovado ou Reprovado
+
+CONFIRMAÇÕES FINAIS
+
+Confirmar explicitamente:
+
+* O aplicativo é instalável no Android.
+* O ícone aparecerá na tela inicial do Android.
+* O aplicativo abrirá em tela cheia.
+* O aplicativo possui Manifest válido.
+* O aplicativo possui Service Worker válido.
+* O aplicativo está preparado para domínio próprio.
+* O aplicativo está preparado para futura publicação na Google Play Store.
+
+IMPORTANTE
+
+A tarefa somente deve ser considerada concluída quando o Gol da Sorte estiver funcionando como um aplicativo instalável (PWA) e não apenas como um site comum.

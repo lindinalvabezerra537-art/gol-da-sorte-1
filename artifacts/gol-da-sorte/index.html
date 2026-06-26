@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+    <title>Gol da Sorte</title>
+    <meta name="description" content="Jogue Gol da Sorte, ganhe jogadas e concorra a prêmios!" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Gol da Sorte" />
+    <meta name="theme-color" content="#FFD700" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+
+    <!-- Open Graph / WhatsApp -->
+    <meta property="og:title" content="🏆 Gol da Sorte — Jogue e Ganhe!" />
+    <meta property="og:description" content="Você foi convidado! Clique para jogar Gol da Sorte e ganhar jogadas grátis." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/opengraph.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="🏆 Gol da Sorte — Jogue e Ganhe!" />
+    <meta name="twitter:description" content="Você foi convidado! Clique para jogar Gol da Sorte e ganhar jogadas grátis." />
+
+    <link rel="icon" type="image/png" href="/icon-192.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      /* Bloqueia cliques no emblema "Made with Replit" e move para canto superior esquerdo */
+      #replit-badge, .replit-badge, [id*="replit"], iframe[src*="replit.com/badge"],
+      iframe[src*="replit"], div[style*="z-index: 9999"] iframe {
+        pointer-events: none !important;
+      }
+      #replit-badge, .replit-badge, [id*="replit-badge"], [class*="replit-badge"] {
+        position: fixed !important;
+        top: 4px !important;
+        left: 4px !important;
+        bottom: auto !important;
+        right: auto !important;
+        z-index: 9999 !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      (function() {
+        var removed = new WeakSet();
+        function zapBadge() {
+          var selectors = ['#replit-badge','.replit-badge','[id*="replit-badge"]','[class*="replit-badge"]','[class*="replit-ui"]'];
+          selectors.forEach(function(sel) {
+            document.querySelectorAll(sel).forEach(function(el) {
+              if (!removed.has(el) && el.parentNode) {
+                el.parentNode.removeChild(el);
+                removed.add(el);
+              }
+            });
+          });
+          document.querySelectorAll('iframe').forEach(function(el) {
+            var src = el.src || '';
+            if (src.indexOf('replit') !== -1 && src.indexOf('badge') !== -1) {
+              var target = el.parentElement && el.parentElement !== document.body ? el.parentElement : el;
+              if (!removed.has(target) && target.parentNode) {
+                target.parentNode.removeChild(target);
+                removed.add(target);
+              }
+            }
+          });
+        }
+        zapBadge();
+        var observer = new MutationObserver(zapBadge);
+        observer.observe(document.documentElement, { childList: true, subtree: true });
+      })();
+    </script>
+  </body>
+</html>

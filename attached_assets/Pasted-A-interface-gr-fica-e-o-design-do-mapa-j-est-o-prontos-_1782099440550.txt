@@ -1,0 +1,38 @@
+A interface gráfica e o design do mapa já estão prontos (conforme a imagem fornecida). O seu trabalho deve ser EXCLUSIVAMENTE programar a lógica de funcionamento, o backend, as regras de negócio e a economia do jogo. Não tente gerar ou criar um novo design de mapa. 
+
+Siga rigorosamente as diretrizes de programação abaixo:
+
+### 1. Lógica da Trilha e Peões (Usando a Interface Existente)
+* Mapeamento de Casas: Programe a lógica de coordenadas para que o sistema entenda o circuito em formato de "8" e as extensões de entrada/saída. Cada bloco de pedra/madeira rústica com símbolo rúnico deve corresponder a uma posição indexada no código.
+* Peões Dinâmicos: O sistema deve renderizar a foto de perfil de cada jogador como o peão que se move por essas posições indexadas em tempo real.
+
+### 2. Configuração de Jogadores e Movimentação
+* Limite de Jogadores: Suporte para até 15 jogadores simultâneos por partida.
+* Mecânica de Dados (Escolha Estratégica): No turno do jogador, o sistema rola dois dados. O jogador deve clicar e escolher obrigatoriamente o valor de apenas um dos dados para avançar. O outro dado é descartado.
+* Condição de Vitória: O primeiro jogador a alcançar a última casa no topo do tabuleiro vence a partida.
+
+### 3. Mecânica de Combate (Derrubada)
+* Regra de Ocupação: Se um jogador terminar o movimento exatamente na mesma casa que um oponente, o sistema deve enviar o oponente de volta para a casa inicial.
+* Transferência de Moeda: O jogador que foi derrubado perde 1 moeda automaticamente, e essa moeda é creditada na conta do jogador que o derrubou.
+
+### 4. Economia do Jogo e Monetização
+* Taxa de Entrada: Para iniciar a partida, cada participante desconta 1 moeda do seu saldo. O total acumulado de moedas de todos os jogadores da sala vai para o pote do topo. O vencedor leva tudo.
+* Bônus Inicial: Novos usuários cadastrados ganham 5 moedas gratuitas.
+* Loja de Pacotes de Moedas (Programar a Integração de Pagamento):
+  - 5 moedas por R$ 5,00
+  - 15 moedas por R$ 10,00
+  - 39 moedas por R$ 20,00
+* Bloqueio e Regra de Indicação:
+  - Se o jogador zerar as moedas, o botão/função 'Convidar Amigos' deve ficar bloqueado.
+  - O botão de convite só desbloqueia após o jogador realizar a sua primeira compra de qualquer pacote pago (mínimo de R$ 5,00).
+  - Recompensa por Indicação: Quem indica ganha 3 moedas e quem é indicado ganha 5 moedas. Porém, o sistema só deve liberar essas moedas para ambos quando o amigo indicado fizer a primeira compra de um pacote pago.
+
+### 5. Sistema de Salas (Matchmaking)
+* Criação e Busca de Salas: Programe o sistema para permitir criar salas privadas. Se não houver ninguém jogando com ele, exiba uma lista de salas públicas ativas com partidas em andamento para o usuário clicar e entrar.
+
+### 6. Sistema do Campeão e Redes Sociais
+* Destaque do Vencedor: O ganhador recebe as moedas do pote e sua foto de perfil fica fixada em destaque no topo da plataforma como 'Atual Campeão'.
+* Link Social: Libere um campo para o campeão atual cadastrar o link do seu Instagram ou TikTok. Esse link deve ficar visível em evidência para toda a comunidade da plataforma.
+* Loop Viral (Recompensa por Seguir): Programe um botão que dê 2 moedas de recompensa para qualquer usuário da plataforma que clicar no link e seguir o campeão atual no Instagram ou TikTok.
+
+ Desenvolva apenas a estrutura de banco de dados (para moedas, usuários e salas) e as funções lógicas de backend e turnos em tempo real, aplicando essas regras sobre a interface que já possuímos.

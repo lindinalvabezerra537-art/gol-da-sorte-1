@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Gol da Sorte"
+version = "1.0.0"
+id = "artifacts/gol-da-sorte"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24365
+
+[services.development]
+run = "pnpm --filter @workspace/gol-da-sorte run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/gol-da-sorte", "run", "build" ]
+publicDir = "artifacts/gol-da-sorte/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24365"
+BASE_PATH = "/"

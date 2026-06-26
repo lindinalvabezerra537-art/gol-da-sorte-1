@@ -1,0 +1,37 @@
+{
+  "name": "Gol da Sorte",
+  "short_name": "Gol da Sorte",
+  "description": "Jogue Gol da Sorte e ganhe jogadas grátis!",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0a0a",
+  "theme_color": "#FFD700",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Painel Admin",
+      "short_name": "Admin",
+      "description": "Acessar o painel de administração",
+      "url": "/?admin=1",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "screenshots": [],
+  "categories": ["games", "entertainment"]
+}
