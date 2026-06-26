@@ -115,54 +115,6 @@ export default function MapaBrasil({ compact = false, size = 28 }: MapaBrasilPro
   const [hoverEstado, setHoverEstado] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
 
-  if (compact) {
-    const miniSvg = (
-      <svg
-        viewBox="0 0 100 100"
-        preserveAspectRatio="xMidYMid meet"
-        style={{ width: "100%", height: "100%", display: "block" }}
-      >
-        {Object.entries(ESTADOS).map(([key, estado]) => {
-          const path = ESTADO_PATHS[key];
-          const temCadastrados = estados.find((e) => e.estado === key);
-          return (
-            <g key={key}>
-              {path && (
-                <path
-                  d={path}
-                  fill={temCadastrados ? "rgba(255,215,0,0.35)" : "rgba(255,255,255,0.08)"}
-                  stroke={temCadastrados ? "rgba(255,215,0,0.5)" : "rgba(255,255,255,0.12)"}
-                  strokeWidth="0.4"
-                />
-              )}
-            </g>
-          );
-        })}
-      </svg>
-    );
-    return (
-      <div
-        onClick={() => setExpanded(true)}
-        style={{
-          width: size,
-          height: size,
-          borderRadius: "50%",
-          background: "linear-gradient(135deg, #0a0a0a, #1a1a1a)",
-          border: "2px solid rgba(255,215,0,0.6)",
-          boxShadow: "0 0 8px rgba(255,215,0,0.4)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          overflow: "hidden",
-          cursor: "pointer",
-          flexShrink: 0,
-        }}
-      >
-        {miniSvg}
-      </div>
-    );
-  }
-
   useEffect(() => {
     const fetchLocations = async () => {
       try {
@@ -200,6 +152,51 @@ export default function MapaBrasil({ compact = false, size = 28 }: MapaBrasilPro
 
   const hoverCidadeData = cidades.find((c) => `${c.estado}-${c.cidade}` === hoverCidade);
   const hoverEstadoData = estados.find((e) => e.estado === hoverEstado);
+
+  if (compact) {
+    return (
+      <div
+        onClick={() => setExpanded(true)}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: "50%",
+          background: "linear-gradient(135deg, #0a0a0a, #1a1a1a)",
+          border: "2px solid rgba(255,215,0,0.6)",
+          boxShadow: "0 0 8px rgba(255,215,0,0.4)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          overflow: "hidden",
+          cursor: "pointer",
+          flexShrink: 0,
+        }}
+      >
+        <svg
+          viewBox="0 0 100 100"
+          preserveAspectRatio="xMidYMid meet"
+          style={{ width: "100%", height: "100%", display: "block" }}
+        >
+          {Object.entries(ESTADOS).map(([key]) => {
+            const path = ESTADO_PATHS[key];
+            const temCadastrados = estados.find((e) => e.estado === key);
+            return (
+              <g key={key}>
+                {path && (
+                  <path
+                    d={path}
+                    fill={temCadastrados ? "rgba(255,215,0,0.35)" : "rgba(255,255,255,0.08)"}
+                    stroke={temCadastrados ? "rgba(255,215,0,0.5)" : "rgba(255,255,255,0.12)"}
+                    strokeWidth="0.4"
+                  />
+                )}
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+    );
+  }
 
   const mapContent = (
     <svg
