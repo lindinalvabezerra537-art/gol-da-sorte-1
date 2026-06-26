@@ -1187,7 +1187,8 @@ export default function App() {
                 return (
                   <div key={u.id} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
                     <div style={{
-                      width: avatarSize, height: avatarSize,
+                      width: avatarSize,
+                      height: avatarSize,
                       borderRadius: "50%",
                       border: isMe ? "2px solid #FFD700" : "1.5px solid rgba(255,215,0,0.40)",
                       overflow: "hidden",
@@ -2015,6 +2016,7 @@ export default function App() {
                   </div>
                 );
               })}
+              <MapaBrasil compact size={Math.max(bounds.h * 0.042, 24)} />
             </div>
           )}
         </div>
