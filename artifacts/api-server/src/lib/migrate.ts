@@ -65,6 +65,10 @@ export async function runMigrations() {
   await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS saldo INTEGER NOT NULL DEFAULT 0`);
   await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS pirate_pos INTEGER NOT NULL DEFAULT 0`);
   await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_pirate_move TIMESTAMP`);
+  await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS ranking_points INTEGER NOT NULL DEFAULT 0`);
+  await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS ranking_social_link TEXT`);
+  await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS online_minutes_today INTEGER NOT NULL DEFAULT 0`);
+  await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_online_date TIMESTAMP`);
 
   await db.execute(sql`INSERT INTO settings (key, value) VALUES ('premiacao_ativa', 'true')     ON CONFLICT (key) DO NOTHING`);
 
