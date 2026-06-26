@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "iowOdcqpwDeP-HRskRFM-"
+uri = "file://artifacts/gol-da-sorte/public/opengraph.jpg"
+type = "image"
+title = "SSH Key - Public key for GitHub"
