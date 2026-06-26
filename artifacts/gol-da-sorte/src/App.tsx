@@ -2019,7 +2019,6 @@ export default function App() {
                 })}
               </>
             )}
-            <MapaBrasil compact size={Math.max(bounds.h * 0.042, 24)} />
           </div>
         </div>
       </div>
@@ -2123,25 +2122,6 @@ export default function App() {
         });
       })}
 
-      {/* ── MINI MAPA BRASIL — ao lado direito da última bola da linha de cima (R5) ── */}
-      {showGolDaSorte && (
-        <div style={{
-          position: "absolute",
-          left: bounds.x + bounds.w * 0.425,
-          top: bounds.y + bounds.h * 0.220,
-          width: bounds.w * 0.070,
-          height: bounds.w * 0.070,
-          zIndex: 20,
-          borderRadius: 4,
-          overflow: "hidden",
-          border: "2px solid rgba(255,215,0,0.5)",
-          boxShadow: "0 0 12px rgba(255,215,0,0.3)",
-          cursor: "pointer",
-        }}>
-          <MapaBrasil compact size={Math.max(bounds.w * 0.070, 28)} />
-        </div>
-      )}
-
       {/* ── CALIBRATION OVERLAY ── */}
       {TOUCH_CALIB && (
         <>
@@ -2243,6 +2223,29 @@ export default function App() {
           } : { nome: "Mateus Lima", pontos: 0, label: "Sem dados", foto: "https://i.pravatar.cc/150?img=33" }}
           onClick={() => setShowRankingModal(true)}
         />
+      </div>
+
+      {/* ── MAPA DO BRASIL — ao lado direito da última fileira de bolas (R5), mesmo tamanho/formato das tarjas ── */}
+      <div
+        style={{
+          position: "absolute",
+          left: bounds.x + bounds.w * 0.425,
+          top: bounds.y + bounds.h * 0.224,
+          width: bounds.w * 0.145,
+          height: bounds.h * 0.152,
+          zIndex: 95,
+          borderRadius: 14,
+          overflow: "hidden",
+          border: "1.5px solid rgba(255,215,0,0.35)",
+          boxShadow: "0 0 16px 2px rgba(255,215,0,0.2)",
+          background: "#000",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <MapaBrasil />
       </div>
 
       {/* ── TARJA GANHADORES 1 — ao lado direito, abaixo do ranking ── */}
