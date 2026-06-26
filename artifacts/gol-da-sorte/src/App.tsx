@@ -2224,25 +2224,7 @@ export default function App() {
         />
       </div>
 
-      {/* ── MAPA DO BRASIL — ao lado direito da foto (visível mas fora da interface) ── */}
-      <div
-        style={{
-          position: "absolute",
-          left: bounds.x + bounds.w + 113,
-          top: bounds.y,
-          width: bounds.w * 0.350,
-          height: bounds.h * 0.100,
-          zIndex: 95,
-          borderRadius: 10,
-          overflow: "hidden",
-          border: "1.5px solid rgba(255,215,0,0.35)",
-          boxShadow: "0 0 16px 2px rgba(255,215,0,0.2)",
-        }}
-      >
-        <MapaBrasil />
-      </div>
-
-      {/* ── TARJA GANHADORES 1 — ao lado direito, abaixo do mapa ── */}
+      {/* ── TARJA GANHADORES 1 — ao lado direito, abaixo do ranking ── */}
       <div style={{
         position: "absolute",
         left: bounds.x + bounds.w + 113,
