@@ -160,7 +160,6 @@ export default function MapaBrasil({ compact = false, size = 28 }: MapaBrasilPro
         style={{
           width: size,
           height: size,
-          borderRadius: "50%",
           background: "linear-gradient(135deg, #0a0a0a, #1a1a1a)",
           border: "2px solid rgba(255,215,0,0.6)",
           boxShadow: "0 0 8px rgba(255,215,0,0.4)",
@@ -170,6 +169,7 @@ export default function MapaBrasil({ compact = false, size = 28 }: MapaBrasilPro
           overflow: "hidden",
           cursor: "pointer",
           flexShrink: 0,
+          borderRadius: 4,
         }}
       >
         <svg

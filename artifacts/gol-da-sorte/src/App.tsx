@@ -2132,7 +2132,7 @@ export default function App() {
           width: bounds.w * 0.070,
           height: bounds.w * 0.070,
           zIndex: 20,
-          borderRadius: "50%",
+          borderRadius: 4,
           overflow: "hidden",
           border: "2px solid rgba(255,215,0,0.5)",
           boxShadow: "0 0 12px rgba(255,215,0,0.3)",
