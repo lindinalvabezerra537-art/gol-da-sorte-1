@@ -1970,55 +1970,57 @@ export default function App() {
           🟢 USUÁRIOS ONLINE
         </span>
         <div style={{ flex: 1, overflow: "hidden", width: "100%", display: "flex", alignItems: "center" }}>
-          {onlineUsers.length === 0 ? (
-            <span style={{ color: "#555", fontSize: Math.max(bounds.w * 0.013, 7), fontWeight: 600, whiteSpace: "nowrap" }}>
-              nenhum usuário ativo agora
-            </span>
-          ) : (
-            <div style={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-              gap: bounds.w * 0.018,
-              animation: onlineUsers.length > 4 ? `tickerScroll ${Math.max(onlineUsers.length * 3, 14)}s linear infinite` : "none",
-              width: onlineUsers.length > 4 ? "max-content" : "auto",
-            }}>
-              {[...onlineUsers, ...(onlineUsers.length > 4 ? onlineUsers : [])].map((u, i) => {
-                const firstName = u.name.split(" ")[0] || u.name;
-                const initials = firstName.slice(0, 2).toUpperCase();
-                const avatarSize = Math.max(bounds.h * 0.042, 24);
-                return (
-                  <div key={`${u.id}-${i}`} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: bounds.h * 0.004, flexShrink: 0 }}>
-                    <div style={{
-                      width: avatarSize,
-                      height: avatarSize,
-                      borderRadius: "50%",
-                      background: u.fotoBase64 ? "transparent" : "linear-gradient(135deg, #00c850 0%, #00802f 100%)",
-                      border: "2px solid rgba(0,255,100,0.8)",
-                      boxShadow: "0 0 8px rgba(0,200,80,0.7)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                      overflow: "hidden",
-                    }}>
-                      {u.fotoBase64 ? (
-                        <img src={u.fotoBase64} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                      ) : (
-                        <span style={{ color: "#fff", fontSize: Math.max(avatarSize * 0.38, 8), fontWeight: 900, lineHeight: 1, userSelect: "none" }}>
-                          {initials}
-                        </span>
-                      )}
+          <div style={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            gap: bounds.w * 0.018,
+            animation: onlineUsers.length > 4 ? `tickerScroll ${Math.max(onlineUsers.length * 3, 14)}s linear infinite` : "none",
+            width: "auto",
+          }}>
+            {onlineUsers.length === 0 ? (
+              <span style={{ color: "#555", fontSize: Math.max(bounds.w * 0.013, 7), fontWeight: 600, whiteSpace: "nowrap" }}>
+                nenhum usuário ativo agora
+              </span>
+            ) : (
+              <>
+                {[...onlineUsers, ...(onlineUsers.length > 4 ? onlineUsers : [])].map((u, i) => {
+                  const firstName = u.name.split(" ")[0] || u.name;
+                  const initials = firstName.slice(0, 2).toUpperCase();
+                  const avatarSize = Math.max(bounds.h * 0.042, 24);
+                  return (
+                    <div key={`${u.id}-${i}`} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: bounds.h * 0.004, flexShrink: 0 }}>
+                      <div style={{
+                        width: avatarSize,
+                        height: avatarSize,
+                        borderRadius: "50%",
+                        background: u.fotoBase64 ? "transparent" : "linear-gradient(135deg, #00c850 0%, #00802f 100%)",
+                        border: "2px solid rgba(0,255,100,0.8)",
+                        boxShadow: "0 0 8px rgba(0,200,80,0.7)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                        overflow: "hidden",
+                      }}>
+                        {u.fotoBase64 ? (
+                          <img src={u.fotoBase64} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        ) : (
+                          <span style={{ color: "#fff", fontSize: Math.max(avatarSize * 0.38, 8), fontWeight: 900, lineHeight: 1, userSelect: "none" }}>
+                            {initials}
+                          </span>
+                        )}
+                      </div>
+                      <span style={{ color: "#cfffdf", fontSize: Math.max(bounds.w * 0.013, 7), fontWeight: 700, whiteSpace: "nowrap", lineHeight: 1, textAlign: "center" }}>
+                        {firstName}
+                      </span>
                     </div>
-                    <span style={{ color: "#cfffdf", fontSize: Math.max(bounds.w * 0.013, 7), fontWeight: 700, whiteSpace: "nowrap", lineHeight: 1, textAlign: "center" }}>
-                      {firstName}
-                    </span>
-                  </div>
-                );
-              })}
-              <MapaBrasil compact size={Math.max(bounds.h * 0.042, 24)} />
-            </div>
-          )}
+                  );
+                })}
+              </>
+            )}
+            <MapaBrasil compact size={Math.max(bounds.h * 0.042, 24)} />
+          </div>
         </div>
       </div>
 
