@@ -384,6 +384,8 @@ export default function App() {
   const [ganhadores, setGanhadores] = useState<WinnerCard[]>([emptyWinner, emptyWinner, emptyWinner, emptyWinner]);
   const [selectedWinner, setSelectedWinner] = useState<WinnerCard | null>(null);
   const [showRankingModal, setShowRankingModal] = useState(false);
+  const [rankingData, setRankingData] = useState<{ cidade?: any[]; estado?: any[]; brasil?: any[]; myCity?: string; myState?: string } | null>(null);
+  const [rankingMyPosition, setRankingMyPosition] = useState<{ cidadeRank: number; estadoRank: number; brasilRank: number; points: number } | null>(null);
   const [referralUnlocked, setReferralUnlocked] = useState(false);
   const [totalFriends, setTotalFriends] = useState<number>(0);
   const [valorAcumulado, setValorAcumulado] = useState<string>("0,00");
@@ -618,6 +620,14 @@ export default function App() {
     }
     setConfettiActive(true);
     setMegaActive(true);
+    // Adicionar pontos de vitória no ranking
+    if (userId) {
+      apiCall(`/users/${userId}/add-points`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "win" }),
+      }).catch(() => {});
+    }
     if (plays > 0) {
       setPlaysRemaining(prev => prev + plays);
       if (userId) {
@@ -868,6 +878,33 @@ export default function App() {
         setPlaysRemaining(userData.user.playsRemaining);
         setReferralUnlocked(userData.user.referralUnlocked);
         setUserInfo({ name: userData.user.name, cidade: userData.user.cidade, estado: userData.user.estado, fotoBase64: userData.user.fotoBase64 });
+        // Buscar ranking
+        const city = userData.user.cidade;
+        const state = userData.user.estado;
+        if (city && state) {
+          Promise.all([
+            apiCall(`/users/ranking/cidade/${encodeURIComponent(city)}`),
+            apiCall(`/users/ranking/estado/${encodeURIComponent(state)}`),
+            apiCall(`/users/ranking/brasil`),
+            apiCall(`/users/${userId}/ranking`),
+          ]).then(([cData, eData, bData, myData]) => {
+            setRankingData({
+              cidade: cData?.users?.slice(0, 3),
+              estado: eData?.users?.slice(0, 3),
+              brasil: bData?.users?.slice(0, 3),
+              myCity: city,
+              myState: state,
+            });
+            if (myData?.user) {
+              setRankingMyPosition({
+                cidadeRank: myData.cidadeRank,
+                estadoRank: myData.estadoRank,
+                brasilRank: myData.brasilRank,
+                points: myData.user.rankingPoints,
+              });
+            }
+          }).catch(() => {});
+        }
       } else {
         localStorage.removeItem("golUserId");
         setUserId(null);
@@ -2163,9 +2200,24 @@ export default function App() {
       {/* ── RANKING PÓDIO — pódio compacto Cidade / Brasil / Estado ── */}
       <div style={{ ...ov(0.614, 0.730, 0.350, 0.270), zIndex: 89 }}>
         <RankingPodium
-          cidade={{ nome: "João Silva",     pontos: 12850, label: "Dom Inocêncio - PI", foto: "https://i.pravatar.cc/150?img=12" }}
-          brasil={{ nome: "Carlos Eduardo", pontos: 18560, label: "São Paulo - SP",      foto: "https://i.pravatar.cc/150?img=7"  }}
-          estado={{ nome: "Mateus Lima",    pontos: 12600, label: "Teresina - PI",       foto: "https://i.pravatar.cc/150?img=33" }}
+          cidade={rankingData?.cidade?.[0] ? {
+            nome: rankingData.cidade[0].name,
+            pontos: rankingData.cidade[0].rankingPoints,
+            label: `${rankingData.cidade[0].cidade} - ${rankingData.cidade[0].estado}`,
+            foto: rankingData.cidade[0].fotoBase64,
+          } : { nome: "João Silva", pontos: 0, label: "Sem dados", foto: "https://i.pravatar.cc/150?img=12" }}
+          brasil={rankingData?.brasil?.[0] ? {
+            nome: rankingData.brasil[0].name,
+            pontos: rankingData.brasil[0].rankingPoints,
+            label: `${rankingData.brasil[0].cidade} - ${rankingData.brasil[0].estado}`,
+            foto: rankingData.brasil[0].fotoBase64,
+          } : { nome: "Carlos Eduardo", pontos: 0, label: "Sem dados", foto: "https://i.pravatar.cc/150?img=7" }}
+          estado={rankingData?.estado?.[0] ? {
+            nome: rankingData.estado[0].name,
+            pontos: rankingData.estado[0].rankingPoints,
+            label: `${rankingData.estado[0].cidade} - ${rankingData.estado[0].estado}`,
+            foto: rankingData.estado[0].fotoBase64,
+          } : { nome: "Mateus Lima", pontos: 0, label: "Sem dados", foto: "https://i.pravatar.cc/150?img=33" }}
           onClick={() => setShowRankingModal(true)}
         />
       </div>

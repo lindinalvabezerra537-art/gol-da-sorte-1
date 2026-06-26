@@ -22,6 +22,10 @@ export const usersTable = pgTable("users", {
   saldo: integer("saldo").notNull().default(0),
   piratePos: integer("pirate_pos").notNull().default(0),
   lastPirateMove: timestamp("last_pirate_move"),
+  rankingPoints: integer("ranking_points").notNull().default(0),
+  rankingSocialLink: text("ranking_social_link"),
+  onlineMinutesToday: integer("online_minutes_today").notNull().default(0),
+  lastOnlineDate: timestamp("last_online_date"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

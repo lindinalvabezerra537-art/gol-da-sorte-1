@@ -308,4 +308,92 @@ router.post("/:id/referral-reward", async (req, res) => {
   res.json({ user: updated, newReferrals: referrals.length });
 });
 
+// ── RANKING SYSTEM ──
+
+// Adicionar pontos ao jogador (vitória, indicação, online)
+router.post("/:id/add-points", async (req, res) => {
+  const id = parseInt(req.params.id);
+  const { type, amount } = req.body as { type?: string; amount?: number };
+  if (!id || isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+
+  const pointsMap: Record<string, number> = { win: 10, referral: 10, online: 1 };
+  const addPoints = amount ?? pointsMap[type ?? ""] ?? 0;
+  if (addPoints <= 0) { res.status(400).json({ error: "Invalid type or amount" }); return; }
+
+  const [user] = await db.select({ rankingPoints: usersTable.rankingPoints }).from(usersTable).where(eq(usersTable.id, id));
+  if (!user) { res.status(404).json({ error: "User not found" }); return; }
+
+  const newPoints = (user.rankingPoints ?? 0) + addPoints;
+  const [updated] = await db.update(usersTable).set({ rankingPoints: newPoints }).where(eq(usersTable.id, id)).returning();
+  res.json({ user: updated, added: addPoints, total: newPoints });
+});
+
+// Atualizar link social do ranking
+router.put("/:id/ranking-social-link", async (req, res) => {
+  const id = parseInt(req.params.id);
+  const { link } = req.body as { link?: string };
+  if (!id || isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+
+  const [updated] = await db.update(usersTable).set({ rankingSocialLink: link || null }).where(eq(usersTable.id, id)).returning();
+  res.json({ user: updated });
+});
+
+// Ranking por cidade
+router.get("/ranking/cidade/:cidade", async (req, res) => {
+  const cidade = decodeURIComponent(req.params.cidade);
+  if (!cidade) { res.status(400).json({ error: "Missing cidade" }); return; }
+
+  const users = await db
+    .select({ id: usersTable.id, name: usersTable.name, cidade: usersTable.cidade, estado: usersTable.estado, fotoBase64: usersTable.fotoBase64, rankingPoints: usersTable.rankingPoints, rankingSocialLink: usersTable.rankingSocialLink })
+    .from(usersTable)
+    .where(eq(usersTable.cidade, cidade))
+    .orderBy(desc(usersTable.rankingPoints))
+    .limit(50);
+  res.json({ cidade, users });
+});
+
+// Ranking por estado
+router.get("/ranking/estado/:estado", async (req, res) => {
+  const estado = decodeURIComponent(req.params.estado);
+  if (!estado) { res.status(400).json({ error: "Missing estado" }); return; }
+
+  const users = await db
+    .select({ id: usersTable.id, name: usersTable.name, cidade: usersTable.cidade, estado: usersTable.estado, fotoBase64: usersTable.fotoBase64, rankingPoints: usersTable.rankingPoints, rankingSocialLink: usersTable.rankingSocialLink })
+    .from(usersTable)
+    .where(eq(usersTable.estado, estado))
+    .orderBy(desc(usersTable.rankingPoints))
+    .limit(50);
+  res.json({ estado, users });
+});
+
+// Ranking do Brasil
+router.get("/ranking/brasil", async (_req, res) => {
+  const users = await db
+    .select({ id: usersTable.id, name: usersTable.name, cidade: usersTable.cidade, estado: usersTable.estado, fotoBase64: usersTable.fotoBase64, rankingPoints: usersTable.rankingPoints, rankingSocialLink: usersTable.rankingSocialLink })
+    .from(usersTable)
+    .orderBy(desc(usersTable.rankingPoints))
+    .limit(100);
+  res.json({ users });
+});
+
+// Posição do usuário no ranking
+router.get("/:id/ranking", async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (!id || isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+
+  const [user] = await db.select({ id: usersTable.id, name: usersTable.name, cidade: usersTable.cidade, estado: usersTable.estado, rankingPoints: usersTable.rankingPoints, rankingSocialLink: usersTable.rankingSocialLink }).from(usersTable).where(eq(usersTable.id, id));
+  if (!user) { res.status(404).json({ error: "User not found" }); return; }
+
+  const cidadeRank = await db.select({ count: sql<number>`COUNT(*)` }).from(usersTable).where(and(eq(usersTable.cidade, user.cidade), gte(usersTable.rankingPoints, user.rankingPoints ?? 0)));
+  const estadoRank = await db.select({ count: sql<number>`COUNT(*)` }).from(usersTable).where(and(eq(usersTable.estado, user.estado), gte(usersTable.rankingPoints, user.rankingPoints ?? 0)));
+  const brasilRank = await db.select({ count: sql<number>`COUNT(*)` }).from(usersTable).where(gte(usersTable.rankingPoints, user.rankingPoints ?? 0));
+
+  res.json({
+    user,
+    cidadeRank: cidadeRank[0]?.count ?? 0,
+    estadoRank: estadoRank[0]?.count ?? 0,
+    brasilRank: brasilRank[0]?.count ?? 0,
+  });
+});
+
 export default router;
