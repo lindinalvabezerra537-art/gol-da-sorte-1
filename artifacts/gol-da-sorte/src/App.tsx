@@ -2123,6 +2123,25 @@ export default function App() {
         });
       })}
 
+      {/* ── MINI MAPA BRASIL — ao lado direito da última bola da linha de cima (R5) ── */}
+      {showGolDaSorte && (
+        <div style={{
+          position: "absolute",
+          left: bounds.x + bounds.w * 0.425,
+          top: bounds.y + bounds.h * 0.220,
+          width: bounds.w * 0.070,
+          height: bounds.w * 0.070,
+          zIndex: 20,
+          borderRadius: "50%",
+          overflow: "hidden",
+          border: "2px solid rgba(255,215,0,0.5)",
+          boxShadow: "0 0 12px rgba(255,215,0,0.3)",
+          cursor: "pointer",
+        }}>
+          <MapaBrasil compact size={Math.max(bounds.w * 0.070, 28)} />
+        </div>
+      )}
+
       {/* ── CALIBRATION OVERLAY ── */}
       {TOUCH_CALIB && (
         <>
