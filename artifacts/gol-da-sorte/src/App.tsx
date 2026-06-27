@@ -1131,8 +1131,8 @@ export default function App() {
       />
 
 
-      {/* ─── Avatar do usuário — fora do tabuleiro, canto superior esquerdo ─── */}
-      {!showGolDaSorte && userInfo?.fotoBase64 && (
+      {/* ─── Avatar do usuário — canto superior esquerdo, sempre visível quando logado ─── */}
+      {userId && (
         <div
           style={{
             position: "fixed",
@@ -1149,14 +1149,21 @@ export default function App() {
             borderRadius: "50%",
             border: "2.5px solid #FFD700",
             overflow: "hidden",
-            background: "#1a1a1a",
+            background: userInfo?.fotoBase64 ? "#1a1a1a" : "linear-gradient(135deg, #333 0%, #111 100%)",
             boxShadow: "0 0 12px rgba(255,215,0,0.4)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}>
-            <img
-              src={userInfo.fotoBase64}
-              alt="Foto"
-              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center", display: "block" }}
-            />
+            {userInfo?.fotoBase64 ? (
+              <img
+                src={userInfo.fotoBase64}
+                alt="Foto"
+                style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center", display: "block" }}
+              />
+            ) : (
+              <span style={{ fontSize: 20 }}>👤</span>
+            )}
           </div>
           <div style={{
             position: "absolute",
