@@ -2263,9 +2263,14 @@ export default function App() {
               fontWeight: 800,
               letterSpacing: 0.3,
               textShadow: "0 1px 3px rgba(0,0,0,0.7)",
+              lineHeight: 1.05,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
             }}
           >
-            EM TODO BRASIL
+            <span>EM TODO</span>
+            <span style={{ marginTop: -2 }}>BRASIL</span>
           </span>
         </div>
       </div>
