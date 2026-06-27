@@ -1131,6 +1131,52 @@ export default function App() {
       />
 
 
+      {/* ─── Avatar do usuário — fora do tabuleiro, canto superior esquerdo ─── */}
+      {!showGolDaSorte && userInfo?.fotoBase64 && (
+        <div
+          style={{
+            position: "fixed",
+            left: 12,
+            top: 12,
+            zIndex: 9999,
+            cursor: "pointer",
+          }}
+          onClick={() => setShowEditPhoto(true)}
+        >
+          <div style={{
+            width: 44,
+            height: 44,
+            borderRadius: "50%",
+            border: "2.5px solid #FFD700",
+            overflow: "hidden",
+            background: "#1a1a1a",
+            boxShadow: "0 0 12px rgba(255,215,0,0.4)",
+          }}>
+            <img
+              src={userInfo.fotoBase64}
+              alt="Foto"
+              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center", display: "block" }}
+            />
+          </div>
+          <div style={{
+            position: "absolute",
+            bottom: -2,
+            right: -2,
+            width: 18,
+            height: 18,
+            borderRadius: "50%",
+            background: "#FFD700",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.5)",
+            border: "1.5px solid #000",
+          }}>
+            <span style={{ fontSize: 10, color: "#000" }}>✏</span>
+          </div>
+        </div>
+      )}
+
       {/* ─── HUD COMPACTO — modo pirata (absolute dentro dos bounds) ─── */}
       {!showGolDaSorte && (
         <div style={{
@@ -1145,46 +1191,6 @@ export default function App() {
           pointerEvents: "auto",
           width: Math.max(bounds.w * 0.13, 54),
         }}>
-
-          {/* Avatar do usuário com lápis */}
-          {userInfo?.fotoBase64 && (
-            <div
-              style={{ position: "relative", cursor: "pointer" }}
-              onClick={() => setShowEditPhoto(true)}
-            >
-              <div style={{
-                width: Math.max(bounds.w * 0.10, 36),
-                height: Math.max(bounds.w * 0.10, 36),
-                borderRadius: "50%",
-                border: "2px solid #FFD700",
-                overflow: "hidden",
-                background: "#1a1a1a",
-                boxShadow: "0 0 8px rgba(255,215,0,0.3)",
-              }}>
-                <img
-                  src={userInfo.fotoBase64}
-                  alt="Foto"
-                  style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center", display: "block" }}
-                />
-              </div>
-              <div style={{
-                position: "absolute",
-                bottom: -2,
-                right: -2,
-                width: Math.max(bounds.w * 0.035, 14),
-                height: Math.max(bounds.w * 0.035, 14),
-                borderRadius: "50%",
-                background: "#FFD700",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                boxShadow: "0 1px 4px rgba(0,0,0,0.5)",
-                border: "1.5px solid #000",
-              }}>
-                <span style={{ fontSize: Math.max(bounds.w * 0.018, 8), color: "#000" }}>✏</span>
-              </div>
-            </div>
-          )}
 
           {/* Jogadas badge */}
           <div
