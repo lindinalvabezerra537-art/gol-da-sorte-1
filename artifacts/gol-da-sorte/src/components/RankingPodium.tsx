@@ -10,6 +10,8 @@ interface RankingPodiumProps {
   estado: PodiumPlayer;
   brasil: PodiumPlayer;
   onClick: () => void;
+  onSeguir?: (scope: "cidade" | "estado" | "brasil") => void;
+  seguindo?: { cidade: boolean; estado: boolean; brasil: boolean };
 }
 
 const THEMES = {
@@ -41,11 +43,15 @@ function PlayerCard({
   theme,
   tagLabel,
   big,
+  onSeguir,
+  jaSeguiu,
 }: {
   player: PodiumPlayer;
   theme: typeof THEMES.gold;
   tagLabel: string;
   big?: boolean;
+  onSeguir?: () => void;
+  jaSeguiu?: boolean;
 }) {
   const photoSize = big ? 44 : 34;
   const firstName = player.nome.split(" ")[0] || "—";
@@ -153,23 +159,43 @@ function PlayerCard({
         display: "flex",
         justifyContent: "center",
       }}>
-        <div style={{
-          background: theme.border,
-          color: "#000",
-          fontWeight: 900,
-          fontSize: big ? 7 : 6,
-          borderRadius: 4,
-          padding: "2px 6px",
-          letterSpacing: 0.5,
-          textTransform: "uppercase",
-          lineHeight: 1.3,
-        }}>SEGUIR</div>
+        {jaSeguiu ? (
+          <div style={{
+            background: "rgba(0,180,0,0.25)",
+            border: `1px solid ${theme.border}`,
+            color: theme.border,
+            fontWeight: 900,
+            fontSize: big ? 7 : 6,
+            borderRadius: 4,
+            padding: "2px 6px",
+            letterSpacing: 0.5,
+            textTransform: "uppercase",
+            lineHeight: 1.3,
+          }}>SEGUINDO</div>
+        ) : (
+          <button
+            onClick={(e) => { e.stopPropagation(); onSeguir?.(); }}
+            style={{
+              background: theme.border,
+              color: "#000",
+              fontWeight: 900,
+              fontSize: big ? 7 : 6,
+              borderRadius: 4,
+              padding: "2px 6px",
+              letterSpacing: 0.5,
+              textTransform: "uppercase",
+              lineHeight: 1.3,
+              border: "none",
+              cursor: "pointer",
+            }}
+          >SEGUIR</button>
+        )}
       </div>
     </div>
   );
 }
 
-export default function RankingPodium({ cidade, estado, brasil, onClick }: RankingPodiumProps) {
+export default function RankingPodium({ cidade, estado, brasil, onClick, onSeguir, seguindo }: RankingPodiumProps) {
   return (
     <div
       onClick={onClick}
@@ -209,9 +235,9 @@ export default function RankingPodium({ cidade, estado, brasil, onClick }: Ranki
         flex: 1,
         minHeight: 0,
       }}>
-        <PlayerCard player={cidade} theme={THEMES.silver} tagLabel="🏙 Cidade" />
-        <PlayerCard player={brasil} theme={THEMES.gold}   tagLabel="🇧🇷 Brasil" big />
-        <PlayerCard player={estado} theme={THEMES.bronze} tagLabel="🗺 Estado" />
+        <PlayerCard player={cidade} theme={THEMES.silver} tagLabel="🏙 Cidade" onSeguir={() => onSeguir?.("cidade")} jaSeguiu={seguindo?.cidade} />
+        <PlayerCard player={brasil} theme={THEMES.gold} tagLabel="🇧🇷 Brasil" big onSeguir={() => onSeguir?.("brasil")} jaSeguiu={seguindo?.brasil} />
+        <PlayerCard player={estado} theme={THEMES.bronze} tagLabel="🗺 Estado" onSeguir={() => onSeguir?.("estado")} jaSeguiu={seguindo?.estado} />
       </div>
 
       <div style={{ fontSize: 6, color: "#333", lineHeight: 1, flexShrink: 0 }}>toque para ver ranking</div>

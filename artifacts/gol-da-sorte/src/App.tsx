@@ -387,6 +387,10 @@ export default function App() {
   const [showRankingModal, setShowRankingModal] = useState(false);
   const [rankingData, setRankingData] = useState<{ cidade?: any[]; estado?: any[]; brasil?: any[]; myCity?: string; myState?: string } | null>(null);
   const [rankingMyPosition, setRankingMyPosition] = useState<{ cidadeRank: number; estadoRank: number; brasilRank: number; points: number } | null>(null);
+  const [seguindoRanking, setSeguindoRanking] = useState<{ cidade: boolean; estado: boolean; brasil: boolean }>({ cidade: false, estado: false, brasil: false });
+  const [showRankingEntryModal, setShowRankingEntryModal] = useState(false);
+  const [rankingEntryScope, setRankingEntryScope] = useState<"cidade" | "estado" | "brasil" | null>(null);
+  const [rankingLinkInput, setRankingLinkInput] = useState("");
   const [referralUnlocked, setReferralUnlocked] = useState(false);
   const [totalFriends, setTotalFriends] = useState<number>(0);
   const [valorAcumulado, setValorAcumulado] = useState<string>("0,00");
@@ -621,14 +625,6 @@ export default function App() {
     }
     setConfettiActive(true);
     setMegaActive(true);
-    // Adicionar pontos de vitória no ranking
-    if (userId) {
-      apiCall(`/users/${userId}/add-points`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "win" }),
-      }).catch(() => {});
-    }
     if (plays > 0) {
       setPlaysRemaining(prev => prev + plays);
       if (userId) {
@@ -888,7 +884,8 @@ export default function App() {
             apiCall(`/users/ranking/estado/${encodeURIComponent(state)}`),
             apiCall(`/users/ranking/brasil`),
             apiCall(`/users/${userId}/ranking`),
-          ]).then(([cData, eData, bData, myData]) => {
+            apiCall(`/users/${userId}/seguidos`),
+          ]).then(([cData, eData, bData, myData, segData]) => {
             setRankingData({
               cidade: cData?.users?.slice(0, 3),
               estado: eData?.users?.slice(0, 3),
@@ -904,6 +901,15 @@ export default function App() {
                 points: myData.user.rankingPoints,
               });
             }
+            const seguidos: number[] = segData?.seguidos || [];
+            const cidTop = cData?.users?.[0]?.id;
+            const estTop = eData?.users?.[0]?.id;
+            const braTop = bData?.users?.[0]?.id;
+            setSeguindoRanking({
+              cidade: cidTop && seguidos.includes(cidTop),
+              estado: estTop && seguidos.includes(estTop),
+              brasil: braTop && seguidos.includes(braTop),
+            });
           }).catch(() => {});
         }
       } else {
@@ -1001,6 +1007,19 @@ export default function App() {
       const pick = { row: rowIdx, ball: ballIdx };
       setCorrectPicks(prev => [...prev, pick]);
       setJustOkBall(pick);
+      // +50 pontos por fileira vencida
+      if (userId) {
+        apiCall(`/users/${userId}/add-points`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "win" }),
+        }).then(async (data) => {
+          if (data?.enteredRanking) {
+            setRankingEntryScope(data.enteredRanking as "cidade" | "estado" | "brasil");
+            setShowRankingEntryModal(true);
+          }
+        }).catch(() => {});
+      }
       setTimeout(() => {
         setJustOkBall(null);
         const next = rowIdx + 1;
@@ -1055,6 +1074,32 @@ export default function App() {
       setUserLoaded(true);
     });
   };
+
+  const handleSeguirRanking = useCallback(async (scope: "cidade" | "estado" | "brasil") => {
+    if (!userId || !rankingData) return;
+    const topPlayer = rankingData[scope]?.[0];
+    if (!topPlayer || !topPlayer.id) return;
+    if (topPlayer.id === userId) { showToast("Você é o líder!"); return; }
+
+    const link = topPlayer.rankingSocialLink || topPlayer.linkSocial;
+    if (link) {
+      window.open(link, "_blank");
+    }
+
+    const data = await apiCall(`/users/${userId}/seguir-ranking`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ targetUserId: topPlayer.id }),
+    });
+    if (data?.error) {
+      showToast(data.error);
+      return;
+    }
+    if (data?.user) {
+      setSeguindoRanking(prev => ({ ...prev, [scope]: true }));
+      showToast(`🎉 +5 pts! Você seguiu o melhor de ${scope}!`);
+    }
+  }, [userId, rankingData]);
 
   const handlePurchased = (newPlays: number) => {
     setPlaysRemaining(newPlays);
@@ -2291,6 +2336,8 @@ export default function App() {
             foto: rankingData.estado[0].fotoBase64,
           } : { nome: "Mateus Lima", pontos: 0, label: "Sem dados", foto: "https://i.pravatar.cc/150?img=33" }}
           onClick={() => setShowRankingModal(true)}
+          onSeguir={(scope) => handleSeguirRanking(scope)}
+          seguindo={seguindoRanking}
         />
       </div>
 
@@ -2449,6 +2496,88 @@ export default function App() {
                 display: "block",
               }}
             />
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL ENTRADA NO RANKING ── */}
+      {showRankingEntryModal && rankingEntryScope && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 2147483642,
+          background: "rgba(0,0,0,0.9)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          padding: "24px",
+        }}>
+          <div style={{
+            background: "linear-gradient(135deg, #1a0a00, #0d0d0d, #1a0a00)",
+            border: "3px solid #FFD700",
+            borderRadius: 24,
+            maxWidth: 380, width: "100%",
+            padding: "32px 24px",
+            textAlign: "center",
+            boxShadow: "0 0 80px rgba(255,215,0,0.5)",
+          }}>
+            <div style={{ fontSize: 52, marginBottom: 8 }}>🏆🎉</div>
+            <div style={{
+              color: "#FFD700", fontWeight: 900, fontSize: 20,
+              marginBottom: 8, letterSpacing: 0.5, textTransform: "uppercase",
+              textShadow: "0 0 20px rgba(255,200,0,0.6)",
+            }}>
+              PARABÉNS!
+            </div>
+            <div style={{ color: "#fff", fontSize: 15, fontWeight: 700, marginBottom: 6 }}>
+              Você acaba de entrar no ranking {rankingEntryScope === "brasil" ? "do Brasil" : rankingEntryScope === "estado" ? "do seu Estado" : "da sua Cidade"}!
+            </div>
+            <div style={{ color: "#ccc", fontSize: 13, lineHeight: 1.5, marginBottom: 20 }}>
+              Agora você será exibido em destaque. Cole o link da sua rede social para que outros jogadores possam seguir você:
+            </div>
+            <input
+              type="text"
+              value={rankingLinkInput}
+              onChange={(e) => setRankingLinkInput(e.target.value)}
+              placeholder="https://instagram.com/seu_perfil"
+              style={{
+                width: "100%", padding: "12px 14px",
+                background: "#111", border: "2px solid #FFD700",
+                borderRadius: 12, color: "#fff", fontSize: 14,
+                outline: "none", marginBottom: 16,
+                boxSizing: "border-box",
+              }}
+            />
+            <button
+              onClick={async () => {
+                if (!userId || !rankingLinkInput.trim()) return;
+                await apiCall(`/users/${userId}/ranking-social-link`, {
+                  method: "PUT",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ link: rankingLinkInput.trim() }),
+                });
+                setShowRankingEntryModal(false);
+                setRankingLinkInput("");
+                showToast("🎉 Link salvo! Você está no ranking!");
+              }}
+              style={{
+                width: "100%", padding: "14px",
+                background: "linear-gradient(135deg, #FFD700, #FFA500)",
+                border: "none", borderRadius: 12,
+                color: "#000", fontWeight: 900, fontSize: 16,
+                cursor: "pointer", textTransform: "uppercase",
+                letterSpacing: 0.5,
+              }}
+            >
+              💾 SALVAR MEU LINK
+            </button>
+            <button
+              onClick={() => { setShowRankingEntryModal(false); setRankingLinkInput(""); }}
+              style={{
+                width: "100%", padding: "10px", marginTop: 10,
+                background: "none", border: "1px solid #555",
+                borderRadius: 12, color: "#888", fontWeight: 700, fontSize: 13,
+                cursor: "pointer",
+              }}
+            >
+              Depois
+            </button>
           </div>
         </div>
       )}

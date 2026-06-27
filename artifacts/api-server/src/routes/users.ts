@@ -1,5 +1,5 @@
 import { Router, Request } from "express";
-import { db, usersTable, referralsTable } from "@workspace/db";
+import { db, usersTable, referralsTable, rankingFollowsTable } from "@workspace/db";
 import { eq, and, sql, gte, desc } from "drizzle-orm";
 import { sendEvent } from "../app";
 
@@ -296,8 +296,11 @@ router.post("/:id/referral-reward", async (req, res) => {
   const totalBonus = referrals.length * bonusPerReferral;
   const newPlays = (user.playsRemaining ?? 0) + totalBonus;
 
+  const [referrerUser] = await db.select({ rankingPoints: usersTable.rankingPoints }).from(usersTable).where(eq(usersTable.id, id));
+  const newRankingPoints = (referrerUser?.rankingPoints ?? 0) + referrals.length * 5;
+
   const [updated] = await db.update(usersTable)
-    .set({ playsRemaining: newPlays, referralUnlocked: true })
+    .set({ playsRemaining: newPlays, referralUnlocked: true, rankingPoints: newRankingPoints })
     .where(eq(usersTable.id, id))
     .returning();
 
@@ -305,7 +308,7 @@ router.post("/:id/referral-reward", async (req, res) => {
     .set({ rewarded: true })
     .where(eq(referralsTable.referrerId, id));
 
-  res.json({ user: updated, newReferrals: referrals.length });
+  res.json({ user: updated, newReferrals: referrals.length, addedPoints: referrals.length * 5 });
 });
 
 // ── RANKING SYSTEM ──
@@ -316,16 +319,39 @@ router.post("/:id/add-points", async (req, res) => {
   const { type, amount } = req.body as { type?: string; amount?: number };
   if (!id || isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
 
-  const pointsMap: Record<string, number> = { win: 10, referral: 10, online: 1 };
+  const pointsMap: Record<string, number> = { win: 50, referral: 5, online: 1, follow_champion: 5, follow_ranking: 5 };
   const addPoints = amount ?? pointsMap[type ?? ""] ?? 0;
   if (addPoints <= 0) { res.status(400).json({ error: "Invalid type or amount" }); return; }
 
-  const [user] = await db.select({ rankingPoints: usersTable.rankingPoints }).from(usersTable).where(eq(usersTable.id, id));
+  const [user] = await db.select({ rankingPoints: usersTable.rankingPoints, cidade: usersTable.cidade, estado: usersTable.estado }).from(usersTable).where(eq(usersTable.id, id));
   if (!user) { res.status(404).json({ error: "User not found" }); return; }
 
   const newPoints = (user.rankingPoints ?? 0) + addPoints;
   const [updated] = await db.update(usersTable).set({ rankingPoints: newPoints }).where(eq(usersTable.id, id)).returning();
-  res.json({ user: updated, added: addPoints, total: newPoints });
+
+  // Verificar se entrou no top 3
+  let enteredRanking: string | null = null;
+  if (type === "win") {
+    const brasilTop = await db.select({ rankingPoints: usersTable.rankingPoints }).from(usersTable).orderBy(desc(usersTable.rankingPoints)).limit(3);
+    const isBrasilTop = brasilTop.some(u => u.rankingPoints <= newPoints);
+    if (isBrasilTop) {
+      enteredRanking = "brasil";
+    } else if (user.estado) {
+      const estadoTop = await db.select({ rankingPoints: usersTable.rankingPoints }).from(usersTable).where(eq(usersTable.estado, user.estado)).orderBy(desc(usersTable.rankingPoints)).limit(3);
+      const isEstadoTop = estadoTop.some(u => u.rankingPoints <= newPoints);
+      if (isEstadoTop) {
+        enteredRanking = "estado";
+      } else if (user.cidade) {
+        const cidadeTop = await db.select({ rankingPoints: usersTable.rankingPoints }).from(usersTable).where(eq(usersTable.cidade, user.cidade)).orderBy(desc(usersTable.rankingPoints)).limit(3);
+        const isCidadeTop = cidadeTop.some(u => u.rankingPoints <= newPoints);
+        if (isCidadeTop) {
+          enteredRanking = "cidade";
+        }
+      }
+    }
+  }
+
+  res.json({ user: updated, added: addPoints, total: newPoints, enteredRanking });
 });
 
 // Atualizar link social do ranking
@@ -411,6 +437,77 @@ router.post("/:id/photo", async (req, res) => {
     .returning();
 
   res.json({ ok: true, user: updated });
+});
+
+// ── SEGUIR CAMPEÃO ──
+router.post("/:id/seguir-campeao", async (req, res) => {
+  const id = parseInt(req.params.id);
+  const { campeonUserId } = req.body as { campeonUserId?: number };
+  if (!id || isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+  if (!campeonUserId || isNaN(campeonUserId)) { res.status(400).json({ error: "campeonUserId required" }); return; }
+  if (id === campeonUserId) { res.status(400).json({ error: "Não pode seguir a si mesmo" }); return; }
+
+  const existing = await db.select().from(rankingFollowsTable)
+    .where(and(eq(rankingFollowsTable.targetUserId, campeonUserId), eq(rankingFollowsTable.followerUserId, id)))
+    .limit(1);
+  if (existing.length > 0) {
+    res.status(409).json({ error: "Você já resgatou esse bônus" });
+    return;
+  }
+
+  await db.insert(rankingFollowsTable).values({ targetUserId: campeonUserId, followerUserId: id });
+
+  // +5 pontos no ranking
+  const [user] = await db.select({ rankingPoints: usersTable.rankingPoints, playsRemaining: usersTable.playsRemaining }).from(usersTable).where(eq(usersTable.id, id));
+  if (!user) { res.status(404).json({ error: "User not found" }); return; }
+  const newPoints = (user.rankingPoints ?? 0) + 5;
+  const newPlays = (user.playsRemaining ?? 0) + 3;
+  const [updated] = await db.update(usersTable)
+    .set({ rankingPoints: newPoints, playsRemaining: newPlays })
+    .where(eq(usersTable.id, id))
+    .returning();
+
+  res.json({ user: updated, addedPoints: 5, addedPlays: 3 });
+});
+
+// ── SEGUIR JOGADOR DO RANKING ──
+router.post("/:id/seguir-ranking", async (req, res) => {
+  const id = parseInt(req.params.id);
+  const { targetUserId } = req.body as { targetUserId?: number };
+  if (!id || isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+  if (!targetUserId || isNaN(targetUserId)) { res.status(400).json({ error: "targetUserId required" }); return; }
+  if (id === targetUserId) { res.status(400).json({ error: "Não pode seguir a si mesmo" }); return; }
+
+  const existing = await db.select().from(rankingFollowsTable)
+    .where(and(eq(rankingFollowsTable.targetUserId, targetUserId), eq(rankingFollowsTable.followerUserId, id)))
+    .limit(1);
+  if (existing.length > 0) {
+    res.status(409).json({ error: "Você já seguiu este jogador" });
+    return;
+  }
+
+  await db.insert(rankingFollowsTable).values({ targetUserId, followerUserId: id });
+
+  const [user] = await db.select({ rankingPoints: usersTable.rankingPoints }).from(usersTable).where(eq(usersTable.id, id));
+  if (!user) { res.status(404).json({ error: "User not found" }); return; }
+  const newPoints = (user.rankingPoints ?? 0) + 5;
+  const [updated] = await db.update(usersTable)
+    .set({ rankingPoints: newPoints })
+    .where(eq(usersTable.id, id))
+    .returning();
+
+  res.json({ user: updated, addedPoints: 5 });
+});
+
+// ── Verificar se já seguiu um jogador ──
+router.get("/:id/seguidos", async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (!id || isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+
+  const follows = await db.select({ targetUserId: rankingFollowsTable.targetUserId }).from(rankingFollowsTable)
+    .where(eq(rankingFollowsTable.followerUserId, id));
+
+  res.json({ seguidos: follows.map(f => f.targetUserId) });
 });
 
 export default router;

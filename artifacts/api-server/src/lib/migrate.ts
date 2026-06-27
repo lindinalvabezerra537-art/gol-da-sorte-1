@@ -125,4 +125,14 @@ export async function runMigrations() {
       created_at TIMESTAMP NOT NULL DEFAULT NOW()
     )
   `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS ranking_follows (
+      id SERIAL PRIMARY KEY,
+      target_user_id INTEGER NOT NULL,
+      follower_user_id INTEGER NOT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+      UNIQUE (target_user_id, follower_user_id)
+    )
+  `);
 }
