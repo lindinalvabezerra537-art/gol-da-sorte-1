@@ -8,6 +8,7 @@ import AdminPanel from "./components/AdminPanel";
 import ChatRoom from "./components/ChatRoom";
 import BoardEditor from "./components/BoardEditor";
 import MapaBrasil from "./components/MapaBrasil";
+import EditPhotoModal from "./components/EditPhotoModal";
 import RankingPodium from "./components/RankingPodium";
 import { playZoneSound, playHorrorScream, playChampionFanfare } from "./sounds";
 
@@ -422,6 +423,7 @@ export default function App() {
   const [broadcastModal, setBroadcastModal] = useState<string | null>(null);
   const [megaActive, setMegaActive] = useState(false);
   const [showPromoModal, setShowPromoModal] = useState(false);
+  const [showEditPhoto, setShowEditPhoto] = useState(false);
   const [videoPlaying, setVideoPlaying] = useState(false);
   const [videoExpanded, setVideoExpanded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -1143,6 +1145,46 @@ export default function App() {
           pointerEvents: "auto",
           width: Math.max(bounds.w * 0.13, 54),
         }}>
+
+          {/* Avatar do usuário com lápis */}
+          {userInfo?.fotoBase64 && (
+            <div
+              style={{ position: "relative", cursor: "pointer" }}
+              onClick={() => setShowEditPhoto(true)}
+            >
+              <div style={{
+                width: Math.max(bounds.w * 0.10, 36),
+                height: Math.max(bounds.w * 0.10, 36),
+                borderRadius: "50%",
+                border: "2px solid #FFD700",
+                overflow: "hidden",
+                background: "#1a1a1a",
+                boxShadow: "0 0 8px rgba(255,215,0,0.3)",
+              }}>
+                <img
+                  src={userInfo.fotoBase64}
+                  alt="Foto"
+                  style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center", display: "block" }}
+                />
+              </div>
+              <div style={{
+                position: "absolute",
+                bottom: -2,
+                right: -2,
+                width: Math.max(bounds.w * 0.035, 14),
+                height: Math.max(bounds.w * 0.035, 14),
+                borderRadius: "50%",
+                background: "#FFD700",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0 1px 4px rgba(0,0,0,0.5)",
+                border: "1.5px solid #000",
+              }}>
+                <span style={{ fontSize: Math.max(bounds.w * 0.018, 8), color: "#000" }}>✏</span>
+              </div>
+            </div>
+          )}
 
           {/* Jogadas badge */}
           <div
@@ -2157,6 +2199,9 @@ export default function App() {
       )}
       {showInviteScreen && userId && (
         <InviteScreen userId={userId} onClose={() => { setShowInviteScreen(false); refreshReferralCount(userId); }} />
+      )}
+      {showEditPhoto && userId && (
+        <EditPhotoModal userId={userId} onClose={() => setShowEditPhoto(false)} onUpdated={() => { window.location.reload(); }} />
       )}
       {/* ── BOTÃO PROMOÇÃO 100 JOGADAS ── */}
       {showGolDaSorte && (<>

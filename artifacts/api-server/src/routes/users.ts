@@ -396,4 +396,21 @@ router.get("/:id/ranking", async (req, res) => {
   });
 });
 
+// — Atualizar foto do usuário —
+router.post("/:id/photo", async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (!id || isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+
+  const { fotoBase64 } = req.body as { fotoBase64?: string };
+  if (!fotoBase64) { res.status(400).json({ error: "fotoBase64 required" }); return; }
+
+  const [updated] = await db
+    .update(usersTable)
+    .set({ fotoBase64: fotoBase64 })
+    .where(eq(usersTable.id, id))
+    .returning();
+
+  res.json({ ok: true, user: updated });
+});
+
 export default router;
