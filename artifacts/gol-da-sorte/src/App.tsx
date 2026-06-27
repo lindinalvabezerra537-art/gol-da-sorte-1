@@ -2230,7 +2230,7 @@ export default function App() {
         style={{
           position: "absolute",
           left: bounds.x + bounds.w * 0.425,
-          top: bounds.y + bounds.h * 0.224,
+          top: bounds.y + bounds.h * 0.170,
           width: bounds.w * 0.145,
           height: bounds.h * 0.152,
           zIndex: 95,
