@@ -2258,15 +2258,14 @@ export default function App() {
         >
           <span
             style={{
-              fontSize: Math.max(bounds.w * 0.008, 6),
-              color: "#FFD700",
-              fontWeight: 900,
-              textTransform: "uppercase",
-              letterSpacing: 0.5,
-              textShadow: "0 1px 3px #000",
+              fontSize: Math.max(bounds.w * 0.0055, 5),
+              color: "rgba(255,215,0,0.85)",
+              fontWeight: 700,
+              letterSpacing: 1.2,
+              textShadow: "0 1px 2px rgba(0,0,0,0.6)",
             }}
           >
-            CADASTRADOS NO BRASIL
+            Cadastrados no Brasil
           </span>
         </div>
       </div>
