@@ -87,7 +87,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "PORT=5000 BASE_PATH=/ pnpm --filter @workspace/gol-da-sorte run dev"
+args = "bash start.sh"
 waitForPort = 5000
 
 [agent]
@@ -108,10 +108,6 @@ externalPort = 80
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 8081
-externalPort = 8081
 
 [[ports]]
 localPort = 8082
