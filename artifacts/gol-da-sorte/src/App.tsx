@@ -592,7 +592,6 @@ export default function App() {
   const triggerBonus = useCallback(async (amount: number) => {
     const big = amount >= 5;
     playFanfareSound(big);
-    setConfettiActive(true);
     setBonusCelebration({ amount, big });
     // Update counter immediately (optimistic)
     setPlaysRemaining(prev => prev + amount);
