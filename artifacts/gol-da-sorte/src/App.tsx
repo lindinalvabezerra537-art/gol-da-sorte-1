@@ -1136,12 +1136,24 @@ export default function App() {
         <div
           style={{
             position: "fixed",
-            left: 12,
-            top: 12,
-            zIndex: 9999,
+            left: 8,
+            top: 8,
+            zIndex: 99999,
             cursor: "pointer",
+            width: 52,
+            height: 52,
           }}
-          onClick={() => setShowEditPhoto(true)}
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            console.log("[Avatar] clicado!");
+            setShowEditPhoto(true);
+          }}
+          onTouchStart={(e) => {
+            e.stopPropagation();
+            console.log("[Avatar] touch!");
+            setShowEditPhoto(true);
+          }}
         >
           <div style={{
             width: 44,
