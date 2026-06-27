@@ -2265,7 +2265,7 @@ export default function App() {
               textShadow: "0 1px 3px rgba(0,0,0,0.7)",
             }}
           >
-            Jogadores no Brasil
+            EM TODO BRASIL
           </span>
         </div>
       </div>
