@@ -2229,7 +2229,7 @@ export default function App() {
       <div
         style={{
           position: "absolute",
-          left: bounds.x + bounds.w * 0.440,
+          left: bounds.x + bounds.w * 0.4425,
           top: bounds.y + bounds.h * 0.170,
           width: bounds.w * 0.145,
           height: bounds.h * 0.152,
