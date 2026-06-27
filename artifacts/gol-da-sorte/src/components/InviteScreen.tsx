@@ -41,6 +41,7 @@ export default function InviteScreen({ userId, onClose }: Props) {
     if (navigator.share) {
       try {
         await navigator.share({ title: "Gol da Sorte", text, url: inviteLink });
+        onClose();
         return;
       } catch {}
     }
@@ -48,12 +49,14 @@ export default function InviteScreen({ userId, onClose }: Props) {
       await navigator.clipboard.writeText(inviteLink);
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
+      onClose();
     } catch {}
   };
 
   const handleWhatsApp = () => {
     const text = encodeURIComponent(`🏆 Jogue o GOL DA SORTE comigo e ganhe 5 jogadas grátis!\n${inviteLink}`);
     window.open(`https://wa.me/?text=${text}`, "_blank");
+    onClose();
   };
 
   return (
@@ -126,6 +129,7 @@ export default function InviteScreen({ userId, onClose }: Props) {
                   navigator.clipboard.writeText(info.referralCode);
                   setCopied(true);
                   setTimeout(() => setCopied(false), 2500);
+                  onClose();
                 }}
                 style={{
                   background: "rgba(255,200,0,0.15)", border: "1px solid rgba(255,200,0,0.3)",
