@@ -2245,7 +2245,30 @@ export default function App() {
           justifyContent: "center",
         }}
       >
-        <MapaBrasil />
+        <div style={{ flex: 1, width: "100%", overflow: "hidden" }}>
+          <MapaBrasil />
+        </div>
+        <div
+          style={{
+            padding: "2px 4px",
+            textAlign: "center",
+            width: "100%",
+            flexShrink: 0,
+          }}
+        >
+          <span
+            style={{
+              fontSize: Math.max(bounds.w * 0.008, 6),
+              color: "#FFD700",
+              fontWeight: 900,
+              textTransform: "uppercase",
+              letterSpacing: 0.5,
+              textShadow: "0 1px 3px #000",
+            }}
+          >
+            CADASTRADOS NO BRASIL
+          </span>
+        </div>
       </div>
 
       {/* ── TARJA GANHADORES 1 — ao lado direito, abaixo do ranking ── */}
