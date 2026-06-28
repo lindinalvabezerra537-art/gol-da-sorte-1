@@ -391,7 +391,6 @@ export default function App() {
   const [showRankingEntryModal, setShowRankingEntryModal] = useState(false);
   const [rankingEntryScope, setRankingEntryScope] = useState<"cidade" | "estado" | "brasil" | null>(null);
   const [rankingLinkInput, setRankingLinkInput] = useState("");
-  const pendingRankingEntryRef = useRef<string | null>(null);
   const [referralUnlocked, setReferralUnlocked] = useState(false);
   const [totalFriends, setTotalFriends] = useState<number>(0);
   const [valorAcumulado, setValorAcumulado] = useState<string>("0,00");
@@ -637,10 +636,36 @@ export default function App() {
         if (data?.user) setPlaysRemaining(data.user.playsRemaining);
       }
     }
-    setTimeout(() => {
+    setTimeout(async () => {
       setMegaActive(false);
+      const link = championLinkInput.trim();
+      if (link && userId && userInfo) {
+        await apiCall("/settings/atual-campeao", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            nome: userInfo.name,
+            cidadeEstado: `${userInfo.cidade} - ${userInfo.estado}`,
+            foto: userInfo.fotoBase64 || "",
+            linkSocial: link,
+            userId: String(userId),
+          }),
+        });
+        setAtualCampeao({
+          nome: userInfo.name,
+          cidadeEstado: `${userInfo.cidade} - ${userInfo.estado}`,
+          foto: userInfo.fotoBase64 || "",
+          linkSocial: link,
+          userId: String(userId),
+        });
+        setChampionFollowClaimed(String(userId));
+        localStorage.setItem("claimedChampionUserId", String(userId));
+        showToast("🏆 Você agora é o Atual Campeão!");
+      } else {
+        setShowChampionModal(true);
+      }
     }, 5000);
-  }, [userId]);
+  }, [userId, championLinkInput, userInfo]);
 
   const reCalc = useCallback(() => {
     const mode = showGolDaSorteRef.current;
@@ -990,7 +1015,8 @@ export default function App() {
           body: JSON.stringify({ type: "win" }),
         }).then(async (data) => {
           if (data?.enteredRanking) {
-            pendingRankingEntryRef.current = data.enteredRanking;
+            setRankingEntryScope(data.enteredRanking as "cidade" | "estado" | "brasil");
+            setShowRankingEntryModal(true);
           }
         }).catch(() => {});
       }
@@ -1011,12 +1037,6 @@ export default function App() {
         if (next >= TOTAL_ROWS) {
           setGameActive(false); setCurrentRow(0);
           setTimeout(() => {
-            // Mostrar notificação de entrada no ranking só quando completou o jogo
-            if (pendingRankingEntryRef.current) {
-              setRankingEntryScope(pendingRankingEntryRef.current as "cidade" | "estado" | "brasil");
-              setShowRankingEntryModal(true);
-              pendingRankingEntryRef.current = null;
-            }
             setCorrectPicks([]);
             lockedRef.current = false;
             setLocked(false);
