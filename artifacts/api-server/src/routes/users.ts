@@ -388,24 +388,33 @@ async function getExclusiveRanking() {
     .orderBy(desc(usersTable.rankingPoints));
 
   const sorted = [...allUsers].sort((a, b) => (b.rankingPoints ?? 0) - (a.rankingPoints ?? 0));
-  const brasil = sorted.slice(0, 3);
-  const brasilIds = new Set(brasil.map(u => u.id));
 
-  // Estado: excluir quem já está no Brasil
+  // Brasil: top 3
+  const brasil = sorted.slice(0, 3);
+  const brasilTop1Id = brasil[0]?.id;
+
+  // Estado: top 3 de cada estado, EXCLUINDO APENAS o #1 do Brasil
   const estadoMap = new Map<string, typeof allUsers[0][]>([]);
   for (const u of sorted) {
-    if (brasilIds.has(u.id)) continue;
+    if (u.id === brasilTop1Id) continue; // excluir só o #1 do Brasil
     if (!estadoMap.has(u.estado)) estadoMap.set(u.estado, []);
     estadoMap.get(u.estado)!.push(u);
   }
   const estados: Record<string, typeof allUsers[0][]> = {};
   for (const [est, list] of estadoMap) { estados[est] = list.slice(0, 3); }
-  const estadoIds = new Set(Object.values(estados).flat().map(u => u.id));
 
-  // Cidade: excluir quem já está no Brasil OU Estado
+  // Cidade: top 3 de cada cidade, excluindo #1 do Brasil e #1 de cada Estado
+  const estadoTop1Ids = new Set<number>();
+  for (const list of Object.values(estados)) {
+    if (list[0]) estadoTop1Ids.add(list[0].id);
+  }
+  const excludedIds = new Set<number>();
+  if (brasilTop1Id) excludedIds.add(brasilTop1Id);
+  estadoTop1Ids.forEach(id => excludedIds.add(id));
+
   const cidadeMap = new Map<string, typeof allUsers[0][]>([]);
   for (const u of sorted) {
-    if (brasilIds.has(u.id) || estadoIds.has(u.id)) continue;
+    if (excludedIds.has(u.id)) continue;
     if (!cidadeMap.has(u.cidade)) cidadeMap.set(u.cidade, []);
     cidadeMap.get(u.cidade)!.push(u);
   }
