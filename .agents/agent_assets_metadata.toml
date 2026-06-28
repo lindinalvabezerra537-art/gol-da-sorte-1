@@ -30,3 +30,9 @@ id = "vwCqzPCExAbdy6yr7Bnez"
 uri = "file://screenshots/gol-da-sorte-5000.jpg"
 type = "image"
 title = "App na porta 5000 (Start application)"
+
+[[outputs]]
+id = "NEu3Yd5lPo-AbfYGS4Y1x"
+uri = "file://screenshots/gol-da-sorte-app-5000.jpg"
+type = "image"
+title = "App rodando na porta 5000"
