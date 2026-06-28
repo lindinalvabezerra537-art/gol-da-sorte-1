@@ -36,3 +36,21 @@ id = "NEu3Yd5lPo-AbfYGS4Y1x"
 uri = "file://screenshots/gol-da-sorte-app-5000.jpg"
 type = "image"
 title = "App rodando na porta 5000"
+
+[[outputs]]
+id = "4HEnln9HhGptCBN8vzVgB"
+uri = "file://screenshots/gol-da-sorte-dev-domain.png"
+type = "image"
+title = "App acessível pelo domínio do Replit"
+
+[[outputs]]
+id = "qUnU_K3aZrVMt2kRrWnuT"
+uri = "file://screenshots/gol-da-sorte-dev-ok.png"
+type = "image"
+title = "Projeto visível no preview Replit"
+
+[[outputs]]
+id = "556ByGL59ibUcwPsJwaQE"
+uri = "file://screenshots/gol-da-sorte-dev-now.png"
+type = "image"
+title = "App visível no preview agora"
