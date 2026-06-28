@@ -1012,6 +1012,11 @@ export default function App() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ type: "win" }),
+        }).then((data: any) => {
+          if (data?.enteredRanking) {
+            setRankingEntryScope(data.enteredRanking);
+            setShowRankingEntryModal(true);
+          }
         }).catch(() => {});
       }
       setTimeout(() => {
@@ -1075,15 +1080,16 @@ export default function App() {
     if (!topPlayer || !topPlayer.id) return;
     if (topPlayer.id === userId) { showToast("Você é o líder! Não precisa seguir a si mesmo."); return; }
 
-    // Abrir link social do jogador em nova aba
-    const link = topPlayer.rankingSocialLink || topPlayer.linkSocial || topPlayer.ranking_social_link;
+    // Primeiro abrir link social em nova aba
+    const link = topPlayer.rankingSocialLink || topPlayer.linkSocial || topPlayer.ranking_social_link || topPlayer.rankingSocialLink;
     if (link) {
       window.open(link, "_blank");
     } else {
       showToast("📞 Este jogador ainda não cadastrou seu link social.");
+      return;
     }
 
-    // Chamar API para seguir e ganhar pontos
+    // Depois chamar API para seguir e ganhar pontos
     const data = await apiCall(`/users/${userId}/seguir-ranking`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -1095,7 +1101,7 @@ export default function App() {
     }
     if (data?.user) {
       setSeguindoRanking(prev => ({ ...prev, [scope]: true }));
-      showToast(`🎉 +5 pts! Você seguiu ${topPlayer.name || "o líder"}!`);
+      showToast(`🎉 +5 pts! Você seguiu ${topPlayer.name || "o líder do " + scope.toUpperCase()}!`);
     }
   }, [userId, rankingData]);
 
@@ -2343,6 +2349,8 @@ export default function App() {
             label: `${rankingData.cidade[0].cidade} - ${rankingData.cidade[0].estado}`,
             foto: rankingData.cidade[0].fotoBase64,
             id: rankingData.cidade[0].id,
+            cidade: rankingData.cidade[0].cidade,
+            estado: rankingData.cidade[0].estado,
           } : { nome: "João Silva", pontos: 0, label: "Sem dados", foto: "https://i.pravatar.cc/150?img=12" }}
           brasil={rankingData?.brasil?.[0] ? {
             nome: rankingData.brasil[0].name,
@@ -2350,6 +2358,8 @@ export default function App() {
             label: `${rankingData.brasil[0].cidade} - ${rankingData.brasil[0].estado}`,
             foto: rankingData.brasil[0].fotoBase64,
             id: rankingData.brasil[0].id,
+            cidade: rankingData.brasil[0].cidade,
+            estado: rankingData.brasil[0].estado,
           } : { nome: "Carlos Eduardo", pontos: 0, label: "Sem dados", foto: "https://i.pravatar.cc/150?img=7" }}
           estado={rankingData?.estado?.[0] ? {
             nome: rankingData.estado[0].name,
@@ -2357,6 +2367,8 @@ export default function App() {
             label: `${rankingData.estado[0].cidade} - ${rankingData.estado[0].estado}`,
             foto: rankingData.estado[0].fotoBase64,
             id: rankingData.estado[0].id,
+            cidade: rankingData.estado[0].cidade,
+            estado: rankingData.estado[0].estado,
           } : { nome: "Mateus Lima", pontos: 0, label: "Sem dados", foto: "https://i.pravatar.cc/150?img=33" }}
           onClick={() => setShowRankingModal(true)}
           onSeguir={(scope) => handleSeguirRanking(scope)}

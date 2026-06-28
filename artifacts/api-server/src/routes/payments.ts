@@ -199,9 +199,21 @@ async function confirmPayment(txId: string) {
 
   const [user] = await db.select().from(usersTable).where(eq(usersTable.id, payment.userId));
   if (user) {
+    const isFirstPayment = !user.hasPaid;
     await db.update(usersTable)
       .set({ playsRemaining: user.playsRemaining + payment.plays, hasPaid: true })
       .where(eq(usersTable.id, payment.userId));
+
+    // Se é o primeiro pagamento e o usuário foi indicado, dá +10 pts de ranking para quem indicou
+    if (isFirstPayment && user.referredById) {
+      const [referrer] = await db.select({ rankingPoints: usersTable.rankingPoints }).from(usersTable).where(eq(usersTable.id, user.referredById));
+      if (referrer) {
+        const newPoints = (referrer.rankingPoints ?? 0) + 10;
+        await db.update(usersTable)
+          .set({ rankingPoints: newPoints })
+          .where(eq(usersTable.id, user.referredById));
+      }
+    }
   }
   return payment;
 }

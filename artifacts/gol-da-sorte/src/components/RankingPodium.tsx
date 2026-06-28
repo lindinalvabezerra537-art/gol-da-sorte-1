@@ -4,6 +4,9 @@ interface PodiumPlayer {
   foto?: string;
   label: string;
   id?: number;
+  link?: string;
+  cidade?: string;
+  estado?: string;
 }
 
 interface RankingPodiumProps {
@@ -22,21 +25,21 @@ const THEMES = {
     glow: "rgba(168,168,179,0.4)",
     tag: "#c0c0c0",
     tagBg: "rgba(168,168,179,0.15)",
-    crown: "🥈",
+    crown: "\ud83e\udd48",
   },
   gold: {
     border: "#FFD700",
     glow: "rgba(255,215,0,0.5)",
     tag: "#FFD700",
     tagBg: "rgba(255,215,0,0.15)",
-    crown: "👑",
+    crown: "\ud83d\udc51",
   },
   bronze: {
     border: "#cd7f32",
     glow: "rgba(205,127,50,0.4)",
     tag: "#e8a060",
     tagBg: "rgba(205,127,50,0.15)",
-    crown: "🥉",
+    crown: "\ud83e\udd49",
   },
 };
 
@@ -58,8 +61,11 @@ function PlayerCard({
   isMe?: boolean;
 }) {
   const photoSize = big ? 44 : 34;
-  const firstName = player.nome.split(" ")[0] || "—";
+  const firstName = player.nome.split(" ")[0] || "\u2014";
   const lastName = player.nome.split(" ")[1] || "";
+  const cityState = player.cidade && player.estado
+    ? `${player.cidade} \u2013 ${player.estado}`
+    : player.label;
 
   return (
     <div style={{
@@ -148,6 +154,22 @@ function PlayerCard({
         }}>{lastName}</div>
       )}
 
+      {/* Cidade e Estado */}
+      <div style={{
+        fontSize: big ? 6.5 : 5.5,
+        fontWeight: 700,
+        color: theme.tag,
+        textAlign: "center",
+        lineHeight: 1.1,
+        maxWidth: "100%",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
+        paddingInline: 2,
+        marginTop: 1,
+        opacity: 0.85,
+      }}>{cityState}</div>
+
       <div style={{
         fontSize: big ? 7.5 : 6.5,
         fontWeight: 900,
@@ -174,7 +196,7 @@ function PlayerCard({
             letterSpacing: 0.5,
             textTransform: "uppercase",
             lineHeight: 1.3,
-          }}>VOCÊ</div>
+          }}>VOC\u00ca</div>
         ) : jaSeguiu ? (
           <div style={{
             background: "rgba(0,180,0,0.25)",
@@ -192,22 +214,30 @@ function PlayerCard({
           <button
             onClick={(e) => { e.stopPropagation(); e.preventDefault(); onSeguir?.(); }}
             style={{
-              background: theme.border,
+              background: `linear-gradient(135deg, ${theme.border}, ${theme.tag})`,
               color: "#000",
               fontWeight: 900,
-              fontSize: big ? 7 : 6,
+              fontSize: big ? 8 : 7,
               borderRadius: 4,
-              padding: "2px 6px",
+              padding: "3px 8px",
               letterSpacing: 0.5,
               textTransform: "uppercase",
               lineHeight: 1.3,
-              border: "none",
+              border: `1.5px solid ${theme.border}`,
               cursor: "pointer",
               touchAction: "manipulation",
               position: "relative",
               zIndex: 2,
+              boxShadow: `0 0 8px ${theme.glow}`,
+              transition: "transform 0.1s",
             }}
-          >SEGUIR</button>
+            onMouseDown={(e) => { (e.target as HTMLButtonElement).style.transform = "scale(0.95)"; }}
+            onMouseUp={(e) => { (e.target as HTMLButtonElement).style.transform = "scale(1)"; }}
+            onTouchStart={(e) => { (e.target as HTMLButtonElement).style.transform = "scale(0.95)"; }}
+            onTouchEnd={(e) => { (e.target as HTMLButtonElement).style.transform = "scale(1)"; }}
+          >
+            \u2b50 SEGUIR
+          </button>
         )}
       </div>
     </div>
@@ -243,7 +273,7 @@ export default function RankingPodium({ cidade, estado, brasil, onClick, onSegui
         textTransform: "uppercase",
         lineHeight: 1,
         flexShrink: 0,
-      }}>🏆 OS MELHORES</div>
+      }}>\ud83c\udfc6 OS MELHORES</div>
 
       <div style={{
         display: "flex",
@@ -254,9 +284,9 @@ export default function RankingPodium({ cidade, estado, brasil, onClick, onSegui
         flex: 1,
         minHeight: 0,
       }}>
-        <PlayerCard player={cidade} theme={THEMES.silver} tagLabel="🏙 Cidade" onSeguir={() => onSeguir?.("cidade")} jaSeguiu={seguindo?.cidade} isMe={currentUserId != null && cidade.id === currentUserId} />
-        <PlayerCard player={brasil} theme={THEMES.gold} tagLabel="🇧🇷 Brasil" big onSeguir={() => onSeguir?.("brasil")} jaSeguiu={seguindo?.brasil} isMe={currentUserId != null && brasil.id === currentUserId} />
-        <PlayerCard player={estado} theme={THEMES.bronze} tagLabel="🗺 Estado" onSeguir={() => onSeguir?.("estado")} jaSeguiu={seguindo?.estado} isMe={currentUserId != null && estado.id === currentUserId} />
+        <PlayerCard player={cidade} theme={THEMES.silver} tagLabel="\ud83c\udf99 Cidade" onSeguir={() => onSeguir?.("cidade")} jaSeguiu={seguindo?.cidade} isMe={currentUserId != null && cidade.id === currentUserId} />
+        <PlayerCard player={brasil} theme={THEMES.gold} tagLabel="\ud83c\udde7\ud83c\uddf7 Brasil" big onSeguir={() => onSeguir?.("brasil")} jaSeguiu={seguindo?.brasil} isMe={currentUserId != null && brasil.id === currentUserId} />
+        <PlayerCard player={estado} theme={THEMES.bronze} tagLabel="\ud83d\uddfa Estado" onSeguir={() => onSeguir?.("estado")} jaSeguiu={seguindo?.estado} isMe={currentUserId != null && estado.id === currentUserId} />
       </div>
 
       <div style={{ fontSize: 6, color: "#333", lineHeight: 1, flexShrink: 0 }}>toque para ver ranking</div>
