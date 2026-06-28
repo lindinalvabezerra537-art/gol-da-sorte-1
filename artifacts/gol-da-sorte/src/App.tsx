@@ -1974,6 +1974,7 @@ export default function App() {
           <button
             onClick={e => {
               e.stopPropagation();
+              e.preventDefault();
               if (atualCampeao?.linkSocial) {
                 window.open(atualCampeao.linkSocial, "_blank");
                 setHasClickedChampionLink(true);
@@ -2961,9 +2962,13 @@ export default function App() {
 
             {/* Etapa 1: abrir link */}
             <button
-              onClick={() => {
-                window.open(atualCampeao.linkSocial, "_blank");
-                setHasClickedChampionLink(true);
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                if (atualCampeao.linkSocial) {
+                  window.open(atualCampeao.linkSocial, "_blank");
+                  setHasClickedChampionLink(true);
+                }
               }}
               style={{
                 width: "100%", padding: "12px",
@@ -3156,11 +3161,11 @@ export default function App() {
         title="Testar voz do campeão"
       >🔊</button>
 
-      {/* Botão Admin — sempre visível, painel protege por senha internamente */}
+      {/* Botão Admin — canto inferior esquerdo, longe dos elementos do jogo */}
       <button
         onClick={(e) => { e.stopPropagation(); setShowAdmin(true); }}
         style={{
-          position: "fixed", top: 12, right: 12, zIndex: 2147483639,
+          position: "fixed", bottom: 12, left: 12, zIndex: 2147483639,
           background: "rgba(10,10,20,0.9)", border: "1.5px solid rgba(255,215,0,0.6)",
           borderRadius: "50%", color: "gold", fontSize: 18,
           width: 40, height: 40, cursor: "pointer",
