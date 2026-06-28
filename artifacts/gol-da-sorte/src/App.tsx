@@ -599,15 +599,23 @@ export default function App() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ amount: plays }),
           }),
-          apiCall(`/users/${userId}/credit-ranking-points`, {
+          apiCall(`/users/${userId}/add-points`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ amount: 50 }),
+            body: JSON.stringify({ type: "win" }),
           }),
         ]);
         if (playData?.user) setPlaysRemaining(playData.user.playsRemaining);
         if (rankingData?.user?.rankingPoints !== undefined) {
           setRankingMyPosition(prev => prev ? { ...prev, points: rankingData.user.rankingPoints } : prev);
+        }
+        if (rankingData?.enteredRanking) {
+          const key = `rankingEntryShown_${rankingData.enteredRanking}`;
+          if (!localStorage.getItem(key)) {
+            localStorage.setItem(key, "1");
+            setRankingEntryScope(rankingData.enteredRanking);
+            setShowRankingEntryModal(true);
+          }
         }
       }
     }
@@ -1019,23 +1027,6 @@ export default function App() {
       const pick = { row: rowIdx, ball: ballIdx };
       setCorrectPicks(prev => [...prev, pick]);
       setJustOkBall(pick);
-      // +50 pontos por fileira vencida
-      if (userId) {
-        apiCall(`/users/${userId}/add-points`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type: "win" }),
-        }).then((data: any) => {
-          if (data?.enteredRanking) {
-            const key = `rankingEntryShown_${data.enteredRanking}`;
-            if (!localStorage.getItem(key)) {
-              localStorage.setItem(key, "1");
-              setRankingEntryScope(data.enteredRanking);
-              setShowRankingEntryModal(true);
-            }
-          }
-        }).catch(() => {});
-      }
       setTimeout(() => {
         setJustOkBall(null);
         const next = rowIdx + 1;
