@@ -637,36 +637,10 @@ export default function App() {
         if (data?.user) setPlaysRemaining(data.user.playsRemaining);
       }
     }
-    setTimeout(async () => {
+    setTimeout(() => {
       setMegaActive(false);
-      const link = championLinkInput.trim();
-      if (link && userId && userInfo) {
-        await apiCall("/settings/atual-campeao", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            nome: userInfo.name,
-            cidadeEstado: `${userInfo.cidade} - ${userInfo.estado}`,
-            foto: userInfo.fotoBase64 || "",
-            linkSocial: link,
-            userId: String(userId),
-          }),
-        });
-        setAtualCampeao({
-          nome: userInfo.name,
-          cidadeEstado: `${userInfo.cidade} - ${userInfo.estado}`,
-          foto: userInfo.fotoBase64 || "",
-          linkSocial: link,
-          userId: String(userId),
-        });
-        setChampionFollowClaimed(String(userId));
-        localStorage.setItem("claimedChampionUserId", String(userId));
-        showToast("🏆 Você agora é o Atual Campeão!");
-      } else {
-        setShowChampionModal(true);
-      }
     }, 5000);
-  }, [userId, championLinkInput, userInfo]);
+  }, [userId]);
 
   const reCalc = useCallback(() => {
     const mode = showGolDaSorteRef.current;
