@@ -342,6 +342,7 @@ export default function App() {
   const [atualCampeao, setAtualCampeao] = useState<{
     nome: string; cidadeEstado: string; foto: string; linkSocial: string; userId: string;
   } | null>(null);
+  const prevCampeaoUserId = useRef<string | null>(null);
   const [showChampionModal, setShowChampionModal] = useState(false);
   const [championLinkInput, setChampionLinkInput] = useState("");
   const [showChampionFollowModal, setShowChampionFollowModal] = useState(false);
@@ -670,13 +671,20 @@ export default function App() {
         setGanhadores(ganhadoresData);
       }
       if (campeaoData) {
+        const newUserId = campeaoData.userId ?? "";
+        const newNome = campeaoData.nome ?? "";
+        const newCidadeEstado = campeaoData.cidadeEstado ?? "";
         setAtualCampeao({
-          nome: campeaoData.nome ?? "",
-          cidadeEstado: campeaoData.cidadeEstado ?? "",
+          nome: newNome,
+          cidadeEstado: newCidadeEstado,
           foto: campeaoData.foto ?? "",
           linkSocial: campeaoData.linkSocial ?? "",
-          userId: campeaoData.userId ?? "",
+          userId: newUserId,
         });
+        if (newUserId && newNome && prevCampeaoUserId.current !== null && prevCampeaoUserId.current !== newUserId) {
+          speakMessage(`Atenção! Nova performance! ${newNome}, ${newCidadeEstado}. Vamos seguir o atual campeão e ganhar 3 jogadas e 50 pontos para o ranking!`);
+        }
+        prevCampeaoUserId.current = newUserId;
       }
       if (gameConfigData) {
         if (Array.isArray(gameConfigData.rowWrongCounts) && gameConfigData.rowWrongCounts.length === 6) {
