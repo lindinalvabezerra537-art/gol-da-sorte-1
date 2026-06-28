@@ -391,6 +391,7 @@ export default function App() {
   const [showRankingEntryModal, setShowRankingEntryModal] = useState(false);
   const [rankingEntryScope, setRankingEntryScope] = useState<"cidade" | "estado" | "brasil" | null>(null);
   const [rankingLinkInput, setRankingLinkInput] = useState("");
+  const pendingRankingEntryRef = useRef<string | null>(null);
   const [referralUnlocked, setReferralUnlocked] = useState(false);
   const [totalFriends, setTotalFriends] = useState<number>(0);
   const [valorAcumulado, setValorAcumulado] = useState<string>("0,00");
@@ -1015,8 +1016,7 @@ export default function App() {
           body: JSON.stringify({ type: "win" }),
         }).then(async (data) => {
           if (data?.enteredRanking) {
-            setRankingEntryScope(data.enteredRanking as "cidade" | "estado" | "brasil");
-            setShowRankingEntryModal(true);
+            pendingRankingEntryRef.current = data.enteredRanking;
           }
         }).catch(() => {});
       }
@@ -1037,6 +1037,12 @@ export default function App() {
         if (next >= TOTAL_ROWS) {
           setGameActive(false); setCurrentRow(0);
           setTimeout(() => {
+            // Mostrar notificação de entrada no ranking só quando completou o jogo
+            if (pendingRankingEntryRef.current) {
+              setRankingEntryScope(pendingRankingEntryRef.current as "cidade" | "estado" | "brasil");
+              setShowRankingEntryModal(true);
+              pendingRankingEntryRef.current = null;
+            }
             setCorrectPicks([]);
             lockedRef.current = false;
             setLocked(false);
