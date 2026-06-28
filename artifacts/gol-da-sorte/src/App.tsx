@@ -579,6 +579,10 @@ export default function App() {
     playMegaFanfare();
     if (isJogadas) {
       speakMessage("Parabéns! Você acaba de ganhar 50 jogadas e 50 pontos para o ranking!");
+      if (userInfo) {
+        const tts2 = `Atenção! Nova performance! ${userInfo.name}, ${userInfo.cidade} - ${estadoNome(userInfo.estado)}. Siga o novo líder e ganhe 3 pontos para concorrer no ranking!`;
+        speakMessage(tts2, 4000);
+      }
       showToast("🎉 +50 jogadas e +50 pts no ranking!");
     } else {
       speakMessage("Parabéns! Você acabou de ganhar um brinde incrível!");
