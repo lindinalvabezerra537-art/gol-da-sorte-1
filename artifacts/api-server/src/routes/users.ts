@@ -377,40 +377,66 @@ router.put("/:id/ranking-social-link", async (req, res) => {
   res.json({ user: updated });
 });
 
-// Ranking por cidade — top 3 verdadeiros (SEM exclusividade)
+// —— Ranking público com EXCLUSIVIDADE HIERÁRQUICA ——
+// Regra: um jogador só ocupa 1 posição (Brasil > Estado > Cidade)
+// Se ultrapassa alguém, "sobe" e o outro "desce" para o próximo nível
+
+async function getExclusiveRanking() {
+  const allUsers = await db
+    .select({ id: usersTable.id, name: usersTable.name, cidade: usersTable.cidade, estado: usersTable.estado, fotoBase64: usersTable.fotoBase64, rankingPoints: usersTable.rankingPoints, rankingSocialLink: usersTable.rankingSocialLink })
+    .from(usersTable)
+    .orderBy(desc(usersTable.rankingPoints));
+
+  const sorted = [...allUsers].sort((a, b) => (b.rankingPoints ?? 0) - (a.rankingPoints ?? 0));
+  const brasil = sorted.slice(0, 3);
+  const brasilIds = new Set(brasil.map(u => u.id));
+
+  // Estado: excluir quem já está no Brasil
+  const estadoMap = new Map<string, typeof allUsers[0][]>([]);
+  for (const u of sorted) {
+    if (brasilIds.has(u.id)) continue;
+    if (!estadoMap.has(u.estado)) estadoMap.set(u.estado, []);
+    estadoMap.get(u.estado)!.push(u);
+  }
+  const estados: Record<string, typeof allUsers[0][]> = {};
+  for (const [est, list] of estadoMap) { estados[est] = list.slice(0, 3); }
+  const estadoIds = new Set(Object.values(estados).flat().map(u => u.id));
+
+  // Cidade: excluir quem já está no Brasil OU Estado
+  const cidadeMap = new Map<string, typeof allUsers[0][]>([]);
+  for (const u of sorted) {
+    if (brasilIds.has(u.id) || estadoIds.has(u.id)) continue;
+    if (!cidadeMap.has(u.cidade)) cidadeMap.set(u.cidade, []);
+    cidadeMap.get(u.cidade)!.push(u);
+  }
+  const cidades: Record<string, typeof allUsers[0][]> = {};
+  for (const [cid, list] of cidadeMap) { cidades[cid] = list.slice(0, 3); }
+
+  return { brasil, estados, cidades };
+}
+
+// Ranking por cidade (exclusivo: sem quem já está em Brasil ou Estado)
 router.get("/ranking/cidade/:cidade", async (req, res) => {
   const cidade = decodeURIComponent(req.params.cidade);
   if (!cidade) { res.status(400).json({ error: "Missing cidade" }); return; }
-  const users = await db
-    .select({ id: usersTable.id, name: usersTable.name, cidade: usersTable.cidade, estado: usersTable.estado, fotoBase64: usersTable.fotoBase64, rankingPoints: usersTable.rankingPoints, rankingSocialLink: usersTable.rankingSocialLink })
-    .from(usersTable)
-    .where(eq(usersTable.cidade, cidade))
-    .orderBy(desc(usersTable.rankingPoints))
-    .limit(3);
+  const result = await getExclusiveRanking();
+  const users = result.cidades[cidade] || [];
   res.json({ cidade, users });
 });
 
-// Ranking por estado — top 3 verdadeiros (SEM exclusividade)
+// Ranking por estado (exclusivo: sem quem já está em Brasil)
 router.get("/ranking/estado/:estado", async (req, res) => {
   const estado = decodeURIComponent(req.params.estado);
   if (!estado) { res.status(400).json({ error: "Missing estado" }); return; }
-  const users = await db
-    .select({ id: usersTable.id, name: usersTable.name, cidade: usersTable.cidade, estado: usersTable.estado, fotoBase64: usersTable.fotoBase64, rankingPoints: usersTable.rankingPoints, rankingSocialLink: usersTable.rankingSocialLink })
-    .from(usersTable)
-    .where(eq(usersTable.estado, estado))
-    .orderBy(desc(usersTable.rankingPoints))
-    .limit(3);
+  const result = await getExclusiveRanking();
+  const users = result.estados[estado] || [];
   res.json({ estado, users });
 });
 
-// Ranking do Brasil — top 3 verdadeiros
+// Ranking do Brasil (top 3)
 router.get("/ranking/brasil", async (_req, res) => {
-  const users = await db
-    .select({ id: usersTable.id, name: usersTable.name, cidade: usersTable.cidade, estado: usersTable.estado, fotoBase64: usersTable.fotoBase64, rankingPoints: usersTable.rankingPoints, rankingSocialLink: usersTable.rankingSocialLink })
-    .from(usersTable)
-    .orderBy(desc(usersTable.rankingPoints))
-    .limit(3);
-  res.json({ users });
+  const result = await getExclusiveRanking();
+  res.json({ users: result.brasil });
 });
 
 // Posição do usuário no ranking
