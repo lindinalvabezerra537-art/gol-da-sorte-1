@@ -376,11 +376,11 @@ export default function App() {
   const rowWrongCountsRef = useRef<number[]>([...DEFAULT_ROW_WRONG_COUNT]);
   const gameConfigRef = useRef({
     r5PrizeType: "jogadas" as "jogadas" | "brinde",
-    r5PrizeValue: "15",
+    r5PrizeValue: "50",
     r5PrizeBallCount: 2,
     bonusRow3: 1,
     bonusRow4: 5,
-    bonusRow5: 15,
+    bonusRow5: 50,
   });
   const r5PrizeBallsRef = useRef<number[]>([]);
   const [showBrindeModal, setShowBrindeModal] = useState(false);
@@ -544,7 +544,7 @@ export default function App() {
   const triggerMegaBonus = useCallback(async () => {
     const cfg = gameConfigRef.current;
     const isJogadas = cfg.r5PrizeType !== "brinde";
-    const plays = isJogadas ? (cfg.bonusRow5 || 15) : 0;
+    const plays = isJogadas ? (cfg.bonusRow5 || 50) : 0;
     playMegaFanfare();
     if (isJogadas) {
       speakMessage(`Parabéns! Você acaba de ganhar ${plays} jogadas! E por muito pouco você não ganha o prêmio acumulado!`);
@@ -556,12 +556,22 @@ export default function App() {
     if (plays > 0) {
       setPlaysRemaining(prev => prev + plays);
       if (userId) {
-        const data = await apiCall(`/users/${userId}/credit-plays`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ amount: plays }),
-        });
-        if (data?.user) setPlaysRemaining(data.user.playsRemaining);
+        const [playData, rankingData] = await Promise.all([
+          apiCall(`/users/${userId}/credit-plays`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ amount: plays }),
+          }),
+          apiCall(`/users/${userId}/credit-ranking-points`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ amount: 50 }),
+          }),
+        ]);
+        if (playData?.user) setPlaysRemaining(playData.user.playsRemaining);
+        if (rankingData?.user?.rankingPoints !== undefined) {
+          setRankingMyPosition(prev => prev ? { ...prev, points: rankingData.user.rankingPoints } : prev);
+        }
       }
     }
     setTimeout(async () => {
@@ -673,11 +683,11 @@ export default function App() {
         }
         gameConfigRef.current = {
           r5PrizeType: gameConfigData.r5PrizeType || "jogadas",
-          r5PrizeValue: gameConfigData.r5PrizeValue || "15",
+          r5PrizeValue: gameConfigData.r5PrizeValue || "50",
           r5PrizeBallCount: gameConfigData.r5PrizeBallCount ?? 2,
           bonusRow3: gameConfigData.bonusRow3 ?? 1,
           bonusRow4: gameConfigData.bonusRow4 ?? 5,
-          bonusRow5: gameConfigData.bonusRow5 ?? 15,
+          bonusRow5: gameConfigData.bonusRow5 ?? 50,
         };
       }
       if (Array.isArray(piratePathData?.path) && piratePathData.path.length > 0) {

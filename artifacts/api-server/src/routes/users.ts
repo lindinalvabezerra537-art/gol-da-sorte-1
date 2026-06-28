@@ -215,6 +215,17 @@ router.post("/:id/credit-plays", async (req, res) => {
   res.json({ user: updated });
 });
 
+router.post("/:id/credit-ranking-points", async (req, res) => {
+  const id = parseInt(req.params.id);
+  const { amount } = req.body as { amount?: number };
+  if (!id || isNaN(id) || typeof amount !== "number") { res.status(400).json({ error: "Invalid id or amount" }); return; }
+  const [user] = await db.select({ rankingPoints: usersTable.rankingPoints }).from(usersTable).where(eq(usersTable.id, id));
+  if (!user) { res.status(404).json({ error: "Usuário não encontrado" }); return; }
+  const newPoints = Math.max(0, (user.rankingPoints ?? 0) + amount);
+  const [updated] = await db.update(usersTable).set({ rankingPoints: newPoints }).where(eq(usersTable.id, id)).returning();
+  res.json({ user: updated });
+});
+
 router.post("/:id/purchase", async (req, res) => {
   const id = parseInt(req.params.id);
   const { planId } = req.body as { planId?: string };
