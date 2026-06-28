@@ -616,10 +616,16 @@ export default function App() {
         setChampionFollowClaimed(String(userId));
         localStorage.setItem("claimedChampionUserId", String(userId));
         showToast("🏆 Você agora é o Atual Campeão!");
+        // Anuncia instantaneamente para todos (inclusive o próprio ganhador)
+        const localTTS = `cidade de ${userInfo.cidade}, estado de ${userInfo.estado}`;
+        speakMessage(`Atenção! Nova performance! ${userInfo.name}, ${localTTS}. Siga o novo campeão e ganhe 3 jogadas e 5 pontos para o ranking!`, 0);
+        // Marca como anunciado para evitar duplo no polling
+        prevCampeaoUserId.current = String(userId);
+        announcingCampeaoRef.current = String(userId);
       } else {
         setShowChampionModal(true);
       }
-    }, 5000);
+    }, 3000);
   }, [userId, championLinkInput, userInfo]);
 
   const reCalc = useCallback(() => {
@@ -759,6 +765,35 @@ export default function App() {
 
   useEffect(() => {
     fetchSettings();
+    // Polling leve do campeão para anúncio em tempo real a cada 3s
+    const pollChamp = setInterval(() => {
+      apiCall("/settings/atual-campeao").then((campeaoData: any) => {
+        if (campeaoData) {
+          const newUserId = campeaoData.userId ?? "";
+          const newNome = campeaoData.nome ?? "";
+          const newCidadeEstado = campeaoData.cidadeEstado ?? "";
+          setAtualCampeao({
+            nome: newNome,
+            cidadeEstado: newCidadeEstado,
+            foto: campeaoData.foto ?? "",
+            linkSocial: campeaoData.linkSocial ?? "",
+            userId: newUserId,
+          });
+          if (newUserId && newNome && prevCampeaoUserId.current !== newUserId && announcingCampeaoRef.current !== newUserId) {
+            announcingCampeaoRef.current = newUserId;
+            const partsTTS = newCidadeEstado.split(/[-/]/).map((s: string) => s.trim());
+            const cidadeTTS = partsTTS[0] ?? "";
+            const estadoTTS = partsTTS[1] ?? "";
+            const localTTS = cidadeTTS && estadoTTS
+              ? `cidade de ${cidadeTTS}, estado de ${estadoTTS}`
+              : newCidadeEstado;
+            speakMessage(`Atenção! Nova performance! ${newNome}, ${localTTS}. Siga o novo campeão e ganhe 3 jogadas e 5 pontos para o ranking!`, 0);
+          }
+          prevCampeaoUserId.current = newUserId;
+        }
+      });
+    }, 3_000);
+    return () => clearInterval(pollChamp);
   }, [fetchSettings]);
 
   useEffect(() => {
