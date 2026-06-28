@@ -647,16 +647,9 @@ export default function App() {
         setChampionFollowClaimed(String(userId));
         localStorage.setItem("claimedChampionUserId", String(userId));
         showToast("🏆 Você agora é o Atual Campeão!");
-        // Espera "Parabéns!" terminar (~7.5s) + 1s de pausa antes de anunciar
-        const localTTS = `cidade de ${userInfo.cidade}, estado de ${estadoNome(userInfo.estado)}`;
-        const uidStr = String(userId);
-        if (!wasAnnounced(uidStr)) {
-          markAnnounced(uidStr);
-          speakMessage(`Atenção! Nova performance! ${userInfo.name}, ${localTTS}. Siga o novo campeão e ganhe 3 jogadas e 5 pontos para o ranking!`);
-        }
         // Marca como anunciado para evitar duplo no polling
-        prevCampeaoUserId.current = uidStr;
-        announcingCampeaoRef.current = uidStr;
+        prevCampeaoUserId.current = String(userId);
+        announcingCampeaoRef.current = String(userId);
       } else {
         setShowChampionModal(true);
       }
@@ -738,17 +731,6 @@ export default function App() {
           linkSocial: campeaoData.linkSocial ?? "",
           userId: newUserId,
         });
-        if (newUserId && newNome && prevCampeaoUserId.current !== newUserId && announcingCampeaoRef.current !== newUserId && !wasAnnounced(newUserId)) {
-          announcingCampeaoRef.current = newUserId;
-          markAnnounced(newUserId);
-          const partsTTS = newCidadeEstado.split(/[-/]/).map((s: string) => s.trim());
-          const cidadeTTS = partsTTS[0] ?? "";
-          const estadoTTS = partsTTS[1] ?? "";
-          const localTTS = cidadeTTS && estadoTTS
-            ? `cidade de ${cidadeTTS}, estado de ${estadoNome(estadoTTS)}`
-            : newCidadeEstado;
-          speakMessage(`Atenção! Nova performance! ${newNome}, ${localTTS}. Siga o novo campeão e ganhe 3 jogadas e 5 pontos para o ranking!`, 0);
-        }
         prevCampeaoUserId.current = newUserId;
       }
       if (gameConfigData) {
@@ -815,17 +797,6 @@ export default function App() {
             linkSocial: campeaoData.linkSocial ?? "",
             userId: newUserId,
           });
-          if (newUserId && newNome && prevCampeaoUserId.current !== newUserId && announcingCampeaoRef.current !== newUserId && !wasAnnounced(newUserId)) {
-            announcingCampeaoRef.current = newUserId;
-            markAnnounced(newUserId);
-            const partsTTS = newCidadeEstado.split(/[-/]/).map((s: string) => s.trim());
-            const cidadeTTS = partsTTS[0] ?? "";
-            const estadoTTS = partsTTS[1] ?? "";
-            const localTTS = cidadeTTS && estadoTTS
-              ? `cidade de ${cidadeTTS}, estado de ${estadoNome(estadoTTS)}`
-              : newCidadeEstado;
-            speakMessage(`Atenção! Nova performance! ${newNome}, ${localTTS}. Siga o novo campeão e ganhe 3 jogadas e 5 pontos para o ranking!`, 0);
-          }
           prevCampeaoUserId.current = newUserId;
         }
       });
@@ -1517,9 +1488,6 @@ export default function App() {
         const estado = parts[1] ?? "";
         return (
           <div
-            onClick={atualCampeao?.nome && userId && String(userId) !== atualCampeao.userId
-              ? () => { setHasClickedChampionLink(false); setShowChampionFollowModal(true); }
-              : undefined}
             style={{
               position: "absolute",
               left: cx - cW / 2,
@@ -1536,7 +1504,7 @@ export default function App() {
               display: "flex",
               flexDirection: "column",
               pointerEvents: "auto",
-              cursor: atualCampeao?.nome && userId && String(userId) !== atualCampeao.userId ? "pointer" : "default",
+              cursor: "default",
               boxShadow: "0 0 16px 5px rgba(255,200,0,0.65), 0 0 32px 8px rgba(255,170,0,0.25)",
             }}
           >
@@ -1994,9 +1962,16 @@ export default function App() {
               e.stopPropagation();
               e.preventDefault();
               if (!userId) { showToast("Faça login para seguir o campeão!"); return; }
-              const link = atualCampeao?.linkSocial || "";
-              if (!link) { showToast("Este campeão ainda não cadastrou o link social."); return; }
-              window.open(link, "_blank");
+              const rawLink = (atualCampeao?.linkSocial || "").trim();
+              const link = rawLink.startsWith("http://") || rawLink.startsWith("https://") ? rawLink : (rawLink ? `https://${rawLink}` : "");
+              if (!link || !rawLink) { showToast("Este campeão ainda não cadastrou o link social."); return; }
+              const a = document.createElement("a");
+              a.href = link;
+              a.target = "_blank";
+              a.rel = "noopener noreferrer";
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
               setHasClickedChampionLink(true);
               if (atualCampeao?.nome) setShowChampionFollowModal(true);
             }}
@@ -3164,21 +3139,6 @@ export default function App() {
       )}
 
 
-
-      {/* Botão Testar Voz — ao lado do admin */}
-      <button
-        onClick={(e) => { e.stopPropagation(); speakMessage("Atenção! Nova performance! João, cidade de Piranhas, estado de Alagoas. Siga o novo campeão e ganhe 3 jogadas e 5 pontos para o ranking!", 0); }}
-        style={{
-          position: "fixed", top: 12, right: 56, zIndex: 2147483638,
-          background: "rgba(10,10,20,0.9)", border: "1.5px solid rgba(0,230,120,0.6)",
-          borderRadius: "50%", color: "#0f0", fontSize: 18,
-          width: 40, height: 40, cursor: "pointer",
-          boxShadow: "0 2px 10px rgba(0,0,0,0.7)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          backdropFilter: "blur(4px)",
-        }}
-        title="Testar voz do campeão"
-      >🔊</button>
 
       {/* Botão Admin — canto inferior esquerdo, longe dos elementos do jogo */}
       <button
