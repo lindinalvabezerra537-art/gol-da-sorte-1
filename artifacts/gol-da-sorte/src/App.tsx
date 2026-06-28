@@ -1299,12 +1299,6 @@ export default function App() {
           </div>
 
 
-          {/* Editor do tabuleiro */}
-          <div onClick={() => setShowBoardEditor(true)} style={{ width: "100%", cursor: "pointer", padding: "4px 2px", borderRadius: 7, background: "rgba(0,0,0,0.50)", backdropFilter: "blur(6px)", border: "1px solid rgba(255,215,0,0.35)", display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
-            <span style={{ fontSize: Math.max(bounds.w * 0.040, 15), lineHeight: 1 }}>🎨</span>
-            <span style={{ fontSize: Math.max(bounds.w * 0.014, 6), color: "#FFD700", fontWeight: 900, textShadow: "0 1px 3px #000", lineHeight: 1, whiteSpace: "nowrap" }}>Editor</span>
-          </div>
-
           {/* ── Participantes online — círculos de foto ── */}
           {onlineUsers.length > 0 && (
             <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 3, alignItems: "center", marginTop: 2 }}>
@@ -1340,6 +1334,33 @@ export default function App() {
               })}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Botão Editor — canto superior esquerdo da área do tabuleiro, acima da imagem */}
+      {!showGolDaSorte && (
+        <div
+          onClick={() => setShowBoardEditor(true)}
+          style={{
+            position: "absolute",
+            left: bounds.x + 4,
+            top: bounds.y + 4,
+            zIndex: 200,
+            cursor: "pointer",
+            padding: "4px 2px",
+            borderRadius: 7,
+            background: "rgba(0,0,0,0.60)",
+            backdropFilter: "blur(6px)",
+            border: "1px solid rgba(255,215,0,0.45)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 1,
+            width: Math.max(bounds.w * 0.13, 54),
+          }}
+        >
+          <span style={{ fontSize: Math.max(bounds.w * 0.040, 15), lineHeight: 1 }}>🎨</span>
+          <span style={{ fontSize: Math.max(bounds.w * 0.014, 6), color: "#FFD700", fontWeight: 900, textShadow: "0 1px 3px #000", lineHeight: 1, whiteSpace: "nowrap" }}>Editor</span>
         </div>
       )}
 
