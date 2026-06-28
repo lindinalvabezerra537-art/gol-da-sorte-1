@@ -288,23 +288,6 @@ function estadoNome(sigla: string): string {
   return map[s] || sigla;
 }
 
-// Guarda no localStorage IDs de campeões já anunciados (sobrevive refresh)
-function wasAnnounced(userId: string): boolean {
-  try {
-    const announced = JSON.parse(localStorage.getItem("announcedCampeoes") || "[]");
-    return Array.isArray(announced) && announced.includes(userId);
-  } catch { return false; }
-}
-function markAnnounced(userId: string) {
-  try {
-    const announced: string[] = JSON.parse(localStorage.getItem("announcedCampeoes") || "[]");
-    if (!announced.includes(userId)) {
-      announced.push(userId);
-      localStorage.setItem("announcedCampeoes", JSON.stringify(announced.slice(-50)));
-    }
-  } catch {}
-}
-
 function speakMessage(text: string, delayMs = 1400) {
   if (!("speechSynthesis" in window)) return;
   window.speechSynthesis.cancel();
@@ -650,6 +633,10 @@ export default function App() {
         // Marca como anunciado para evitar duplo no polling
         prevCampeaoUserId.current = String(userId);
         announcingCampeaoRef.current = String(userId);
+        // Anuncia imediatamente para o vencedor
+        const myUid = String(userId);
+        const winTTS = `cidade de ${userInfo.cidade}, estado de ${estadoNome(userInfo.estado)}`;
+        speakMessage(`Atenção! Nova performance! ${userInfo.name}, ${winTTS}. Siga o novo campeão e ganhe 3 jogadas e 5 pontos para o ranking!`);
       } else {
         setShowChampionModal(true);
       }
