@@ -12,3 +12,21 @@ id = "7sE9BJYSiAl1IepRbdx9u"
 uri = "file://screenshots/gol-da-sorte-ranking-v2.jpg"
 type = "image"
 title = "Ranking com CIDADE / BRASIL / ESTADO nos cards"
+
+[[outputs]]
+id = "wEkjTc_bwrmJRFYdRr7BR"
+uri = "file://screenshots/gol-da-sorte-tela-atual.jpg"
+type = "image"
+title = "Tela atual do app (porta 5000)"
+
+[[outputs]]
+id = "D5MnGVVcNBO-164d2ey6s"
+uri = "file://screenshots/gol-da-sorte-24365.jpg"
+type = "image"
+title = "App na porta 24365 (workflow artifact)"
+
+[[outputs]]
+id = "vwCqzPCExAbdy6yr7Bnez"
+uri = "file://screenshots/gol-da-sorte-5000.jpg"
+type = "image"
+title = "App na porta 5000 (Start application)"
