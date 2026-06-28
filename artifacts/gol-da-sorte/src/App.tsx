@@ -264,10 +264,22 @@ function playMegaFanfare() {
   });
 }
 
+function getFemaleVoice(): SpeechSynthesisVoice | null {
+  if (!("speechSynthesis" in window)) return null;
+  const voices = window.speechSynthesis.getVoices();
+  const female = voices.find(v =>
+    v.lang.toLowerCase().startsWith("pt") &&
+    (/female|feminina|maria|luciana|francisca|helena/i.test(v.name) || /google.*pt/i.test(v.name))
+  );
+  return female || voices.find(v => v.lang.toLowerCase().startsWith("pt")) || null;
+}
+
 function speakMessage(text: string, delayMs = 1400) {
   if (!("speechSynthesis" in window)) return;
   window.speechSynthesis.cancel();
   const utter = new SpeechSynthesisUtterance(text);
+  const voice = getFemaleVoice();
+  if (voice) utter.voice = voice;
   utter.lang = "pt-BR";
   utter.rate = 0.88;
   utter.pitch = 1.1;
