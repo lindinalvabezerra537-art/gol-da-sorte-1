@@ -547,7 +547,7 @@ export default function App() {
     const plays = isJogadas ? (cfg.bonusRow5 || 50) : 0;
     playMegaFanfare();
     if (isJogadas) {
-      speakMessage(`Parabéns! Você acaba de ganhar ${plays} jogadas! E por muito pouco você não ganha o prêmio acumulado!`);
+      speakMessage(`Parabéns! Você acaba de ganhar ${plays} jogadas e 50 pontos no ranking! E por muito pouco você não ganha o prêmio acumulado!`);
     } else {
       speakMessage("Parabéns! Você acabou de ganhar um brinde incrível!");
       setBrindeText(cfg.r5PrizeValue);
@@ -683,11 +683,11 @@ export default function App() {
         }
         gameConfigRef.current = {
           r5PrizeType: gameConfigData.r5PrizeType || "jogadas",
-          r5PrizeValue: gameConfigData.r5PrizeValue || "50",
+          r5PrizeValue: "50",
           r5PrizeBallCount: gameConfigData.r5PrizeBallCount ?? 2,
           bonusRow3: gameConfigData.bonusRow3 ?? 1,
           bonusRow4: gameConfigData.bonusRow4 ?? 5,
-          bonusRow5: gameConfigData.bonusRow5 ?? 50,
+          bonusRow5: 50,
         };
       }
       if (Array.isArray(piratePathData?.path) && piratePathData.path.length > 0) {

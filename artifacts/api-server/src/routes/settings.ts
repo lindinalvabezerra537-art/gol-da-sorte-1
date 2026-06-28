@@ -177,7 +177,7 @@ router.get("/game-config", async (_req, res) => {
       r5PrizeBallCount: parseInt(rows[3] || "2"),
       bonusRow3: parseInt(rows[4] || "1"),
       bonusRow4: parseInt(rows[5] || "5"),
-      bonusRow5: parseInt(rows[6] || "15"),
+      bonusRow5: parseInt(rows[6] || "50"),
       premiacaoAtiva: rows[7] !== "false",
     });
   } catch {
