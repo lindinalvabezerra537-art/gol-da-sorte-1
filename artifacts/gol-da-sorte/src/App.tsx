@@ -346,6 +346,7 @@ export default function App() {
     nome: string; cidadeEstado: string; foto: string; linkSocial: string; userId: string;
   } | null>(null);
   const prevCampeaoUserId = useRef<string>("");
+  const announcingCampeaoRef = useRef<string>("");
   const [showChampionModal, setShowChampionModal] = useState(false);
   const [championLinkInput, setChampionLinkInput] = useState("");
   const [showChampionFollowModal, setShowChampionFollowModal] = useState(false);
@@ -684,8 +685,15 @@ export default function App() {
           linkSocial: campeaoData.linkSocial ?? "",
           userId: newUserId,
         });
-        if (newUserId && newNome && prevCampeaoUserId.current !== newUserId) {
-          speakMessage(`Atenção! Nova performance! ${newNome}, ${newCidadeEstado}. Siga o novo campeão e ganhe 3 jogadas e 5 pontos para o ranking!`, 0);
+        if (newUserId && newNome && prevCampeaoUserId.current !== newUserId && announcingCampeaoRef.current !== newUserId) {
+          announcingCampeaoRef.current = newUserId;
+          const partsTTS = newCidadeEstado.split(/[-/]/).map(s => s.trim());
+          const cidadeTTS = partsTTS[0] ?? "";
+          const estadoTTS = partsTTS[1] ?? "";
+          const localTTS = cidadeTTS && estadoTTS
+            ? `cidade de ${cidadeTTS}, estado de ${estadoTTS}`
+            : newCidadeEstado;
+          speakMessage(`Atenção! Nova performance! ${newNome}, ${localTTS}. Siga o novo campeão e ganhe 3 jogadas e 5 pontos para o ranking!`, 0);
         }
         prevCampeaoUserId.current = newUserId;
       }
