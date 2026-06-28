@@ -169,7 +169,7 @@ export default function AdminPanel({ onClose, skipAuth }: { onClose: () => void;
   });
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
-  const [tab, setTab] = useState<Tab>("dashboard");
+  const [tab, setTab] = useState<Tab>("ranking");
   const [stats, setStats] = useState<Stats | null>(null);
   const [users, setUsers] = useState<UserRow[]>([]);
   const [search, setSearch] = useState("");
