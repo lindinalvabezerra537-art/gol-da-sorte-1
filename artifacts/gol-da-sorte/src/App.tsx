@@ -373,6 +373,7 @@ export default function App() {
   } | null>(null);
   const prevCampeaoUserId = useRef<string>("");
   const announcingCampeaoRef = useRef<string>("");
+  const lastAnnouncedChampId = useRef<string>("");
   const [showChampionModal, setShowChampionModal] = useState(false);
   const [championLinkInput, setChampionLinkInput] = useState("");
   const [showChampionFollowModal, setShowChampionFollowModal] = useState(false);
@@ -789,6 +790,14 @@ export default function App() {
             userId: newUserId,
           });
           prevCampeaoUserId.current = newUserId;
+          // Anunciar em voz para todos (exceto o próprio campeão) quando muda
+          if (newUserId && newUserId !== lastAnnouncedChampId.current && String(userId) !== newUserId) {
+            lastAnnouncedChampId.current = newUserId;
+            const [cidade, estado] = newCidadeEstado.split(" - ");
+            const estadoExtenso = estado ? estadoNome(estado) : "";
+            const tts = `Atenção! Nova performance! ${newNome}, ${cidade || ""} - ${estadoExtenso}. Siga o novo líder e ganhe 3 pontos para concorrer no ranking!`;
+            speakMessage(tts, 0);
+          }
         }
       });
     }, 3_000);
