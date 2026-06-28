@@ -1014,8 +1014,12 @@ export default function App() {
           body: JSON.stringify({ type: "win" }),
         }).then((data: any) => {
           if (data?.enteredRanking) {
-            setRankingEntryScope(data.enteredRanking);
-            setShowRankingEntryModal(true);
+            const key = `rankingEntryShown_${data.enteredRanking}`;
+            if (!localStorage.getItem(key)) {
+              localStorage.setItem(key, "1");
+              setRankingEntryScope(data.enteredRanking);
+              setShowRankingEntryModal(true);
+            }
           }
         }).catch(() => {});
       }
