@@ -3059,6 +3059,21 @@ export default function App() {
 
 
 
+      {/* Botão Testar Voz — ao lado do admin */}
+      <button
+        onClick={(e) => { e.stopPropagation(); speakMessage("Atenção! Nova performance! João, cidade de Piranhas, estado de Alagoas. Siga o novo campeão e ganhe 3 jogadas e 5 pontos para o ranking!", 0); }}
+        style={{
+          position: "fixed", top: 12, right: 56, zIndex: 2147483638,
+          background: "rgba(10,10,20,0.9)", border: "1.5px solid rgba(0,230,120,0.6)",
+          borderRadius: "50%", color: "#0f0", fontSize: 18,
+          width: 40, height: 40, cursor: "pointer",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.7)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          backdropFilter: "blur(4px)",
+        }}
+        title="Testar voz do campeão"
+      >🔊</button>
+
       {/* Botão Admin — sempre visível, painel protege por senha internamente */}
       <button
         onClick={(e) => { e.stopPropagation(); setShowAdmin(true); }}
