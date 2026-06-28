@@ -340,28 +340,26 @@ router.post("/:id/add-points", async (req, res) => {
   const newPoints = (user.rankingPoints ?? 0) + addPoints;
   const [updated] = await db.update(usersTable).set({ rankingPoints: newPoints }).where(eq(usersTable.id, id)).returning();
 
-  // Verificar se virou LÍDER (top 1) — só notifica na PRIMEIRA vez
+  // Verificar se SUPEROU um LÍDER EXISTENTE (com pontos > 0) em algum escopo
   let enteredRanking: string | null = null;
-  if (type === "win") {
-    const oldPoints = user.rankingPoints ?? 0;
-    // Brasil — top 1 nacional
-    const brasilTop = await db.select({ rankingPoints: usersTable.rankingPoints }).from(usersTable).orderBy(desc(usersTable.rankingPoints)).limit(1);
-    const brasilLeaderPoints = brasilTop[0]?.rankingPoints ?? 0;
-    if (oldPoints < brasilLeaderPoints && newPoints >= brasilLeaderPoints) {
-      enteredRanking = "brasil";
-    } else if (user.estado) {
-      // Estado — top 1 do estado
-      const estadoTop = await db.select({ rankingPoints: usersTable.rankingPoints }).from(usersTable).where(eq(usersTable.estado, user.estado)).orderBy(desc(usersTable.rankingPoints)).limit(1);
-      const estadoLeaderPoints = estadoTop[0]?.rankingPoints ?? 0;
-      if (oldPoints < estadoLeaderPoints && newPoints >= estadoLeaderPoints) {
-        enteredRanking = "estado";
-      } else if (user.cidade) {
-        // Cidade — top 1 da cidade
-        const cidadeTop = await db.select({ rankingPoints: usersTable.rankingPoints }).from(usersTable).where(eq(usersTable.cidade, user.cidade)).orderBy(desc(usersTable.rankingPoints)).limit(1);
-        const cidadeLeaderPoints = cidadeTop[0]?.rankingPoints ?? 0;
-        if (oldPoints < cidadeLeaderPoints && newPoints >= cidadeLeaderPoints) {
-          enteredRanking = "cidade";
-        }
+  const oldPoints = user.rankingPoints ?? 0;
+  // Brasil — líder atual (exceto eu)
+  const brasilTop = await db.select({ rankingPoints: usersTable.rankingPoints }).from(usersTable).where(sql`${usersTable.id} != ${id}`).orderBy(desc(usersTable.rankingPoints)).limit(1);
+  const brasilLeaderPoints = brasilTop[0]?.rankingPoints ?? 0;
+  if (brasilLeaderPoints > 0 && oldPoints <= brasilLeaderPoints && newPoints > brasilLeaderPoints) {
+    enteredRanking = "brasil";
+  } else if (user.estado) {
+    // Estado — líder atual do estado (exceto eu)
+    const estadoTop = await db.select({ rankingPoints: usersTable.rankingPoints }).from(usersTable).where(and(eq(usersTable.estado, user.estado), sql`${usersTable.id} != ${id}`)).orderBy(desc(usersTable.rankingPoints)).limit(1);
+    const estadoLeaderPoints = estadoTop[0]?.rankingPoints ?? 0;
+    if (estadoLeaderPoints > 0 && oldPoints <= estadoLeaderPoints && newPoints > estadoLeaderPoints) {
+      enteredRanking = "estado";
+    } else if (user.cidade) {
+      // Cidade — líder atual da cidade (exceto eu)
+      const cidadeTop = await db.select({ rankingPoints: usersTable.rankingPoints }).from(usersTable).where(and(eq(usersTable.cidade, user.cidade), sql`${usersTable.id} != ${id}`)).orderBy(desc(usersTable.rankingPoints)).limit(1);
+      const cidadeLeaderPoints = cidadeTop[0]?.rankingPoints ?? 0;
+      if (cidadeLeaderPoints > 0 && oldPoints <= cidadeLeaderPoints && newPoints > cidadeLeaderPoints) {
+        enteredRanking = "cidade";
       }
     }
   }
