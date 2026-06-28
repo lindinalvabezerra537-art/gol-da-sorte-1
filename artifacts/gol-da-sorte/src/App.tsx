@@ -705,7 +705,7 @@ export default function App() {
         });
         if (newUserId && newNome && prevCampeaoUserId.current !== newUserId && announcingCampeaoRef.current !== newUserId) {
           announcingCampeaoRef.current = newUserId;
-          const partsTTS = newCidadeEstado.split(/[-/]/).map(s => s.trim());
+          const partsTTS = newCidadeEstado.split(/[-/]/).map((s: string) => s.trim());
           const cidadeTTS = partsTTS[0] ?? "";
           const estadoTTS = partsTTS[1] ?? "";
           const localTTS = cidadeTTS && estadoTTS

@@ -55,12 +55,12 @@ router.post("/valor-acumulado", async (req, res) => {
   try {
     const { valor } = req.body as { valor: string };
     if (!valor || isNaN(Number(valor.replace(",", ".")))) {
-      return res.status(400).json({ error: "Valor inválido" });
+      res.status(400).json({ error: "Valor inválido" }); return;
     }
     await setSetting("valor_acumulado", valor);
-    res.json({ ok: true, valor });
+    res.json({ ok: true, valor }); return;
   } catch {
-    res.status(500).json({ error: "Erro ao atualizar valor acumulado" });
+    res.status(500).json({ error: "Erro ao atualizar valor acumulado" }); return;
   }
 });
 

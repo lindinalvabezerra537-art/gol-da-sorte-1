@@ -91,12 +91,12 @@ router.get("/users/:id", async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     const [user] = await db.select().from(usersTable).where(eq(usersTable.id, id));
-    if (!user) return res.status(404).json({ error: "Usuário não encontrado" });
+    if (!user) { res.status(404).json({ error: "Usuário não encontrado" }); return; }
     const payments = await db.select().from(paymentsTable).where(and(eq(paymentsTable.userId, id), eq(paymentsTable.status, "confirmed")));
     const totalDepositado = payments.reduce((s, p) => s + p.amountCents, 0);
-    res.json({ user, totalDepositado: (totalDepositado / 100).toFixed(2) });
+    res.json({ user, totalDepositado: (totalDepositado / 100).toFixed(2) }); return;
   } catch (err) {
-    res.status(500).json({ error: "Erro ao buscar usuário" });
+    res.status(500).json({ error: "Erro ao buscar usuário" }); return;
   }
 });
 
@@ -120,12 +120,12 @@ router.post("/users/:id/plays", async (req, res) => {
     const id = parseInt(req.params.id);
     const { delta } = req.body as { delta: number };
     const [user] = await db.select().from(usersTable).where(eq(usersTable.id, id));
-    if (!user) return res.status(404).json({ error: "Usuário não encontrado" });
+    if (!user) { res.status(404).json({ error: "Usuário não encontrado" }); return; }
     const newPlays = Math.max(0, user.playsRemaining + delta);
     const [updated] = await db.update(usersTable).set({ playsRemaining: newPlays }).where(eq(usersTable.id, id)).returning();
-    res.json({ user: updated });
+    res.json({ user: updated }); return;
   } catch (err) {
-    res.status(500).json({ error: "Erro ao atualizar jogadas" });
+    res.status(500).json({ error: "Erro ao atualizar jogadas" }); return;
   }
 });
 
@@ -135,12 +135,12 @@ router.post("/users/:id/saldo", async (req, res) => {
     const id = parseInt(req.params.id);
     const { delta } = req.body as { delta: number };
     const [user] = await db.select().from(usersTable).where(eq(usersTable.id, id));
-    if (!user) return res.status(404).json({ error: "Usuário não encontrado" });
+    if (!user) { res.status(404).json({ error: "Usuário não encontrado" }); return; }
     const newSaldo = Math.max(0, user.saldo + delta);
     const [updated] = await db.update(usersTable).set({ saldo: newSaldo }).where(eq(usersTable.id, id)).returning();
-    res.json({ user: updated });
+    res.json({ user: updated }); return;
   } catch (err) {
-    res.status(500).json({ error: "Erro ao atualizar saldo" });
+    res.status(500).json({ error: "Erro ao atualizar saldo" }); return;
   }
 });
 
@@ -152,11 +152,11 @@ router.post("/users/:id/update", async (req, res) => {
     const updates: Record<string, string> = {};
     if (name) updates.name = name;
     if (phone) updates.phone = phone.replace(/\D/g, "");
-    if (Object.keys(updates).length === 0) return res.status(400).json({ error: "Nada para atualizar" });
+    if (Object.keys(updates).length === 0) { res.status(400).json({ error: "Nada para atualizar" }); return; }
     const [updated] = await db.update(usersTable).set(updates).where(eq(usersTable.id, id)).returning();
-    res.json({ user: updated });
+    res.json({ user: updated }); return;
   } catch (err) {
-    res.status(500).json({ error: "Erro ao atualizar usuário" });
+    res.status(500).json({ error: "Erro ao atualizar usuário" }); return;
   }
 });
 
@@ -165,30 +165,30 @@ router.post("/plays-by-phone", async (req, res) => {
   try {
     const { phone, delta } = req.body as { phone: string; delta: number };
     const cleanPhone = (phone || "").replace(/\D/g, "");
-    if (!cleanPhone) return res.status(400).json({ error: "Telefone inválido" });
+    if (!cleanPhone) { res.status(400).json({ error: "Telefone inválido" }); return; }
     const [user] = await db.select().from(usersTable).where(eq(usersTable.phone, cleanPhone));
-    if (!user) return res.status(404).json({ error: "Usuário não encontrado com esse telefone" });
+    if (!user) { res.status(404).json({ error: "Usuário não encontrado com esse telefone" }); return; }
     const newPlays = Math.max(0, user.playsRemaining + (delta || 0));
     const [updated] = await db.update(usersTable).set({ playsRemaining: newPlays }).where(eq(usersTable.id, user.id)).returning();
-    res.json({ ok: true, user: updated });
+    res.json({ ok: true, user: updated }); return;
   } catch (err) {
-    res.status(500).json({ error: "Erro ao atualizar jogadas" });
+    res.status(500).json({ error: "Erro ao atualizar jogadas" }); return;
   }
 });
 
 router.get("/check-admin-phone", async (req, res) => {
   try {
     const userId = Number(req.query.userId);
-    if (!userId) return res.json({ isAdmin: false });
+    if (!userId) { res.json({ isAdmin: false }); return; }
     const [adminPhoneSetting] = await db.select().from(settingsTable).where(eq(settingsTable.key, "admin_phone"));
     const adminPhone = (adminPhoneSetting?.value || "").replace(/\D/g, "");
-    if (!adminPhone) return res.json({ isAdmin: false });
+    if (!adminPhone) { res.json({ isAdmin: false }); return; }
     const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId));
-    if (!user) return res.json({ isAdmin: false });
+    if (!user) { res.json({ isAdmin: false }); return; }
     const isAdmin = user.phone.replace(/\D/g, "") === adminPhone;
-    res.json({ isAdmin });
+    res.json({ isAdmin }); return;
   } catch {
-    res.json({ isAdmin: false });
+    res.json({ isAdmin: false }); return;
   }
 });
 
