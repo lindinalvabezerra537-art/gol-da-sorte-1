@@ -6,3 +6,9 @@ id = "iowOdcqpwDeP-HRskRFM-"
 uri = "file://artifacts/gol-da-sorte/public/opengraph.jpg"
 type = "image"
 title = "SSH Key - Public key for GitHub"
+
+[[outputs]]
+id = "7sE9BJYSiAl1IepRbdx9u"
+uri = "file://screenshots/gol-da-sorte-ranking-v2.jpg"
+type = "image"
+title = "Ranking com CIDADE / BRASIL / ESTADO nos cards"

@@ -284,9 +284,9 @@ export default function RankingPodium({ cidade, estado, brasil, onClick, onSegui
         flex: 1,
         minHeight: 0,
       }}>
-        <PlayerCard player={cidade} theme={THEMES.silver} tagLabel="\ud83c\udf99 Cidade" onSeguir={() => onSeguir?.("cidade")} jaSeguiu={seguindo?.cidade} isMe={currentUserId != null && cidade.id === currentUserId} />
-        <PlayerCard player={brasil} theme={THEMES.gold} tagLabel="\ud83c\udde7\ud83c\uddf7 Brasil" big onSeguir={() => onSeguir?.("brasil")} jaSeguiu={seguindo?.brasil} isMe={currentUserId != null && brasil.id === currentUserId} />
-        <PlayerCard player={estado} theme={THEMES.bronze} tagLabel="\ud83d\uddfa Estado" onSeguir={() => onSeguir?.("estado")} jaSeguiu={seguindo?.estado} isMe={currentUserId != null && estado.id === currentUserId} />
+        <PlayerCard player={cidade} theme={THEMES.silver} tagLabel="CIDADE" onSeguir={() => onSeguir?.("cidade")} jaSeguiu={seguindo?.cidade} isMe={currentUserId != null && cidade.id === currentUserId} />
+        <PlayerCard player={brasil} theme={THEMES.gold} tagLabel="BRASIL" big onSeguir={() => onSeguir?.("brasil")} jaSeguiu={seguindo?.brasil} isMe={currentUserId != null && brasil.id === currentUserId} />
+        <PlayerCard player={estado} theme={THEMES.bronze} tagLabel="ESTADO" onSeguir={() => onSeguir?.("estado")} jaSeguiu={seguindo?.estado} isMe={currentUserId != null && estado.id === currentUserId} />
       </div>
 
       <div style={{ fontSize: 6, color: "#333", lineHeight: 1, flexShrink: 0 }}>toque para ver ranking</div>
