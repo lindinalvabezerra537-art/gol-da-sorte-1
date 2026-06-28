@@ -380,7 +380,7 @@ export default function App() {
   const [championFollowClaimed, setChampionFollowClaimed] = useState(
     () => localStorage.getItem("claimedChampionUserId") || ""
   );
-  const [userInfo, setUserInfo] = useState<{ name: string; cidade: string; estado: string; fotoBase64?: string | null } | null>(null);
+  const [userInfo, setUserInfo] = useState<{ name: string; cidade: string; estado: string; fotoBase64?: string | null; rankingSocialLink?: string | null } | null>(null);
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
   const [showInviteScreen, setShowInviteScreen] = useState(false);
   const [userLoaded, setUserLoaded] = useState(false);
@@ -607,7 +607,7 @@ export default function App() {
       }
     }
     setTimeout(async () => {
-      const link = championLinkInput.trim();
+      const link = userInfo?.rankingSocialLink || "";
       if (link && userId && userInfo) {
         await apiCall("/settings/atual-campeao", {
           method: "POST",
@@ -892,7 +892,7 @@ export default function App() {
       if (userData?.user) {
         setPlaysRemaining(userData.user.playsRemaining);
         setReferralUnlocked(userData.user.referralUnlocked);
-        setUserInfo({ name: userData.user.name, cidade: userData.user.cidade, estado: userData.user.estado, fotoBase64: userData.user.fotoBase64 });
+        setUserInfo({ name: userData.user.name, cidade: userData.user.cidade, estado: userData.user.estado, fotoBase64: userData.user.fotoBase64, rankingSocialLink: userData.user.rankingSocialLink });
         // Buscar ranking
         const city = userData.user.cidade;
         const state = userData.user.estado;
@@ -1082,7 +1082,7 @@ export default function App() {
       if (data?.user) {
         setPlaysRemaining(data.user.playsRemaining);
         setReferralUnlocked(data.user.referralUnlocked);
-        setUserInfo({ name: data.user.name, cidade: data.user.cidade, estado: data.user.estado, fotoBase64: data.user.fotoBase64 });
+        setUserInfo({ name: data.user.name, cidade: data.user.cidade, estado: data.user.estado, fotoBase64: data.user.fotoBase64, rankingSocialLink: data.user.rankingSocialLink });
       }
       setUserLoaded(true);
     });
@@ -1874,12 +1874,6 @@ export default function App() {
           overflow: "hidden",
           cursor: atualCampeao?.nome && userId && String(userId) !== atualCampeao.userId ? "pointer" : "default",
         }}
-        onClick={() => {
-          if (atualCampeao?.nome && userId && String(userId) !== atualCampeao.userId) {
-            setHasClickedChampionLink(false);
-            setShowChampionFollowModal(true);
-          }
-        }}
       >
         {/* 52% — Foto */}
         <div style={{
@@ -1974,12 +1968,15 @@ export default function App() {
           <button
             onClick={e => {
               e.stopPropagation();
-              e.preventDefault();
+              if (!userId) { showToast("Faça login para seguir o campeão!"); return; }
               if (atualCampeao?.linkSocial) {
                 window.open(atualCampeao.linkSocial, "_blank");
                 setHasClickedChampionLink(true);
               }
-              if (atualCampeao?.nome) setShowChampionFollowModal(true);
+              if (atualCampeao?.nome) {
+                setHasClickedChampionLink(false);
+                setShowChampionFollowModal(true);
+              }
             }}
             style={{
               marginTop: "auto",
