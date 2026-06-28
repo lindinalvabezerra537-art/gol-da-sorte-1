@@ -547,7 +547,8 @@ export default function App() {
     const plays = isJogadas ? (cfg.bonusRow5 || 50) : 0;
     playMegaFanfare();
     if (isJogadas) {
-      speakMessage(`Parabéns! Você acaba de ganhar ${plays} jogadas e 50 pontos no ranking! E por muito pouco você não ganha o prêmio acumulado!`);
+      speakMessage("Parabéns! Você acaba de ganhar 50 jogadas e 50 pontos para o ranking!");
+      showToast("🎉 +50 jogadas e +50 pts no ranking!");
     } else {
       speakMessage("Parabéns! Você acabou de ganhar um brinde incrível!");
       setBrindeText(cfg.r5PrizeValue);
