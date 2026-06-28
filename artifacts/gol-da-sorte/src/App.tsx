@@ -616,16 +616,16 @@ export default function App() {
         setChampionFollowClaimed(String(userId));
         localStorage.setItem("claimedChampionUserId", String(userId));
         showToast("🏆 Você agora é o Atual Campeão!");
-        // Anuncia instantaneamente para todos (inclusive o próprio ganhador)
+        // Anuncia com 1s de pausa após a mensagem "Parabéns!" terminar
         const localTTS = `cidade de ${userInfo.cidade}, estado de ${userInfo.estado}`;
-        speakMessage(`Atenção! Nova performance! ${userInfo.name}, ${localTTS}. Siga o novo campeão e ganhe 3 jogadas e 5 pontos para o ranking!`, 0);
+        speakMessage(`Atenção! Nova performance! ${userInfo.name}, ${localTTS}. Siga o novo campeão e ganhe 3 jogadas e 5 pontos para o ranking!`, 1000);
         // Marca como anunciado para evitar duplo no polling
         prevCampeaoUserId.current = String(userId);
         announcingCampeaoRef.current = String(userId);
       } else {
         setShowChampionModal(true);
       }
-    }, 3000);
+    }, 6500);
   }, [userId, championLinkInput, userInfo]);
 
   const reCalc = useCallback(() => {
