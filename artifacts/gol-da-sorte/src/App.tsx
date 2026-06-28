@@ -274,6 +274,20 @@ function getFemaleVoice(): SpeechSynthesisVoice | null {
   return female || voices.find(v => v.lang.toLowerCase().startsWith("pt")) || null;
 }
 
+function estadoNome(sigla: string): string {
+  const map: Record<string, string> = {
+    AC: "Acre", AL: "Alagoas", AP: "Amapá", AM: "Amazonas", BA: "Bahia",
+    CE: "Ceará", DF: "Distrito Federal", ES: "Espírito Santo", GO: "Goiás",
+    MA: "Maranhão", MT: "Mato Grosso", MS: "Mato Grosso do Sul", MG: "Minas Gerais",
+    PA: "Pará", PB: "Paraíba", PR: "Paraná", PE: "Pernambuco", PI: "Piauí",
+    RJ: "Rio de Janeiro", RN: "Rio Grande do Norte", RS: "Rio Grande do Sul",
+    RO: "Rondônia", RR: "Roraima", SC: "Santa Catarina", SP: "São Paulo",
+    SE: "Sergipe", TO: "Tocantins",
+  };
+  const s = sigla.trim().toUpperCase();
+  return map[s] || sigla;
+}
+
 function speakMessage(text: string, delayMs = 1400) {
   if (!("speechSynthesis" in window)) return;
   window.speechSynthesis.cancel();
@@ -617,7 +631,7 @@ export default function App() {
         localStorage.setItem("claimedChampionUserId", String(userId));
         showToast("🏆 Você agora é o Atual Campeão!");
         // Anuncia com 1s de pausa após a mensagem "Parabéns!" terminar
-        const localTTS = `cidade de ${userInfo.cidade}, estado de ${userInfo.estado}`;
+        const localTTS = `cidade de ${userInfo.cidade}, estado de ${estadoNome(userInfo.estado)}`;
         speakMessage(`Atenção! Nova performance! ${userInfo.name}, ${localTTS}. Siga o novo campeão e ganhe 3 jogadas e 5 pontos para o ranking!`, 1000);
         // Marca como anunciado para evitar duplo no polling
         prevCampeaoUserId.current = String(userId);
@@ -709,7 +723,7 @@ export default function App() {
           const cidadeTTS = partsTTS[0] ?? "";
           const estadoTTS = partsTTS[1] ?? "";
           const localTTS = cidadeTTS && estadoTTS
-            ? `cidade de ${cidadeTTS}, estado de ${estadoTTS}`
+            ? `cidade de ${cidadeTTS}, estado de ${estadoNome(estadoTTS)}`
             : newCidadeEstado;
           speakMessage(`Atenção! Nova performance! ${newNome}, ${localTTS}. Siga o novo campeão e ganhe 3 jogadas e 5 pontos para o ranking!`, 0);
         }
@@ -785,7 +799,7 @@ export default function App() {
             const cidadeTTS = partsTTS[0] ?? "";
             const estadoTTS = partsTTS[1] ?? "";
             const localTTS = cidadeTTS && estadoTTS
-              ? `cidade de ${cidadeTTS}, estado de ${estadoTTS}`
+              ? `cidade de ${cidadeTTS}, estado de ${estadoNome(estadoTTS)}`
               : newCidadeEstado;
             speakMessage(`Atenção! Nova performance! ${newNome}, ${localTTS}. Siga o novo campeão e ganhe 3 jogadas e 5 pontos para o ranking!`, 0);
           }
