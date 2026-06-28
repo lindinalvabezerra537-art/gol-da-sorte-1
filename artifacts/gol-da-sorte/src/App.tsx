@@ -264,7 +264,7 @@ function playMegaFanfare() {
   });
 }
 
-function speakMessage(text: string) {
+function speakMessage(text: string, delayMs = 1400) {
   if (!("speechSynthesis" in window)) return;
   window.speechSynthesis.cancel();
   const utter = new SpeechSynthesisUtterance(text);
@@ -272,8 +272,11 @@ function speakMessage(text: string) {
   utter.rate = 0.88;
   utter.pitch = 1.1;
   utter.volume = 1.0;
-  // Delay a bit so fanfare starts first
-  setTimeout(() => window.speechSynthesis.speak(utter), 1400);
+  if (delayMs > 0) {
+    setTimeout(() => window.speechSynthesis.speak(utter), delayMs);
+  } else {
+    window.speechSynthesis.speak(utter);
+  }
 }
 
 async function apiCall(path: string, opts?: RequestInit) {
@@ -342,7 +345,7 @@ export default function App() {
   const [atualCampeao, setAtualCampeao] = useState<{
     nome: string; cidadeEstado: string; foto: string; linkSocial: string; userId: string;
   } | null>(null);
-  const prevCampeaoUserId = useRef<string | null>(null);
+  const prevCampeaoUserId = useRef<string>("");
   const [showChampionModal, setShowChampionModal] = useState(false);
   const [championLinkInput, setChampionLinkInput] = useState("");
   const [showChampionFollowModal, setShowChampionFollowModal] = useState(false);
@@ -681,8 +684,8 @@ export default function App() {
           linkSocial: campeaoData.linkSocial ?? "",
           userId: newUserId,
         });
-        if (newUserId && newNome && prevCampeaoUserId.current !== null && prevCampeaoUserId.current !== newUserId) {
-          speakMessage(`Atenção! Nova performance! ${newNome}, ${newCidadeEstado}. Vamos seguir o atual campeão e ganhar 3 jogadas e 50 pontos para o ranking!`);
+        if (newUserId && newNome && prevCampeaoUserId.current !== newUserId) {
+          speakMessage(`Atenção! Nova performance! ${newNome}, ${newCidadeEstado}. Siga o novo campeão e ganhe 3 jogadas e 5 pontos para o ranking!`, 0);
         }
         prevCampeaoUserId.current = newUserId;
       }
