@@ -288,6 +288,23 @@ function estadoNome(sigla: string): string {
   return map[s] || sigla;
 }
 
+// Guarda no localStorage IDs de campeões já anunciados (sobrevive refresh)
+function wasAnnounced(userId: string): boolean {
+  try {
+    const announced = JSON.parse(localStorage.getItem("announcedCampeoes") || "[]");
+    return Array.isArray(announced) && announced.includes(userId);
+  } catch { return false; }
+}
+function markAnnounced(userId: string) {
+  try {
+    const announced: string[] = JSON.parse(localStorage.getItem("announcedCampeoes") || "[]");
+    if (!announced.includes(userId)) {
+      announced.push(userId);
+      localStorage.setItem("announcedCampeoes", JSON.stringify(announced.slice(-50)));
+    }
+  } catch {}
+}
+
 function speakMessage(text: string, delayMs = 1400) {
   if (!("speechSynthesis" in window)) return;
   window.speechSynthesis.cancel();
@@ -632,10 +649,14 @@ export default function App() {
         showToast("🏆 Você agora é o Atual Campeão!");
         // Espera "Parabéns!" terminar (~7.5s) + 1s de pausa antes de anunciar
         const localTTS = `cidade de ${userInfo.cidade}, estado de ${estadoNome(userInfo.estado)}`;
-        speakMessage(`Atenção! Nova performance! ${userInfo.name}, ${localTTS}. Siga o novo campeão e ganhe 3 jogadas e 5 pontos para o ranking!`);
+        const uidStr = String(userId);
+        if (!wasAnnounced(uidStr)) {
+          markAnnounced(uidStr);
+          speakMessage(`Atenção! Nova performance! ${userInfo.name}, ${localTTS}. Siga o novo campeão e ganhe 3 jogadas e 5 pontos para o ranking!`);
+        }
         // Marca como anunciado para evitar duplo no polling
-        prevCampeaoUserId.current = String(userId);
-        announcingCampeaoRef.current = String(userId);
+        prevCampeaoUserId.current = uidStr;
+        announcingCampeaoRef.current = uidStr;
       } else {
         setShowChampionModal(true);
       }
@@ -717,8 +738,9 @@ export default function App() {
           linkSocial: campeaoData.linkSocial ?? "",
           userId: newUserId,
         });
-        if (newUserId && newNome && prevCampeaoUserId.current !== newUserId && announcingCampeaoRef.current !== newUserId) {
+        if (newUserId && newNome && prevCampeaoUserId.current !== newUserId && announcingCampeaoRef.current !== newUserId && !wasAnnounced(newUserId)) {
           announcingCampeaoRef.current = newUserId;
+          markAnnounced(newUserId);
           const partsTTS = newCidadeEstado.split(/[-/]/).map((s: string) => s.trim());
           const cidadeTTS = partsTTS[0] ?? "";
           const estadoTTS = partsTTS[1] ?? "";
@@ -793,8 +815,9 @@ export default function App() {
             linkSocial: campeaoData.linkSocial ?? "",
             userId: newUserId,
           });
-          if (newUserId && newNome && prevCampeaoUserId.current !== newUserId && announcingCampeaoRef.current !== newUserId) {
+          if (newUserId && newNome && prevCampeaoUserId.current !== newUserId && announcingCampeaoRef.current !== newUserId && !wasAnnounced(newUserId)) {
             announcingCampeaoRef.current = newUserId;
+            markAnnounced(newUserId);
             const partsTTS = newCidadeEstado.split(/[-/]/).map((s: string) => s.trim());
             const cidadeTTS = partsTTS[0] ?? "";
             const estadoTTS = partsTTS[1] ?? "";
@@ -1966,17 +1989,16 @@ export default function App() {
 
           {/* 4 — Botão SEGUIR / SEGUINDO */}
           <button
+            type="button"
             onClick={e => {
               e.stopPropagation();
+              e.preventDefault();
               if (!userId) { showToast("Faça login para seguir o campeão!"); return; }
-              if (atualCampeao?.linkSocial) {
-                window.open(atualCampeao.linkSocial, "_blank");
-                setHasClickedChampionLink(true);
-              }
-              if (atualCampeao?.nome) {
-                setHasClickedChampionLink(false);
-                setShowChampionFollowModal(true);
-              }
+              const link = atualCampeao?.linkSocial || "";
+              if (!link) { showToast("Este campeão ainda não cadastrou o link social."); return; }
+              window.open(link, "_blank");
+              setHasClickedChampionLink(true);
+              if (atualCampeao?.nome) setShowChampionFollowModal(true);
             }}
             style={{
               marginTop: "auto",
