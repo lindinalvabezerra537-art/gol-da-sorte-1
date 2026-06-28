@@ -276,74 +276,6 @@ function speakMessage(text: string) {
   setTimeout(() => window.speechSynthesis.speak(utter), 1400);
 }
 
-// ── Confetti canvas component ──
-type ConfettiPiece = {
-  x: number; y: number; vx: number; vy: number;
-  w: number; h: number; color: string; rot: number; rotV: number;
-};
-const CONFETTI_COLORS = ["#FFD700","#FF6B35","#00FF88","#FF1493","#00BFFF","#FF4500","#ADFF2F","#FF69B4","#fff","#f0f"];
-
-function ConfettiCanvas({ active, mega, onDone }: { active: boolean; mega?: boolean; onDone: () => void }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const rafRef = useRef<number>(0);
-
-  useEffect(() => {
-    if (!active) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d")!;
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    const count = mega ? 400 : 140;
-    const pieces: ConfettiPiece[] = Array.from({ length: count }, () => ({
-      x: Math.random() * canvas.width,
-      y: -Math.random() * canvas.height * (mega ? 1.2 : 0.5) - 20,
-      vx: (Math.random() - 0.5) * (mega ? 12 : 7),
-      vy: Math.random() * (mega ? 6 : 4) + 3,
-      w: Math.random() * (mega ? 18 : 12) + 6,
-      h: Math.random() * (mega ? 10 : 7) + 3,
-      color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
-      rot: Math.random() * Math.PI * 2,
-      rotV: (Math.random() - 0.5) * 0.25,
-    }));
-    let frame = 0;
-    const maxFrames = mega ? 420 : 220;
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      let allBelow = true;
-      for (const p of pieces) {
-        p.x += p.vx + Math.sin(frame * 0.03 + p.rotV) * 0.8;
-        p.y += p.vy;
-        p.vy += 0.08;
-        p.rot += p.rotV;
-        if (p.y < canvas.height + 30) allBelow = false;
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate(p.rot);
-        ctx.fillStyle = p.color;
-        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-        ctx.restore();
-      }
-      frame++;
-      if (frame < maxFrames && !allBelow) {
-        rafRef.current = requestAnimationFrame(animate);
-      } else {
-        onDone();
-      }
-    };
-    rafRef.current = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, [active, onDone]);
-
-  if (!active) return null;
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{ position: "fixed", inset: 0, zIndex: 500, pointerEvents: "none" }}
-    />
-  );
-}
-
 async function apiCall(path: string, opts?: RequestInit) {
   try {
     const res = await fetch(`/api${path}`, opts);
@@ -423,9 +355,7 @@ export default function App() {
   const [userLoaded, setUserLoaded] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [bonusCelebration, setBonusCelebration] = useState<{ amount: number; big: boolean } | null>(null);
-  const [confettiActive, setConfettiActive] = useState(false);
   const [broadcastModal, setBroadcastModal] = useState<string | null>(null);
-  const [megaActive, setMegaActive] = useState(false);
   const [showPromoModal, setShowPromoModal] = useState(false);
   const [showEditPhoto, setShowEditPhoto] = useState(false);
   const [videoPlaying, setVideoPlaying] = useState(false);
@@ -623,8 +553,6 @@ export default function App() {
       setBrindeText(cfg.r5PrizeValue);
       setShowBrindeModal(true);
     }
-    setConfettiActive(true);
-    setMegaActive(true);
     if (plays > 0) {
       setPlaysRemaining(prev => prev + plays);
       if (userId) {
@@ -637,7 +565,6 @@ export default function App() {
       }
     }
     setTimeout(async () => {
-      setMegaActive(false);
       const link = championLinkInput.trim();
       if (link && userId && userInfo) {
         await apiCall("/settings/atual-campeao", {
@@ -2743,9 +2670,6 @@ export default function App() {
 
       {/* ── ACESSO ADMIN — removido para usuários comuns ── */}
 
-      {/* ── CONFETE ── */}
-      <ConfettiCanvas active={confettiActive} mega={megaActive} onDone={() => setConfettiActive(false)} />
-
       {/* ── CELEBRAÇÃO DE BÔNUS ── */}
       {bonusCelebration && (
         <div style={{
@@ -2785,59 +2709,6 @@ export default function App() {
               opacity: 0.9,
             }}>
               {bonusCelebration.big ? "INCRÍVEL! Você chegou à 5ª linha!" : "Muito bem! Você chegou à 4ª linha!"}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── MEGA CELEBRAÇÃO — última linha +15 jogadas ── */}
-      {megaActive && (
-        <div style={{
-          position: "fixed", inset: 0, zIndex: 600,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          background: "rgba(0,0,0,0.75)",
-          pointerEvents: "none",
-        }}>
-          <div style={{
-            background: "linear-gradient(135deg,#0a0020,#2d006b,#4b0082,#2d006b,#0a0020)",
-            border: "4px solid #FFD700",
-            borderRadius: 28,
-            padding: "36px 32px",
-            textAlign: "center",
-            maxWidth: 320,
-            width: "88%",
-            boxShadow: "0 0 80px 30px rgba(255,180,0,0.7), 0 0 200px 60px rgba(120,0,255,0.4)",
-            animation: "megaPop 0.5s cubic-bezier(0.175,0.885,0.32,1.275)",
-          }}>
-            <div style={{ fontSize: 56, lineHeight: 1, marginBottom: 10 }}>
-              🏆🎺🎉🎊⭐
-            </div>
-            <div style={{
-              color: "#FFD700",
-              fontSize: 30,
-              fontWeight: 900,
-              lineHeight: 1.15,
-              textShadow: "0 0 30px #FFD700, 0 0 60px rgba(255,200,0,0.5)",
-              letterSpacing: 1,
-              marginBottom: 12,
-            }}>
-              PARABÉNS!<br />
-              VOCÊ ACABA DE<br />
-              GANHAR 15 JOGADAS!
-            </div>
-            <div style={{
-              background: "rgba(255,215,0,0.15)",
-              border: "2px solid rgba(255,215,0,0.5)",
-              borderRadius: 14,
-              padding: "10px 14px",
-              color: "#fff",
-              fontSize: 15,
-              fontWeight: 700,
-              lineHeight: 1.4,
-            }}>
-              🍀 E POR MUITO POUCO<br />
-              VOCÊ NÃO GANHOU<br />
-              O PRÊMIO ACUMULADO!
             </div>
           </div>
         </div>
