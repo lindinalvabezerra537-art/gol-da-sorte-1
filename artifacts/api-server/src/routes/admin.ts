@@ -290,4 +290,29 @@ router.post("/users/:id/points", async (req, res) => {
   }
 });
 
+// Buscar jogadores por estado/cidade para o admin (sem exclusividade, mostra todos)
+router.get("/ranking/search", async (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  try {
+    const estado = (req.query.estado as string) || "";
+    const cidade = (req.query.cidade as string) || "";
+    if (!estado && !cidade) {
+      res.status(400).json({ error: "Informe estado ou cidade" }); return;
+    }
+    let query = db
+      .select({ id: usersTable.id, name: usersTable.name, cidade: usersTable.cidade, estado: usersTable.estado, rankingPoints: usersTable.rankingPoints, fotoBase64: usersTable.fotoBase64, rankingSocialLink: usersTable.rankingSocialLink })
+      .from(usersTable)
+      .orderBy(desc(usersTable.rankingPoints));
+    if (cidade) {
+      query = query.where(eq(usersTable.cidade, cidade)) as typeof query;
+    } else if (estado) {
+      query = query.where(eq(usersTable.estado, estado)) as typeof query;
+    }
+    const users = await query;
+    res.json({ estado, cidade, users });
+  } catch (err) {
+    res.status(500).json({ error: "Erro ao buscar ranking" });
+  }
+});
+
 export default router;

@@ -187,6 +187,9 @@ export default function AdminPanel({ onClose, skipAuth }: { onClose: () => void;
   const [rankingData, setRankingData] = useState<RankingData | null>(null);
   const [pointsDelta, setPointsDelta] = useState("");
   const [pointsUserId, setPointsUserId] = useState<number | null>(null);
+  const [rankingEstadoSearch, setRankingEstadoSearch] = useState("");
+  const [rankingCidadeSearch, setRankingCidadeSearch] = useState("");
+  const [rankingSearchResults, setRankingSearchResults] = useState<{ scope: string; players: RankingPlayer[] } | null>(null);
 
   const isLoggedIn = !!token;
 
@@ -473,6 +476,69 @@ export default function AdminPanel({ onClose, skipAuth }: { onClose: () => void;
         {tab === "ranking" && (
           <div>
             <div style={{ color: C.gold, fontWeight: 700, marginBottom: 12, fontSize: 15 }}>🏆 Ranking</div>
+
+            {/* Busca por Estado / Cidade */}
+            <Card style={{ marginBottom: 12 }}>
+              <div style={{ color: C.blue, fontWeight: 700, fontSize: 13, marginBottom: 10 }}>🔍 Buscar Líderes</div>
+              <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+                <input
+                  placeholder="Estado (ex: PI, AL, SP)"
+                  value={rankingEstadoSearch}
+                  onChange={e => setRankingEstadoSearch(e.target.value)}
+                  style={{ flex: 1, background: "#1a1a25", border: `1px solid ${C.border}`, borderRadius: 8, color: C.text, padding: "8px 10px", fontSize: 13, outline: "none" }}
+                />
+                <input
+                  placeholder="Cidade (ex: Teresina)"
+                  value={rankingCidadeSearch}
+                  onChange={e => setRankingCidadeSearch(e.target.value)}
+                  style={{ flex: 1, background: "#1a1a25", border: `1px solid ${C.border}`, borderRadius: 8, color: C.text, padding: "8px 10px", fontSize: 13, outline: "none" }}
+                />
+              </div>
+              <Btn label="🔍 Buscar" color={C.blue} onClick={async () => {
+                if (!rankingEstadoSearch && !rankingCidadeSearch) { showMsg("❌ Digite estado ou cidade"); return; }
+                setLoading(true);
+                const qs = new URLSearchParams();
+                if (rankingEstadoSearch) qs.set("estado", rankingEstadoSearch);
+                if (rankingCidadeSearch) qs.set("cidade", rankingCidadeSearch);
+                const data = await adminApi(`/admin/ranking/search?${qs.toString()}`, undefined, token);
+                setLoading(false);
+                if (data?.users) {
+                  const scope = rankingCidadeSearch ? `Cidade: ${rankingCidadeSearch}` : `Estado: ${rankingEstadoSearch}`;
+                  setRankingSearchResults({ scope, players: data.users });
+                } else {
+                  showMsg("❌ Nenhum jogador encontrado");
+                  setRankingSearchResults(null);
+                }
+              }} />
+            </Card>
+
+            {/* Resultado da busca */}
+            {rankingSearchResults && (
+              <Card style={{ marginBottom: 12 }}>
+                <div style={{ color: C.gold, fontWeight: 700, fontSize: 13, marginBottom: 8 }}>📋 {rankingSearchResults.scope} — {rankingSearchResults.players.length} jogador(es)</div>
+                {rankingSearchResults.players.map((u, i) => (
+                  <div key={u.id} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+                    <span style={{ fontSize: 14, color: C.muted, minWidth: 24 }}>#{i + 1}</span>
+                    <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#1a1a30", overflow: "hidden", flexShrink: 0 }}>
+                      {u.fotoBase64 ? <img src={u.fotoBase64} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>👤</span>}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ color: C.text, fontWeight: 700, fontSize: 13 }}>{u.name}</div>
+                      <div style={{ color: C.muted, fontSize: 11 }}>{u.cidade}/{u.estado} — {u.rankingPoints ?? 0} pts</div>
+                    </div>
+                    {pointsUserId === u.id ? (
+                      <div style={{ display: "flex", gap: 4 }}>
+                        <input value={pointsDelta} onChange={e => setPointsDelta(e.target.value)} type="number" placeholder="+/-" style={{ width: 60, background: "#1a1a25", border: `1px solid ${C.border}`, borderRadius: 6, color: C.text, padding: "4px 6px", fontSize: 12 }} />
+                        <button onClick={async () => { const d = parseInt(pointsDelta); if (isNaN(d)) return; setLoading(true); await adminApi(`/admin/users/${u.id}/points`, { method: "POST", body: JSON.stringify({ delta: d }) }, token); setLoading(false); setPointsUserId(null); setPointsDelta(""); loadRanking(); showMsg("✅ Pontos atualizados!"); }} style={{ background: C.green, border: "none", borderRadius: 6, color: "#fff", fontSize: 11, padding: "4px 8px", cursor: "pointer" }}>OK</button>
+                      </div>
+                    ) : (
+                      <button onClick={() => { setPointsUserId(u.id); setPointsDelta(""); }} style={{ background: "none", border: `1px solid ${C.border}`, borderRadius: 6, color: C.muted, fontSize: 11, padding: "4px 8px", cursor: "pointer" }}>✏️</button>
+                    )}
+                  </div>
+                ))}
+              </Card>
+            )}
+
             {!rankingData ? (
               <div style={{ color: C.muted, textAlign: "center", padding: 40 }}>Carregando...</div>
             ) : (
