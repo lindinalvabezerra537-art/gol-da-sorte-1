@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { db } from "@workspace/db";
 import { usersTable, paymentsTable, settingsTable } from "@workspace/db";
-import { eq, gte, and, sql, ilike, or } from "drizzle-orm";
+import { eq, gte, and, sql, ilike, or, desc } from "drizzle-orm";
 
 const router = Router();
 
@@ -216,6 +216,77 @@ router.post("/settings", async (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: "Erro ao salvar configurações" });
+  }
+});
+
+// ── ADMIN RANKING COM EXCLUSIVIDADE ──
+// Regra: um jogador só pode ocupar 1 posição (Brasil > Estado > Cidade)
+
+function computeExclusiveRankings(allUsers: Array<{ id: number; name: string; cidade: string; estado: string; rankingPoints: number | null; fotoBase64: string | null; rankingSocialLink: string | null }>) {
+  const sorted = [...allUsers].sort((a, b) => (b.rankingPoints ?? 0) - (a.rankingPoints ?? 0));
+
+  // Brasil: top 3
+  const brasil = sorted.slice(0, 3);
+  const brasilIds = new Set(brasil.map(u => u.id));
+
+  // Estado: top 3 de cada estado, excluindo já no Brasil
+  const estadoMap = new Map<string, Array<typeof allUsers[0]>>();
+  for (const u of sorted) {
+    if (brasilIds.has(u.id)) continue;
+    if (!estadoMap.has(u.estado)) estadoMap.set(u.estado, []);
+    estadoMap.get(u.estado)!.push(u);
+  }
+  const estados: Record<string, typeof allUsers[0][]> = {};
+  for (const [est, list] of estadoMap) {
+    estados[est] = list.slice(0, 3);
+  }
+  const estadoIds = new Set(Object.values(estados).flat().map(u => u.id));
+
+  // Cidade: top 3 de cada cidade, excluindo já no Brasil ou Estado
+  const cidadeMap = new Map<string, Array<typeof allUsers[0]>>();
+  for (const u of sorted) {
+    if (brasilIds.has(u.id) || estadoIds.has(u.id)) continue;
+    if (!cidadeMap.has(u.cidade)) cidadeMap.set(u.cidade, []);
+    cidadeMap.get(u.cidade)!.push(u);
+  }
+  const cidades: Record<string, typeof allUsers[0][]> = {};
+  for (const [cid, list] of cidadeMap) {
+    cidades[cid] = list.slice(0, 3);
+  }
+
+  return { brasil, estados, cidades };
+}
+
+router.get("/ranking", async (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  try {
+    const allUsers = await db
+      .select({ id: usersTable.id, name: usersTable.name, cidade: usersTable.cidade, estado: usersTable.estado, rankingPoints: usersTable.rankingPoints, fotoBase64: usersTable.fotoBase64, rankingSocialLink: usersTable.rankingSocialLink })
+      .from(usersTable)
+      .orderBy(desc(usersTable.rankingPoints));
+    const result = computeExclusiveRankings(allUsers);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: "Erro ao buscar ranking" });
+  }
+});
+
+// Ajustar pontos de ranking de um usuário (admin)
+router.post("/users/:id/points", async (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  try {
+    const id = parseInt(req.params.id);
+    const { delta } = req.body as { delta: number };
+    if (isNaN(id) || typeof delta !== "number") {
+      res.status(400).json({ error: "Invalid id or delta" }); return;
+    }
+    const [user] = await db.select({ rankingPoints: usersTable.rankingPoints }).from(usersTable).where(eq(usersTable.id, id));
+    if (!user) { res.status(404).json({ error: "Usuário não encontrado" }); return; }
+    const newPoints = Math.max(0, (user.rankingPoints ?? 0) + delta);
+    const [updated] = await db.update(usersTable).set({ rankingPoints: newPoints }).where(eq(usersTable.id, id)).returning();
+    res.json({ user: updated, delta, newPoints });
+  } catch (err) {
+    res.status(500).json({ error: "Erro ao atualizar pontos" });
   }
 });
 

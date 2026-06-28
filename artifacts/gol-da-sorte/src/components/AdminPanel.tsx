@@ -31,7 +31,7 @@ const C = {
   muted: "#666",
 };
 
-type Tab = "dashboard" | "users" | "config";
+type Tab = "dashboard" | "users" | "ranking" | "config";
 
 interface Stats {
   usuariosOnline: number;
@@ -61,6 +61,21 @@ interface UserRow {
   ultimoLogin?: string;
   saldo: number;
   createdAt: string;
+}
+
+interface RankingPlayer {
+  id: number;
+  name: string;
+  cidade: string;
+  estado: string;
+  rankingPoints: number | null;
+  fotoBase64: string | null;
+  rankingSocialLink: string | null;
+}
+interface RankingData {
+  brasil: RankingPlayer[];
+  estados: Record<string, RankingPlayer[]>;
+  cidades: Record<string, RankingPlayer[]>;
 }
 
 interface GameSettings {
@@ -169,6 +184,9 @@ export default function AdminPanel({ onClose, skipAuth }: { onClose: () => void;
   const [phoneInput, setPhoneInput] = useState("");
   const [phonePlayDelta, setPhonePlayDelta] = useState("");
   const [phoneResult, setPhoneResult] = useState<string | null>(null);
+  const [rankingData, setRankingData] = useState<RankingData | null>(null);
+  const [pointsDelta, setPointsDelta] = useState("");
+  const [pointsUserId, setPointsUserId] = useState<number | null>(null);
 
   const isLoggedIn = !!token;
 
@@ -205,12 +223,18 @@ export default function AdminPanel({ onClose, skipAuth }: { onClose: () => void;
     if (data?.settings) setSettings(data.settings);
   }, [token]);
 
+  const loadRanking = useCallback(async () => {
+    const data = await adminApi("/admin/ranking", undefined, token);
+    if (data && !data.error) setRankingData(data);
+  }, [token]);
+
   useEffect(() => {
     if (!isLoggedIn) return;
     if (tab === "dashboard") loadStats();
     if (tab === "users") loadUsers();
+    if (tab === "ranking") loadRanking();
     if (tab === "config") loadSettings();
-  }, [tab, isLoggedIn, loadStats, loadUsers, loadSettings]);
+  }, [tab, isLoggedIn, loadStats, loadUsers, loadRanking, loadSettings]);
 
   useEffect(() => {
     if (tab === "users" && isLoggedIn) {
@@ -442,6 +466,101 @@ export default function AdminPanel({ onClose, skipAuth }: { onClose: () => void;
                 window.open(`https://wa.me/55${num}`, "_blank");
               }} />
             </Card>
+          </div>
+        )}
+
+        {/* ── RANKING ── */}
+        {tab === "ranking" && (
+          <div>
+            <div style={{ color: C.gold, fontWeight: 700, marginBottom: 12, fontSize: 15 }}>🏆 Ranking</div>
+            {!rankingData ? (
+              <div style={{ color: C.muted, textAlign: "center", padding: 40 }}>Carregando...</div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {/* Brasil */}
+                <Card>
+                  <div style={{ color: C.gold, fontWeight: 700, fontSize: 13, marginBottom: 8 }}>🇧🇷 Brasil</div>
+                  {rankingData.brasil.length === 0 ? <div style={{ color: C.muted, fontSize: 12 }}>Sem jogadores</div> : (
+                    rankingData.brasil.map((u, i) => (
+                      <div key={u.id} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+                        <span style={{ fontSize: 16 }}>{["🥇","🥈","🥉"][i]}</span>
+                        <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#1a1a30", overflow: "hidden", flexShrink: 0 }}>
+                          {u.fotoBase64 ? <img src={u.fotoBase64} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>👤</span>}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ color: C.text, fontWeight: 700, fontSize: 13 }}>{u.name}</div>
+                          <div style={{ color: C.muted, fontSize: 11 }}>{u.cidade}/{u.estado} — {u.rankingPoints ?? 0} pts</div>
+                        </div>
+                        {pointsUserId === u.id ? (
+                          <div style={{ display: "flex", gap: 4 }}>
+                            <input value={pointsDelta} onChange={e => setPointsDelta(e.target.value)} type="number" placeholder="+/-" style={{ width: 60, background: "#1a1a25", border: `1px solid ${C.border}`, borderRadius: 6, color: C.text, padding: "4px 6px", fontSize: 12 }} />
+                            <button onClick={async () => { const d = parseInt(pointsDelta); if (isNaN(d)) return; setLoading(true); await adminApi(`/admin/users/${u.id}/points`, { method: "POST", body: JSON.stringify({ delta: d }) }, token); setLoading(false); setPointsUserId(null); setPointsDelta(""); loadRanking(); showMsg("✅ Pontos atualizados!"); }} style={{ background: C.green, border: "none", borderRadius: 6, color: "#fff", fontSize: 11, padding: "4px 8px", cursor: "pointer" }}>OK</button>
+                          </div>
+                        ) : (
+                          <button onClick={() => { setPointsUserId(u.id); setPointsDelta(""); }} style={{ background: "none", border: `1px solid ${C.border}`, borderRadius: 6, color: C.muted, fontSize: 11, padding: "4px 8px", cursor: "pointer" }}>✏️</button>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </Card>
+
+                {/* Estados */}
+                {Object.entries(rankingData.estados).map(([estado, lista]) => (
+                  <Card key={estado}>
+                    <div style={{ color: C.blue, fontWeight: 700, fontSize: 13, marginBottom: 8 }}>📍 {estado}</div>
+                    {lista.map((u, i) => (
+                      <div key={u.id} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+                        <span style={{ fontSize: 16 }}>{["🥇","🥈","🥉"][i]}</span>
+                        <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#1a1a30", overflow: "hidden", flexShrink: 0 }}>
+                          {u.fotoBase64 ? <img src={u.fotoBase64} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>👤</span>}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ color: C.text, fontWeight: 700, fontSize: 13 }}>{u.name}</div>
+                          <div style={{ color: C.muted, fontSize: 11 }}>{u.cidade} — {u.rankingPoints ?? 0} pts</div>
+                        </div>
+                        {pointsUserId === u.id ? (
+                          <div style={{ display: "flex", gap: 4 }}>
+                            <input value={pointsDelta} onChange={e => setPointsDelta(e.target.value)} type="number" placeholder="+/-" style={{ width: 60, background: "#1a1a25", border: `1px solid ${C.border}`, borderRadius: 6, color: C.text, padding: "4px 6px", fontSize: 12 }} />
+                            <button onClick={async () => { const d = parseInt(pointsDelta); if (isNaN(d)) return; setLoading(true); await adminApi(`/admin/users/${u.id}/points`, { method: "POST", body: JSON.stringify({ delta: d }) }, token); setLoading(false); setPointsUserId(null); setPointsDelta(""); loadRanking(); showMsg("✅ Pontos atualizados!"); }} style={{ background: C.green, border: "none", borderRadius: 6, color: "#fff", fontSize: 11, padding: "4px 8px", cursor: "pointer" }}>OK</button>
+                          </div>
+                        ) : (
+                          <button onClick={() => { setPointsUserId(u.id); setPointsDelta(""); }} style={{ background: "none", border: `1px solid ${C.border}`, borderRadius: 6, color: C.muted, fontSize: 11, padding: "4px 8px", cursor: "pointer" }}>✏️</button>
+                        )}
+                      </div>
+                    ))}
+                  </Card>
+                ))}
+
+                {/* Cidades */}
+                {Object.entries(rankingData.cidades).map(([cidade, lista]) => (
+                  <Card key={cidade}>
+                    <div style={{ color: C.purple, fontWeight: 700, fontSize: 13, marginBottom: 8 }}>🏙️ {cidade}</div>
+                    {lista.map((u, i) => (
+                      <div key={u.id} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+                        <span style={{ fontSize: 16 }}>{["🥇","🥈","🥉"][i]}</span>
+                        <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#1a1a30", overflow: "hidden", flexShrink: 0 }}>
+                          {u.fotoBase64 ? <img src={u.fotoBase64} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>👤</span>}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ color: C.text, fontWeight: 700, fontSize: 13 }}>{u.name}</div>
+                          <div style={{ color: C.muted, fontSize: 11 }}>{u.rankingPoints ?? 0} pts</div>
+                        </div>
+                        {pointsUserId === u.id ? (
+                          <div style={{ display: "flex", gap: 4 }}>
+                            <input value={pointsDelta} onChange={e => setPointsDelta(e.target.value)} type="number" placeholder="+/-" style={{ width: 60, background: "#1a1a25", border: `1px solid ${C.border}`, borderRadius: 6, color: C.text, padding: "4px 6px", fontSize: 12 }} />
+                            <button onClick={async () => { const d = parseInt(pointsDelta); if (isNaN(d)) return; setLoading(true); await adminApi(`/admin/users/${u.id}/points`, { method: "POST", body: JSON.stringify({ delta: d }) }, token); setLoading(false); setPointsUserId(null); setPointsDelta(""); loadRanking(); showMsg("✅ Pontos atualizados!"); }} style={{ background: C.green, border: "none", borderRadius: 6, color: "#fff", fontSize: 11, padding: "4px 8px", cursor: "pointer" }}>OK</button>
+                          </div>
+                        ) : (
+                          <button onClick={() => { setPointsUserId(u.id); setPointsDelta(""); }} style={{ background: "none", border: `1px solid ${C.border}`, borderRadius: 6, color: C.muted, fontSize: 11, padding: "4px 8px", cursor: "pointer" }}>✏️</button>
+                        )}
+                      </div>
+                    ))}
+                  </Card>
+                ))}
+
+                <Btn label="🔄 Atualizar" color="#1a2a3a" onClick={loadRanking} />
+              </div>
+            )}
           </div>
         )}
 
@@ -888,6 +1007,7 @@ export default function AdminPanel({ onClose, skipAuth }: { onClose: () => void;
         {([
           ["dashboard", "📊", "Dashboard"],
           ["users", "👥", "Usuários"],
+          ["ranking", "🏆", "Ranking"],
           ["config", "⚙️", "Config"],
         ] as [Tab, string, string][]).map(([t, icon, label]) => (
           <button key={t} onClick={() => { setTab(t); setSelectedUser(null); }} style={{

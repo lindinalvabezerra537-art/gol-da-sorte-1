@@ -1,2 +1,3 @@
 - [Gol da Sorte ball positions](gol-da-sorte-positions.md) — pixel-scan confirmed ball centers and overlay layout; do NOT change without new scan data
 - [API Server port fix](api-server-port.md) — api-server must use port 8081 (not 8080); only 8081 has externalPort mapping in .replit so restart_workflow works
+- [Ranking exclusivity rule](ranking-exclusividade.md) — each player occupies only 1 ranking position (Brasil > Estado > Cidade); implemented in `getExclusiveRanking()` shared by public and admin endpoints
