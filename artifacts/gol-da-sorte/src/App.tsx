@@ -3047,21 +3047,6 @@ export default function App() {
       )}
 
 
-      {/* Botão Admin — sempre visível, painel protege por senha internamente */}
-      <button
-        onClick={(e) => { e.stopPropagation(); setShowAdmin(true); }}
-        style={{
-          position: "fixed", top: 12, right: 12, zIndex: 2147483647,
-          background: "rgba(10,10,20,0.9)", border: "1.5px solid rgba(255,215,0,0.6)",
-          borderRadius: "50%", color: "gold", fontSize: 18,
-          width: 40, height: 40, cursor: "pointer",
-          boxShadow: "0 2px 10px rgba(0,0,0,0.7)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          backdropFilter: "blur(4px)",
-        }}
-        title="Painel Admin"
-      >⚙️</button>
-
       <style>{`
         @keyframes bonusPop {
           0%   { transform: scale(0.3) rotate(-8deg); opacity: 0; }
