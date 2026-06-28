@@ -113,9 +113,9 @@ interface GameSettings {
   r5_prize_ball_count: string;
 }
 
-function Card({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
+function Card({ children, style, onClick }: { children: React.ReactNode; style?: React.CSSProperties; onClick?: () => void }) {
   return (
-    <div style={{
+    <div onClick={onClick} style={{
       background: C.card, border: `1px solid ${C.border}`, borderRadius: 12,
       padding: 14, ...style,
     }}>
@@ -244,6 +244,7 @@ export default function AdminPanel({ onClose, skipAuth }: { onClose: () => void;
       const t = setTimeout(loadUsers, 300);
       return () => clearTimeout(t);
     }
+    return undefined;
   }, [search, tab, isLoggedIn, loadUsers]);
 
   const saveSettings = async (patch: Partial<GameSettings>) => {
