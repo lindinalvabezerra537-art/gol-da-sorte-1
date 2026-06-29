@@ -751,19 +751,6 @@ export default function AdminPanel({ onClose, skipAuth }: { onClose: () => void;
               })} />
             </Card>
 
-            {/* Valor acumulado */}
-            <Card style={{ marginBottom: 12 }}>
-              <div style={{ color: C.gold, fontWeight: 700, marginBottom: 10, fontSize: 13 }}>💰 Valor Acumulado</div>
-              <Input label="Valor (Ex: 3632.00)" value={settings.valor_acumulado || ""} onChange={v => setSettings(s => ({ ...s, valor_acumulado: v }))} />
-              <Btn label="Salvar" onClick={() => saveSettings({ valor_acumulado: settings.valor_acumulado || "0" })} />
-            </Card>
-
-            {/* Valor pago em prêmios */}
-            <Card style={{ marginBottom: 12 }}>
-              <div style={{ color: C.red, fontWeight: 700, marginBottom: 10, fontSize: 13 }}>🏆 Valor Pago em Prêmios</div>
-              <Input label="Total pago (Ex: 1250.00)" value={settings.valor_pago_premios || ""} onChange={v => setSettings(s => ({ ...s, valor_pago_premios: v }))} />
-              <Btn label="Salvar" onClick={() => saveSettings({ valor_pago_premios: settings.valor_pago_premios || "0" })} />
-            </Card>
 
             {/* Último Ganhador */}
             <Card style={{ marginBottom: 12 }}>
@@ -846,80 +833,6 @@ export default function AdminPanel({ onClose, skipAuth }: { onClose: () => void;
               }} />
             </Card>
 
-            {/* 4 Últimos Ganhadores */}
-            <Card style={{ marginBottom: 12 }}>
-              <div style={{ color: C.gold, fontWeight: 700, marginBottom: 12, fontSize: 13 }}>🏆 4 Últimos Ganhadores (tarjas)</div>
-              {([1,2,3,4] as const).map(i => {
-                const nk = `gan${i}_nome` as keyof GameSettings;
-                const ck = `gan${i}_cidade_estado` as keyof GameSettings;
-                const vk = `gan${i}_valor` as keyof GameSettings;
-                const fk = `gan${i}_foto` as keyof GameSettings;
-                const inputId = `gan-foto-input-${i}`;
-                const label = i <= 2 ? `Ganhador ${i} (tarja de cima)` : `Ganhador ${i-2} (tarja de baixo)`;
-                const handleFotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-                  const reader = new FileReader();
-                  reader.onload = ev => {
-                    const img = new Image();
-                    img.onload = () => {
-                      const canvas = document.createElement("canvas");
-                      const MAX = 200;
-                      const ratio = Math.min(MAX / img.width, MAX / img.height);
-                      canvas.width = img.width * ratio;
-                      canvas.height = img.height * ratio;
-                      canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
-                      setSettings(s => ({ ...s, [fk]: canvas.toDataURL("image/jpeg", 0.8) }));
-                    };
-                    img.src = ev.target?.result as string;
-                  };
-                  reader.readAsDataURL(file);
-                  e.target.value = "";
-                };
-                return (
-                  <div key={i} style={{ border: `1px solid ${C.border}`, borderRadius: 8, padding: 10, marginBottom: 10 }}>
-                    <div style={{ color: C.gold, fontWeight: 700, fontSize: 11, marginBottom: 8 }}>{label}</div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                      <div style={{ width: 44, height: 44, borderRadius: "50%", background: "#1a1a30", border: `1px solid ${C.border}`, overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        {settings[fk] ? <img src={settings[fk]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 20 }}>👤</span>}
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <input
-                          id={inputId}
-                          type="file"
-                          accept="image/*"
-                          style={{ display: "none" }}
-                          onChange={handleFotoChange}
-                        />
-                        <label
-                          htmlFor={inputId}
-                          style={{ display: "block", background: C.purple, border: "none", borderRadius: 8, color: "#fff", fontWeight: 700, fontSize: 11, padding: "7px 10px", cursor: "pointer", textAlign: "center" }}
-                        >
-                          📷 Foto
-                        </label>
-                        {settings[fk] && (
-                          <button
-                            onClick={() => setSettings(s => ({ ...s, [fk]: "" }))}
-                            style={{ marginTop: 4, width: "100%", background: "transparent", border: `1px solid ${C.border}`, borderRadius: 8, color: C.muted, fontSize: 11, padding: "5px", cursor: "pointer" }}
-                          >
-                            🗑️ Remover
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                    <Input label="Nome" value={settings[nk] || ""} onChange={v => setSettings(s => ({ ...s, [nk]: v }))} />
-                    <Input label="Cidade - Estado (ex: Campinas - SP)" value={settings[ck] || ""} onChange={v => setSettings(s => ({ ...s, [ck]: v }))} />
-                    <Input label="Valor (ex: 1.250,00)" value={settings[vk] || ""} onChange={v => setSettings(s => ({ ...s, [vk]: v }))} />
-                  </div>
-                );
-              })}
-              <Btn label="💾 Salvar 4 Ganhadores" color={C.gold} onClick={() => saveSettings({
-                gan1_nome: settings.gan1_nome || "", gan1_cidade_estado: settings.gan1_cidade_estado || "", gan1_valor: settings.gan1_valor || "", gan1_foto: settings.gan1_foto || "",
-                gan2_nome: settings.gan2_nome || "", gan2_cidade_estado: settings.gan2_cidade_estado || "", gan2_valor: settings.gan2_valor || "", gan2_foto: settings.gan2_foto || "",
-                gan3_nome: settings.gan3_nome || "", gan3_cidade_estado: settings.gan3_cidade_estado || "", gan3_valor: settings.gan3_valor || "", gan3_foto: settings.gan3_foto || "",
-                gan4_nome: settings.gan4_nome || "", gan4_cidade_estado: settings.gan4_cidade_estado || "", gan4_valor: settings.gan4_valor || "", gan4_foto: settings.gan4_foto || "",
-              })} />
-            </Card>
 
             {/* Controle do jogo */}
             <Card style={{ marginBottom: 12 }}>

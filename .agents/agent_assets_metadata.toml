@@ -60,3 +60,9 @@ id = "vNNQkPhUOKw6fcI8XPwP-"
 uri = "file://screenshots/gol-da-sorte-inicio-dia.jpg"
 type = "image"
 title = "Estado atual - início do dia"
+
+[[outputs]]
+id = "DdIauM0y2uwE4_U3jqPQb"
+uri = "file://screenshots/admin-panel-sem-tarjas.jpg"
+type = "image"
+title = "Painel admin sem Valor Acumulado, Prêmios e Tarjas"
