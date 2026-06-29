@@ -1197,8 +1197,8 @@ export default function App() {
           <div
             style={{
               position: "absolute",
-              left: bounds.x + bounds.w * 0.049,
-              top: bounds.y + bounds.h * 0.108,
+              left: bounds.x + bounds.w * 0.068,
+              top: bounds.y + bounds.h * 0.098,
               zIndex: 90,
               cursor: "pointer",
               width: avatarSize + badgeSize * 0.4,
