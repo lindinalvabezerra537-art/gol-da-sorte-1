@@ -38,15 +38,15 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Start application"
+args = "Gol da Sorte"
 
 [[workflows.workflow]]
-name = "Start application"
+name = "Gol da Sorte"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "bash start.sh"
+args = "PORT=5000 BASE_PATH=/ pnpm --filter @workspace/gol-da-sorte run dev"
 waitForPort = 5000
 
 [workflows.workflow.metadata]
