@@ -388,6 +388,7 @@ export default function App() {
   const [userLoaded, setUserLoaded] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [bonusCelebration, setBonusCelebration] = useState<{ amount: number; big: boolean } | null>(null);
+  const [showMegaCelebration, setShowMegaCelebration] = useState(false);
   const [broadcastModal, setBroadcastModal] = useState<string | null>(null);
   const [showPromoModal, setShowPromoModal] = useState(false);
   const [showEditPhoto, setShowEditPhoto] = useState(false);
@@ -628,10 +629,14 @@ export default function App() {
         }
       }
     }
-    // Sempre mostrar o modal — pré-preenche com link existente se já tiver
-    const existingLink = userInfo?.rankingSocialLink || "";
-    if (existingLink) setChampionLinkInput(existingLink);
-    setShowChampionModal(true);
+    // Mostrar plaquinha de parabéns por 3s, depois abrir modal do campeão
+    setShowMegaCelebration(true);
+    setTimeout(() => {
+      setShowMegaCelebration(false);
+      const existingLink = userInfo?.rankingSocialLink || "";
+      if (existingLink) setChampionLinkInput(existingLink);
+      setShowChampionModal(true);
+    }, 3500);
   }, [userId, userInfo]);
 
   const reCalc = useCallback(() => {
@@ -2859,6 +2864,52 @@ export default function App() {
               opacity: 0.9,
             }}>
               {bonusCelebration.big ? "INCRÍVEL! Você chegou à 5ª linha!" : "Muito bem! Você chegou à 4ª linha!"}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── PLAQUINHA: MEGA BÔNUS (50 jogadas + 50 pts) ── */}
+      {showMegaCelebration && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 500,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          pointerEvents: "none",
+        }}>
+          <div style={{
+            background: "linear-gradient(135deg,#1a0a00,#4a1a00,#1a0a00)",
+            border: "3px solid #FFD700",
+            borderRadius: 24,
+            padding: "32px 40px",
+            textAlign: "center",
+            boxShadow: "0 0 80px 30px rgba(255,180,0,0.7)",
+            animation: "bonusPop 0.4s cubic-bezier(0.175,0.885,0.32,1.275)",
+            maxWidth: 340,
+          }}>
+            <div style={{ fontSize: 56, lineHeight: 1, marginBottom: 10 }}>🏆⚽🎉</div>
+            <div style={{
+              color: "#FFD700",
+              fontSize: 26,
+              fontWeight: 900,
+              lineHeight: 1.2,
+              textShadow: "0 0 24px #FFD700",
+              letterSpacing: 1,
+              marginBottom: 14,
+            }}>
+              PARABÉNS!
+            </div>
+            <div style={{
+              color: "#fff",
+              fontSize: 18,
+              fontWeight: 800,
+              lineHeight: 1.4,
+              textShadow: "0 0 10px rgba(255,215,0,0.5)",
+            }}>
+              VOCÊ ACABA DE GANHAR<br />
+              <span style={{ color: "#FFD700", fontSize: 22 }}>50 JOGADAS</span>
+              <span style={{ color: "#fff" }}> + </span>
+              <span style={{ color: "#FFD700", fontSize: 22 }}>50 PONTOS</span><br />
+              PARA O RANKING!
             </div>
           </div>
         </div>
