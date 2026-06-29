@@ -628,41 +628,11 @@ export default function App() {
         }
       }
     }
-    const link = userInfo?.rankingSocialLink || "";
-    if (link && userId && userInfo) {
-      // Já tem link salvo — vira campeão automaticamente após 9s
-      setTimeout(async () => {
-        await apiCall("/settings/atual-campeao", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            nome: userInfo.name,
-            cidadeEstado: `${userInfo.cidade} - ${userInfo.estado}`,
-            foto: userInfo.fotoBase64 || "",
-            linkSocial: link,
-            userId: String(userId),
-          }),
-        });
-        setAtualCampeao({
-          nome: userInfo.name,
-          cidadeEstado: `${userInfo.cidade} - ${userInfo.estado}`,
-          foto: userInfo.fotoBase64 || "",
-          linkSocial: link,
-          userId: String(userId),
-        });
-        setChampionFollowClaimed(String(userId));
-        localStorage.setItem("claimedChampionUserId", String(userId));
-        showToast("🏆 Você agora é o Atual Campeão!");
-        prevCampeaoUserId.current = String(userId);
-        announcingCampeaoRef.current = String(userId);
-        const winTTS = `cidade de ${userInfo.cidade}, estado de ${estadoNome(userInfo.estado)}`;
-        speakMessage(`Atenção! Nova performance! ${userInfo.name}, ${winTTS}. Siga o novo campeão e ganhe 3 jogadas e 5 pontos para o ranking!`);
-      }, 9000);
-    } else {
-      // Sem link salvo — pede o link imediatamente antes de virar campeão
-      setShowChampionModal(true);
-    }
-  }, [userId, championLinkInput, userInfo]);
+    // Sempre mostrar o modal — pré-preenche com link existente se já tiver
+    const existingLink = userInfo?.rankingSocialLink || "";
+    if (existingLink) setChampionLinkInput(existingLink);
+    setShowChampionModal(true);
+  }, [userId, userInfo]);
 
   const reCalc = useCallback(() => {
     const mode = showGolDaSorteRef.current;
