@@ -1097,13 +1097,18 @@ export default function App() {
     if (topPlayer.id === userId) { showToast("Você é o líder! Não precisa seguir a si mesmo."); return; }
 
     // Primeiro abrir link social em nova aba
-    const link = topPlayer.link || topPlayer.rankingSocialLink || topPlayer.linkSocial || topPlayer.ranking_social_link;
-    if (link) {
-      window.open(link, "_blank");
-    } else {
+    const rawLink = topPlayer.link || topPlayer.rankingSocialLink || topPlayer.linkSocial || topPlayer.ranking_social_link || "";
+    const trimmed = rawLink.trim();
+    const link = trimmed.startsWith("http://") || trimmed.startsWith("https://")
+      ? trimmed
+      : trimmed.includes(".") || trimmed.includes("/")
+        ? `https://${trimmed}`
+        : "";
+    if (!link) {
       showToast("📞 Este jogador ainda não cadastrou seu link social.");
       return;
     }
+    window.open(link, "_blank");
 
     // Depois chamar API para seguir e ganhar pontos
     const data = await apiCall(`/users/${userId}/seguir-ranking`, {
