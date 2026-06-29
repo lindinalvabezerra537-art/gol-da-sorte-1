@@ -1252,27 +1252,41 @@ export default function App() {
             }}>
               <span style={{ fontSize: badgeSize * 0.55, color: "#000" }}>✏</span>
             </div>
-            {rankingMyPosition != null && (
-              <div style={{
-                position: "absolute",
-                top: avatarSize + 4,
-                left: "50%",
-                transform: "translateX(-50%)",
-                background: "rgba(0,0,0,0.72)",
-                border: "1px solid rgba(255,215,0,0.5)",
-                borderRadius: 6,
-                padding: "1px 6px",
-                whiteSpace: "nowrap",
-                display: "flex",
-                alignItems: "center",
-                gap: 3,
-              }}>
-                <span style={{ fontSize: Math.max(avatarSize * 0.22, 9), color: "#FFD700" }}>⭐</span>
-                <span style={{ fontSize: Math.max(avatarSize * 0.22, 9), color: "#FFD700", fontWeight: 800, letterSpacing: 0.3 }}>
-                  {rankingMyPosition.points} pts
-                </span>
-              </div>
-            )}
+            {rankingMyPosition != null && (() => {
+              const fs = Math.max(avatarSize * 0.22, 9);
+              const rank = rankingMyPosition.brasilRank;
+              return (
+                <div style={{
+                  position: "absolute",
+                  top: avatarSize + 4,
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  background: "rgba(0,0,0,0.72)",
+                  border: "1px solid rgba(255,215,0,0.5)",
+                  borderRadius: 6,
+                  padding: "2px 7px",
+                  whiteSpace: "nowrap",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 1,
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                    <span style={{ fontSize: fs, color: "#FFD700" }}>⭐</span>
+                    <span style={{ fontSize: fs, color: "#FFD700", fontWeight: 800, letterSpacing: 0.3 }}>
+                      {rankingMyPosition.points} pts
+                    </span>
+                  </div>
+                  {rank > 0 && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      <span style={{ fontSize: fs * 0.9, color: "#aaa", fontWeight: 700 }}>
+                        🏆 #{rank} Brasil
+                      </span>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         );
       })()}
