@@ -84,3 +84,9 @@ id = "hUYlNDlTdHRWUSHU3b74l"
 uri = "file://screenshots/ranking-corrigido-app.jpg"
 type = "image"
 title = "Ranking funcionando como plano de carreira"
+
+[[outputs]]
+id = "hfbZAZuLJimDfH-fHZiG1"
+uri = "file://screenshots/ranking-exclusivo-app.jpg"
+type = "image"
+title = "Ranking exclusivo funcionando"

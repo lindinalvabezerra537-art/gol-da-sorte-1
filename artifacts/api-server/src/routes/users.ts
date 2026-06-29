@@ -381,7 +381,7 @@ router.put("/:id/ranking-social-link", async (req, res) => {
 // Regra: um jogador só ocupa 1 posição (Brasil > Estado > Cidade)
 // Se ultrapassa alguém, "sobe" e o outro "desce" para o próximo nível
 
-async function getRankings() {
+async function getExclusiveRankings() {
   const allUsers = await db
     .select({ id: usersTable.id, name: usersTable.name, cidade: usersTable.cidade, estado: usersTable.estado, fotoBase64: usersTable.fotoBase64, rankingPoints: usersTable.rankingPoints, rankingSocialLink: usersTable.rankingSocialLink })
     .from(usersTable)
@@ -391,19 +391,23 @@ async function getRankings() {
 
   // Brasil: top 3
   const brasil = sorted.slice(0, 3);
+  const brasilIds = new Set(brasil.map(u => u.id));
 
-  // Estado: top 3 de cada estado
+  // Estado: top 3 de cada estado, excluindo quem ja esta no Brasil
   const estadoMap = new Map<string, typeof allUsers[0][]>([]);
   for (const u of sorted) {
+    if (brasilIds.has(u.id)) continue;
     if (!estadoMap.has(u.estado)) estadoMap.set(u.estado, []);
     estadoMap.get(u.estado)!.push(u);
   }
   const estados: Record<string, typeof allUsers[0][]> = {};
   for (const [est, list] of estadoMap) { estados[est] = list.slice(0, 3); }
+  const estadoIds = new Set(Object.values(estados).flat().map(u => u.id));
 
-  // Cidade: top 3 de cada cidade
+  // Cidade: top 3 de cada cidade, excluindo quem ja esta no Brasil ou no Estado
   const cidadeMap = new Map<string, typeof allUsers[0][]>([]);
   for (const u of sorted) {
+    if (brasilIds.has(u.id) || estadoIds.has(u.id)) continue;
     if (!cidadeMap.has(u.cidade)) cidadeMap.set(u.cidade, []);
     cidadeMap.get(u.cidade)!.push(u);
   }
@@ -417,7 +421,7 @@ async function getRankings() {
 router.get("/ranking/cidade/:cidade", async (req, res) => {
   const cidade = decodeURIComponent(req.params.cidade);
   if (!cidade) { res.status(400).json({ error: "Missing cidade" }); return; }
-  const result = await getRankings();
+  const result = await getExclusiveRankings();
   const users = result.cidades[cidade] || [];
   res.json({ cidade, users });
 });
@@ -426,14 +430,14 @@ router.get("/ranking/cidade/:cidade", async (req, res) => {
 router.get("/ranking/estado/:estado", async (req, res) => {
   const estado = decodeURIComponent(req.params.estado);
   if (!estado) { res.status(400).json({ error: "Missing estado" }); return; }
-  const result = await getRankings();
+  const result = await getExclusiveRankings();
   const users = result.estados[estado] || [];
   res.json({ estado, users });
 });
 
 // Ranking do Brasil (top 3)
 router.get("/ranking/brasil", async (_req, res) => {
-  const result = await getRankings();
+  const result = await getExclusiveRankings();
   res.json({ users: result.brasil });
 });
 
