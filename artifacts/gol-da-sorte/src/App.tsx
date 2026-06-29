@@ -1189,70 +1189,72 @@ export default function App() {
       />
 
 
-      {/* ─── Avatar do usuário — canto superior esquerdo, sempre visível quando logado ─── */}
-      {userId && (
-        <div
-          style={{
-            position: "fixed",
-            left: 8,
-            top: 8,
-            zIndex: 99999,
-            cursor: "pointer",
-            width: 52,
-            height: 52,
-          }}
-          onClick={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            console.log("[Avatar] clicado!");
-            setShowEditPhoto(true);
-          }}
-          onTouchStart={(e) => {
-            e.stopPropagation();
-            console.log("[Avatar] touch!");
-            setShowEditPhoto(true);
-          }}
-        >
-          <div style={{
-            width: 44,
-            height: 44,
-            borderRadius: "50%",
-            border: "2.5px solid #FFD700",
-            overflow: "hidden",
-            background: userInfo?.fotoBase64 ? "#1a1a1a" : "linear-gradient(135deg, #333 0%, #111 100%)",
-            boxShadow: "0 0 12px rgba(255,215,0,0.4)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}>
-            {userInfo?.fotoBase64 ? (
-              <img
-                src={userInfo.fotoBase64}
-                alt="Foto"
-                style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center", display: "block" }}
-              />
-            ) : (
-              <span style={{ fontSize: 20 }}>👤</span>
-            )}
+      {/* ─── Avatar do usuário — dentro do jogo, acima da última fileira de bolinhas, canto esquerdo ─── */}
+      {userId && showGolDaSorte && (() => {
+        const avatarSize = Math.max(bounds.w * 0.115, 40);
+        const badgeSize = Math.max(avatarSize * 0.38, 14);
+        return (
+          <div
+            style={{
+              position: "absolute",
+              left: bounds.x + bounds.w * 0.030,
+              top: bounds.y + bounds.h * 0.158,
+              zIndex: 90,
+              cursor: "pointer",
+              width: avatarSize + badgeSize * 0.4,
+              height: avatarSize + badgeSize * 0.4,
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              setShowEditPhoto(true);
+            }}
+            onTouchStart={(e) => {
+              e.stopPropagation();
+              setShowEditPhoto(true);
+            }}
+          >
+            <div style={{
+              width: avatarSize,
+              height: avatarSize,
+              borderRadius: "50%",
+              border: `2.5px solid #FFD700`,
+              overflow: "hidden",
+              background: userInfo?.fotoBase64 ? "#1a1a1a" : "linear-gradient(135deg, #333 0%, #111 100%)",
+              boxShadow: "0 0 12px rgba(255,215,0,0.4)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}>
+              {userInfo?.fotoBase64 ? (
+                <img
+                  src={userInfo.fotoBase64}
+                  alt="Foto"
+                  style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center", display: "block" }}
+                />
+              ) : (
+                <span style={{ fontSize: avatarSize * 0.45 }}>👤</span>
+              )}
+            </div>
+            <div style={{
+              position: "absolute",
+              bottom: 0,
+              right: 0,
+              width: badgeSize,
+              height: badgeSize,
+              borderRadius: "50%",
+              background: "#FFD700",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 1px 4px rgba(0,0,0,0.5)",
+              border: "1.5px solid #000",
+            }}>
+              <span style={{ fontSize: badgeSize * 0.55, color: "#000" }}>✏</span>
+            </div>
           </div>
-          <div style={{
-            position: "absolute",
-            bottom: -2,
-            right: -2,
-            width: 18,
-            height: 18,
-            borderRadius: "50%",
-            background: "#FFD700",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            boxShadow: "0 1px 4px rgba(0,0,0,0.5)",
-            border: "1.5px solid #000",
-          }}>
-            <span style={{ fontSize: 10, color: "#000" }}>✏</span>
-          </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* ─── HUD COMPACTO — modo pirata (absolute dentro dos bounds) ─── */}
       {!showGolDaSorte && (
