@@ -61,6 +61,7 @@ interface UserRow {
   ultimoLogin?: string;
   saldo: number;
   createdAt: string;
+  rankingPoints?: number | null;
 }
 
 interface RankingPlayer {
@@ -190,6 +191,10 @@ export default function AdminPanel({ onClose, skipAuth }: { onClose: () => void;
   const [rankingEstadoSearch, setRankingEstadoSearch] = useState("");
   const [rankingCidadeSearch, setRankingCidadeSearch] = useState("");
   const [rankingSearchResults, setRankingSearchResults] = useState<{ scope: string; players: RankingPlayer[] } | null>(null);
+  const [nameSearch, setNameSearch] = useState("");
+  const [nameSearchResults, setNameSearchResults] = useState<UserRow[] | null>(null);
+  const [namePointsDelta, setNamePointsDelta] = useState<Record<number, string>>({});
+  const [namePointsEditing, setNamePointsEditing] = useState<number | null>(null);
 
   const isLoggedIn = !!token;
 
@@ -477,6 +482,106 @@ export default function AdminPanel({ onClose, skipAuth }: { onClose: () => void;
         {tab === "ranking" && (
           <div>
             <div style={{ color: C.gold, fontWeight: 700, marginBottom: 12, fontSize: 15 }}>🏆 Ranking</div>
+
+            {/* Busca por Nome — ajustar pontos de qualquer usuário */}
+            <Card style={{ marginBottom: 12 }}>
+              <div style={{ color: C.purple, fontWeight: 700, fontSize: 13, marginBottom: 10 }}>🔎 Ajustar Pontos por Nome</div>
+              <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+                <input
+                  placeholder="Nome do jogador..."
+                  value={nameSearch}
+                  onChange={e => setNameSearch(e.target.value)}
+                  onKeyDown={async e => {
+                    if (e.key === "Enter") {
+                      if (!nameSearch.trim()) return;
+                      setLoading(true);
+                      const data = await adminApi(`/admin/users?search=${encodeURIComponent(nameSearch.trim())}`, undefined, token);
+                      setLoading(false);
+                      setNameSearchResults(data?.users ?? []);
+                      setNamePointsEditing(null);
+                    }
+                  }}
+                  style={{ flex: 1, background: "#1a1a25", border: `1px solid ${C.border}`, borderRadius: 8, color: C.text, padding: "8px 10px", fontSize: 13, outline: "none" }}
+                />
+                <button
+                  onClick={async () => {
+                    if (!nameSearch.trim()) return;
+                    setLoading(true);
+                    const data = await adminApi(`/admin/users?search=${encodeURIComponent(nameSearch.trim())}`, undefined, token);
+                    setLoading(false);
+                    setNameSearchResults(data?.users ?? []);
+                    setNamePointsEditing(null);
+                  }}
+                  style={{ background: C.purple, border: "none", borderRadius: 8, color: "#fff", fontWeight: 700, fontSize: 13, padding: "8px 14px", cursor: "pointer", whiteSpace: "nowrap" }}
+                >
+                  Buscar
+                </button>
+              </div>
+
+              {nameSearchResults !== null && (
+                nameSearchResults.length === 0
+                  ? <div style={{ color: C.muted, fontSize: 12 }}>Nenhum jogador encontrado.</div>
+                  : nameSearchResults.map(u => (
+                    <div key={u.id} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8, padding: "6px 0", borderBottom: `1px solid ${C.border}` }}>
+                      <div style={{ width: 34, height: 34, borderRadius: "50%", background: "#1a1a30", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        {u.fotoBase64 ? <img src={u.fotoBase64} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 16 }}>👤</span>}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ color: C.text, fontWeight: 700, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.name}</div>
+                        <div style={{ color: C.muted, fontSize: 11 }}>{u.cidade}/{u.estado}</div>
+                        <div style={{ color: C.gold, fontSize: 12, fontWeight: 700 }}>⭐ {u.rankingPoints ?? 0} pts</div>
+                      </div>
+                      {namePointsEditing === u.id ? (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-end" }}>
+                          <div style={{ display: "flex", gap: 4 }}>
+                            <button
+                              onClick={() => setNamePointsDelta(prev => ({ ...prev, [u.id]: String((parseInt(prev[u.id] || "0") || 0) - 10) }))}
+                              style={{ background: C.red, border: "none", borderRadius: 6, color: "#fff", fontSize: 13, width: 28, height: 28, cursor: "pointer", fontWeight: 900 }}
+                            >−</button>
+                            <input
+                              value={namePointsDelta[u.id] ?? ""}
+                              onChange={e => setNamePointsDelta(prev => ({ ...prev, [u.id]: e.target.value }))}
+                              type="number"
+                              placeholder="+/-"
+                              style={{ width: 58, background: "#1a1a25", border: `1px solid ${C.border}`, borderRadius: 6, color: C.text, padding: "4px 6px", fontSize: 12, textAlign: "center" }}
+                            />
+                            <button
+                              onClick={() => setNamePointsDelta(prev => ({ ...prev, [u.id]: String((parseInt(prev[u.id] || "0") || 0) + 10) }))}
+                              style={{ background: C.green, border: "none", borderRadius: 6, color: "#fff", fontSize: 13, width: 28, height: 28, cursor: "pointer", fontWeight: 900 }}
+                            >+</button>
+                          </div>
+                          <div style={{ display: "flex", gap: 4 }}>
+                            <button
+                              onClick={() => { setNamePointsEditing(null); }}
+                              style={{ background: "none", border: `1px solid ${C.border}`, borderRadius: 6, color: C.muted, fontSize: 11, padding: "3px 8px", cursor: "pointer" }}
+                            >Cancelar</button>
+                            <button
+                              onClick={async () => {
+                                const d = parseInt(namePointsDelta[u.id] ?? "0");
+                                if (isNaN(d) || d === 0) { showMsg("❌ Digite um valor diferente de zero"); return; }
+                                setLoading(true);
+                                await adminApi(`/admin/users/${u.id}/points`, { method: "POST", body: JSON.stringify({ delta: d }) }, token);
+                                setLoading(false);
+                                setNamePointsEditing(null);
+                                setNamePointsDelta(prev => { const n = { ...prev }; delete n[u.id]; return n; });
+                                const data = await adminApi(`/admin/users?search=${encodeURIComponent(nameSearch.trim())}`, undefined, token);
+                                setNameSearchResults(data?.users ?? []);
+                                showMsg(`✅ ${d > 0 ? "+" : ""}${d} pts para ${u.name}`);
+                              }}
+                              style={{ background: C.green, border: "none", borderRadius: 6, color: "#fff", fontSize: 11, padding: "3px 10px", cursor: "pointer", fontWeight: 700 }}
+                            >Salvar</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => { setNamePointsEditing(u.id); setNamePointsDelta(prev => ({ ...prev, [u.id]: "" })); }}
+                          style={{ background: "none", border: `1px solid ${C.gold}`, borderRadius: 6, color: C.gold, fontSize: 11, padding: "5px 10px", cursor: "pointer", fontWeight: 700, whiteSpace: "nowrap" }}
+                        >✏️ Pontos</button>
+                      )}
+                    </div>
+                  ))
+              )}
+            </Card>
 
             {/* Busca por Estado / Cidade */}
             <Card style={{ marginBottom: 12 }}>
