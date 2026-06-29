@@ -63,7 +63,7 @@ const ROWS: RowDef[] = [
   { label: "R5", y: [0.220, 0.304], x: [[0.086, 0.191], [0.200, 0.304], [0.313, 0.415]] },
 ];
 
-const DEFAULT_ROW_WRONG_COUNT = [1, 1, 2, 2, 2, 1];
+const DEFAULT_ROW_WRONG_COUNT = [2, 2, 2, 2, 2, 2];
 const ROW_COLORS = ["#ff0", "#0ff", "#0f0", "#f80", "#f0f", "#fff"];
 const TOTAL_ROWS = ROWS.length;
 
@@ -411,7 +411,7 @@ export default function App() {
   const gameConfigRef = useRef({
     r5PrizeType: "jogadas" as "jogadas" | "brinde",
     r5PrizeValue: "50",
-    r5PrizeBallCount: 2,
+    r5PrizeBallCount: 1,
     bonusRow3: 1,
     bonusRow4: 5,
     bonusRow5: 50,

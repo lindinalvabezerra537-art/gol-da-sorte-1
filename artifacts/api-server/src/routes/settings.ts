@@ -171,10 +171,10 @@ router.get("/game-config", async (_req, res) => {
     ];
     const rows = await Promise.all(keys.map(k => getSetting(k, "")));
     res.json({
-      rowWrongCounts: rows[0] ? rows[0].split(",").map(Number) : [1, 1, 2, 2, 2, 1],
+      rowWrongCounts: rows[0] ? rows[0].split(",").map(Number) : [2, 2, 2, 2, 2, 2],
       r5PrizeType: rows[1] || "jogadas",
       r5PrizeValue: rows[2] || "15",
-      r5PrizeBallCount: parseInt(rows[3] || "2"),
+      r5PrizeBallCount: parseInt(rows[3] || "1"),
       bonusRow3: parseInt(rows[4] || "1"),
       bonusRow4: parseInt(rows[5] || "5"),
       bonusRow5: parseInt(rows[6] || "50"),
