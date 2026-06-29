@@ -54,3 +54,9 @@ id = "556ByGL59ibUcwPsJwaQE"
 uri = "file://screenshots/gol-da-sorte-dev-now.png"
 type = "image"
 title = "App visível no preview agora"
+
+[[outputs]]
+id = "vNNQkPhUOKw6fcI8XPwP-"
+uri = "file://screenshots/gol-da-sorte-inicio-dia.jpg"
+type = "image"
+title = "Estado atual - início do dia"
