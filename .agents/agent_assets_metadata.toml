@@ -72,3 +72,9 @@ id = "in0xrxzWhFoiZWuZsVmKH"
 uri = "file://screenshots/gol-voltou-tela.jpg"
 type = "image"
 title = "Projeto voltou — app ainda na tela"
+
+[[outputs]]
+id = "EE4OjD1mlQluDsETrW5qf"
+uri = "file://screenshots/painel-ranking-existente.jpg"
+type = "image"
+title = "Ferramenta de pontuação do ranking já existe"
