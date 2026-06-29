@@ -236,7 +236,7 @@ function PlayerCard({
             onTouchStart={(e) => { (e.target as HTMLButtonElement).style.transform = "scale(0.95)"; }}
             onTouchEnd={(e) => { (e.target as HTMLButtonElement).style.transform = "scale(1)"; }}
           >
-            \u2b50 SEGUIR
+            SEGUIR
           </button>
         )}
       </div>

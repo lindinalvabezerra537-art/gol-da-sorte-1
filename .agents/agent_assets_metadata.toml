@@ -102,3 +102,9 @@ id = "ijo_w-0t4_EMFNPV62VlM"
 uri = "file://screenshots/ranking-campeoes.jpg"
 type = "image"
 title = "Ranking: 1 campeão por categoria"
+
+[[outputs]]
+id = "OETutiIJMU39eM5CA_cCz"
+uri = "file://screenshots/seguir-so-texto.jpg"
+type = "image"
+title = "Botão SEGUIR sem estrela"
