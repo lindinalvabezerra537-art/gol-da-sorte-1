@@ -2456,7 +2456,7 @@ export default function App() {
           left: bounds.x + bounds.w * 0.4425,
           top: bounds.y + bounds.h * 0.170,
           width: bounds.w * 0.145,
-          height: bounds.h * 0.146,
+          height: bounds.h * 0.130,
           zIndex: 95,
           borderRadius: 14,
           overflow: "hidden",
