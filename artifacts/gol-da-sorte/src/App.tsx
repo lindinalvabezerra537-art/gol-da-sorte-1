@@ -9,6 +9,7 @@ import ChatRoom from "./components/ChatRoom";
 import BoardEditor from "./components/BoardEditor";
 import MapaBrasil from "./components/MapaBrasil";
 import EditPhotoModal from "./components/EditPhotoModal";
+import MeusPontosModal from "./components/MeusPontosModal";
 import RankingPodium from "./components/RankingPodium";
 import { playZoneSound, playHorrorScream, playChampionFanfare } from "./sounds";
 
@@ -390,6 +391,7 @@ export default function App() {
   const [broadcastModal, setBroadcastModal] = useState<string | null>(null);
   const [showPromoModal, setShowPromoModal] = useState(false);
   const [showEditPhoto, setShowEditPhoto] = useState(false);
+  const [showMeusPontos, setShowMeusPontos] = useState(false);
   const [videoPlaying, setVideoPlaying] = useState(false);
   const [videoExpanded, setVideoExpanded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
