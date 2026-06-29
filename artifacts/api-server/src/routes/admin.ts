@@ -225,11 +225,11 @@ router.post("/settings", async (req, res) => {
 function computeRankings(allUsers: Array<{ id: number; name: string; cidade: string; estado: string; rankingPoints: number | null; fotoBase64: string | null; rankingSocialLink: string | null }>) {
   const sorted = [...allUsers].sort((a, b) => (b.rankingPoints ?? 0) - (a.rankingPoints ?? 0));
 
-  // Brasil: top 3
-  const brasil = sorted.slice(0, 3);
+  // Brasil: 1 campeão
+  const brasil = sorted.slice(0, 1);
   const brasilIds = new Set(brasil.map(u => u.id));
 
-  // Estado: top 3 de cada estado, excluindo quem já está no Brasil
+  // Estado: 1 campeão de cada estado, excluindo quem já está no Brasil
   const estadoMap = new Map<string, Array<typeof allUsers[0]>>();
   for (const u of sorted) {
     if (brasilIds.has(u.id)) continue;
@@ -238,11 +238,11 @@ function computeRankings(allUsers: Array<{ id: number; name: string; cidade: str
   }
   const estados: Record<string, typeof allUsers[0][]> = {};
   for (const [est, list] of estadoMap) {
-    estados[est] = list.slice(0, 3);
+    estados[est] = list.slice(0, 1);
   }
   const estadoIds = new Set(Object.values(estados).flat().map(u => u.id));
 
-  // Cidade: top 3 de cada cidade, excluindo quem já está no Brasil ou no Estado
+  // Cidade: 1 campeão de cada cidade, excluindo quem já está no Brasil ou no Estado
   const cidadeMap = new Map<string, Array<typeof allUsers[0]>>();
   for (const u of sorted) {
     if (brasilIds.has(u.id) || estadoIds.has(u.id)) continue;
@@ -251,7 +251,7 @@ function computeRankings(allUsers: Array<{ id: number; name: string; cidade: str
   }
   const cidades: Record<string, typeof allUsers[0][]> = {};
   for (const [cid, list] of cidadeMap) {
-    cidades[cid] = list.slice(0, 3);
+    cidades[cid] = list.slice(0, 1);
   }
 
   return { brasil, estados, cidades };

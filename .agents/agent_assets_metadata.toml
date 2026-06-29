@@ -96,3 +96,9 @@ id = "Ogqjgvc6m6lIvruzSkRE-"
 uri = "file://screenshots/ranking-independente.jpg"
 type = "image"
 title = "Ranking independente - Diana no PI"
+
+[[outputs]]
+id = "ijo_w-0t4_EMFNPV62VlM"
+uri = "file://screenshots/ranking-campeoes.jpg"
+type = "image"
+title = "Ranking: 1 campeão por categoria"
