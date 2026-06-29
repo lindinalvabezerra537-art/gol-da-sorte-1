@@ -219,20 +219,18 @@ router.post("/settings", async (req, res) => {
   }
 });
 
-// ── ADMIN RANKING COM EXCLUSIVIDADE ──
-// Regra: um jogador só pode ocupar 1 posição (Brasil > Estado > Cidade)
+// ── ADMIN RANKING ──
+// Regra: cada ranking é independente (Brasil, Estado, Cidade)
 
-function computeExclusiveRankings(allUsers: Array<{ id: number; name: string; cidade: string; estado: string; rankingPoints: number | null; fotoBase64: string | null; rankingSocialLink: string | null }>) {
+function computeRankings(allUsers: Array<{ id: number; name: string; cidade: string; estado: string; rankingPoints: number | null; fotoBase64: string | null; rankingSocialLink: string | null }>) {
   const sorted = [...allUsers].sort((a, b) => (b.rankingPoints ?? 0) - (a.rankingPoints ?? 0));
 
   // Brasil: top 3
   const brasil = sorted.slice(0, 3);
-  const brasilIds = new Set(brasil.map(u => u.id));
 
-  // Estado: top 3 de cada estado, excluindo já no Brasil
+  // Estado: top 3 de cada estado
   const estadoMap = new Map<string, Array<typeof allUsers[0]>>();
   for (const u of sorted) {
-    if (brasilIds.has(u.id)) continue;
     if (!estadoMap.has(u.estado)) estadoMap.set(u.estado, []);
     estadoMap.get(u.estado)!.push(u);
   }
@@ -240,12 +238,10 @@ function computeExclusiveRankings(allUsers: Array<{ id: number; name: string; ci
   for (const [est, list] of estadoMap) {
     estados[est] = list.slice(0, 3);
   }
-  const estadoIds = new Set(Object.values(estados).flat().map(u => u.id));
 
-  // Cidade: top 3 de cada cidade, excluindo já no Brasil ou Estado
+  // Cidade: top 3 de cada cidade
   const cidadeMap = new Map<string, Array<typeof allUsers[0]>>();
   for (const u of sorted) {
-    if (brasilIds.has(u.id) || estadoIds.has(u.id)) continue;
     if (!cidadeMap.has(u.cidade)) cidadeMap.set(u.cidade, []);
     cidadeMap.get(u.cidade)!.push(u);
   }
@@ -264,7 +260,7 @@ router.get("/ranking", async (req, res) => {
       .select({ id: usersTable.id, name: usersTable.name, cidade: usersTable.cidade, estado: usersTable.estado, rankingPoints: usersTable.rankingPoints, fotoBase64: usersTable.fotoBase64, rankingSocialLink: usersTable.rankingSocialLink })
       .from(usersTable)
       .orderBy(desc(usersTable.rankingPoints));
-    const result = computeExclusiveRankings(allUsers);
+    const result = computeRankings(allUsers);
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: "Erro ao buscar ranking" });

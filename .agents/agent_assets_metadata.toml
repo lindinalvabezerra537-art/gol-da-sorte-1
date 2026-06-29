@@ -78,3 +78,9 @@ id = "EE4OjD1mlQluDsETrW5qf"
 uri = "file://screenshots/painel-ranking-existente.jpg"
 type = "image"
 title = "Ferramenta de pontuação do ranking já existe"
+
+[[outputs]]
+id = "hUYlNDlTdHRWUSHU3b74l"
+uri = "file://screenshots/ranking-corrigido-app.jpg"
+type = "image"
+title = "Ranking funcionando como plano de carreira"
