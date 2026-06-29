@@ -258,7 +258,7 @@ export default function RankingPodium({ cidade, estado, brasil, onClick, onSegui
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        padding: "4px 3px 3px",
+        padding: "4px 3px 32px",
         overflow: "hidden",
         userSelect: "none",
         boxSizing: "border-box",
