@@ -377,9 +377,10 @@ router.put("/:id/ranking-social-link", async (req, res) => {
   res.json({ user: updated });
 });
 
-// —— Ranking público independente ——
-// Regra: cada ranking é independente (Brasil, Estado, Cidade).
-// Um jogador pode aparecer em todos os rankings onde se qualificar.
+// —— Ranking público com EXCLUSIVIDADE HIERÁRQUICA ——
+// Regra: um jogador ocupa apenas 1 ranking (Brasil > Estado > Cidade).
+// Se uma pessoa já está no Brasil, ela não ocupa a vaga do Estado/Cidade.
+// A próxima pessoa da fila assume essa vaga.
 
 async function getRankings() {
   const allUsers = await db
@@ -391,19 +392,23 @@ async function getRankings() {
 
   // Brasil: top 3
   const brasil = sorted.slice(0, 3);
+  const brasilIds = new Set(brasil.map(u => u.id));
 
-  // Estado: top 3 de cada estado
+  // Estado: top 3 de cada estado, excluindo quem já está no Brasil
   const estadoMap = new Map<string, typeof allUsers[0][]>([]);
   for (const u of sorted) {
+    if (brasilIds.has(u.id)) continue;
     if (!estadoMap.has(u.estado)) estadoMap.set(u.estado, []);
     estadoMap.get(u.estado)!.push(u);
   }
   const estados: Record<string, typeof allUsers[0][]> = {};
   for (const [est, list] of estadoMap) { estados[est] = list.slice(0, 3); }
+  const estadoIds = new Set(Object.values(estados).flat().map(u => u.id));
 
-  // Cidade: top 3 de cada cidade
+  // Cidade: top 3 de cada cidade, excluindo quem já está no Brasil ou no Estado
   const cidadeMap = new Map<string, typeof allUsers[0][]>([]);
   for (const u of sorted) {
+    if (brasilIds.has(u.id) || estadoIds.has(u.id)) continue;
     if (!cidadeMap.has(u.cidade)) cidadeMap.set(u.cidade, []);
     cidadeMap.get(u.cidade)!.push(u);
   }
