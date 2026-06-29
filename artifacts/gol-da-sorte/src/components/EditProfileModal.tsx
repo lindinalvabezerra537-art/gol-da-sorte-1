@@ -256,6 +256,20 @@ export default function EditProfileModal({ userId, initialSocialLink, onClose, o
 
         {error && <div style={{ color: G.error, fontSize: 13, textAlign: "center", marginTop: 14 }}>{error}</div>}
         {success && <div style={{ color: G.success, fontSize: 13, textAlign: "center", marginTop: 14 }}>✅ {success}</div>}
+
+        <button onClick={onClose} style={{
+          width: "100%",
+          background: "transparent",
+          color: "#888",
+          border: "1.5px solid rgba(255,255,255,0.12)",
+          borderRadius: 12, padding: "13px",
+          fontSize: 15, fontWeight: 900,
+          cursor: "pointer",
+          marginTop: 18,
+          letterSpacing: 1,
+        }}>
+          ← VOLTAR
+        </button>
       </div>
     </div>
   );
