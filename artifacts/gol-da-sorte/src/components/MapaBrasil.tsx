@@ -87,8 +87,8 @@ const FRONTEIRAS: [string, string][] = [
   ["DF", "MG"], ["DF", "GO"],
 ];
 
-function getApiUrl(path: string) {
-  return `${window.location.origin}/api${path}`;
+function apiUrl(path: string) {
+  return `/api${path}`;
 }
 
 function distribuirCidades(estado: string, cidades: string[]): { x: number; y: number }[] {
@@ -113,7 +113,7 @@ export default function MapaBrasil() {
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const res = await fetch(getApiUrl("/users/locations"));
+        const res = await fetch(apiUrl("/users/locations"));
         const data = await res.json();
         if (data?.cidades) {
           const cidadesPorEstado: Record<string, string[]> = {};

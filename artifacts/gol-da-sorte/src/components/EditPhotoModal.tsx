@@ -11,8 +11,8 @@ const G = {
   success: "#55ff88",
 };
 
-function getApiUrl(path: string) {
-  return `${window.location.origin}/api${path}`;
+function apiUrl(path: string) {
+  return `/api${path}`;
 }
 
 interface Props {
@@ -44,7 +44,7 @@ export default function EditPhotoModal({ userId, onClose, onUpdated }: Props) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(getApiUrl(`/users/${userId}/photo`), {
+      const res = await fetch(apiUrl(`/users/${userId}/photo`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fotoBase64: preview }),

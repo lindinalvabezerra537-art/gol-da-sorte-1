@@ -1,11 +1,7 @@
 import { useEffect, useState } from "react";
 
-const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "").replace(/^\//, "")
-  ? `/${import.meta.env.BASE_URL.replace(/^\/|\/$/g, "")}/api`
-  : "/api";
-
-function getApiUrl(path: string) {
-  return `${window.location.origin}${API_BASE}${path}`;
+function apiUrl(path: string) {
+  return `/api${path}`;
 }
 
 interface ReferralInfo {
@@ -27,7 +23,7 @@ export default function InviteScreen({ userId, onClose }: Props) {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    fetch(getApiUrl(`/users/${userId}/referral-info`))
+    fetch(apiUrl(`/users/${userId}/referral-info`))
       .then(r => r.json())
       .then(d => setInfo(d));
   }, [userId]);

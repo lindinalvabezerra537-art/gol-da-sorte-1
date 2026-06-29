@@ -1,11 +1,7 @@
 import { useState, useRef } from "react";
 
-const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "").replace(/^\//, "")
-  ? `/${import.meta.env.BASE_URL.replace(/^\/|\/$/g, "")}/api`
-  : "/api";
-
-function getApiUrl(path: string) {
-  return `${window.location.origin}${API_BASE}${path}`;
+function apiUrl(path: string) {
+  return `/api${path}`;
 }
 
 const ESTADOS_BR = [
@@ -137,7 +133,7 @@ export default function RegisterScreen({ referralCode, onRegistered }: Props) {
 
     setLoading(true);
     try {
-      const res = await fetch(getApiUrl("/users/register"), {
+      const res = await fetch(apiUrl("/users/register"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -171,7 +167,7 @@ export default function RegisterScreen({ referralCode, onRegistered }: Props) {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(getApiUrl(`/users/by-phone/${phone.replace(/\D/g, "")}`));
+      const res = await fetch(apiUrl(`/users/by-phone/${phone.replace(/\D/g, "")}`));
       const data = await res.json();
       if (!res.ok) {
         setError("Telefone não encontrado. Cadastre-se primeiro.");

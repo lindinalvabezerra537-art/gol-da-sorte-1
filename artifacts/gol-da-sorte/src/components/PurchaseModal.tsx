@@ -1,11 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 
-const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "").replace(/^\//, "")
-  ? `/${import.meta.env.BASE_URL.replace(/^\/|\/$/g, "")}/api`
-  : "/api";
-
-function getApiUrl(path: string) {
-  return `${window.location.origin}${API_BASE}${path}`;
+function apiUrl(path: string) {
+  return `/api${path}`;
 }
 
 const PACKAGES = [
@@ -46,12 +42,12 @@ export default function PurchaseModal({ userId, onPurchased, onClose }: Props) {
 
     pollRef.current = setInterval(async () => {
       try {
-        const res = await fetch(getApiUrl(`/payments/${pixData.txId}/status`));
+        const res = await fetch(apiUrl(`/payments/${pixData.txId}/status`));
         const data = await res.json();
         if (data.status === "confirmed") {
           clearInterval(pollRef.current!);
           // Fetch updated play count
-          const userRes = await fetch(getApiUrl(`/users/${userId}`));
+          const userRes = await fetch(apiUrl(`/users/${userId}`));
           const userData = await userRes.json();
           if (userData?.user) {
             onPurchased(userData.user.playsRemaining);
@@ -68,7 +64,7 @@ export default function PurchaseModal({ userId, onPurchased, onClose }: Props) {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(getApiUrl("/payments/create"), {
+      const res = await fetch(apiUrl("/payments/create"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, plays: selected }),

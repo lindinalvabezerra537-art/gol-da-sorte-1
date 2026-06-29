@@ -8,8 +8,8 @@ const G = {
   success: "#55ff88",
 };
 
-function getApiUrl(path: string) {
-  return `${window.location.origin}/api${path}`;
+function apiUrl(path: string) {
+  return `/api${path}`;
 }
 
 interface Props {
@@ -34,8 +34,8 @@ export default function EditProfileModal({ userId, initialSocialLink, onClose, o
 
   useEffect(() => {
     Promise.all([
-      fetch(getApiUrl(`/users/${userId}`)).then(r => r.json()),
-      fetch(getApiUrl(`/users/${userId}/ranking`)).then(r => r.json()),
+      fetch(apiUrl(`/users/${userId}`)).then(r => r.json()),
+      fetch(apiUrl(`/users/${userId}/ranking`)).then(r => r.json()),
     ]).then(([userRes, rankingRes]) => {
       if (userRes.user) {
         setPhone(userRes.user.phone || "");
@@ -65,7 +65,7 @@ export default function EditProfileModal({ userId, initialSocialLink, onClose, o
     setLoadingPhoto(true);
     setError(null);
     try {
-      const res = await fetch(getApiUrl(`/users/${userId}/photo`), {
+      const res = await fetch(apiUrl(`/users/${userId}/photo`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fotoBase64: preview }),
@@ -93,7 +93,7 @@ export default function EditProfileModal({ userId, initialSocialLink, onClose, o
         setLoadingProfile(false);
         return;
       }
-      const res = await fetch(getApiUrl(`/users/${userId}/profile`), {
+      const res = await fetch(apiUrl(`/users/${userId}/profile`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phone: cleanPhone, rankingSocialLink: socialLink.trim() || null }),
