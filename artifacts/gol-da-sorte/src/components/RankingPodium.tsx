@@ -196,7 +196,7 @@ function PlayerCard({
             letterSpacing: 0.5,
             textTransform: "uppercase",
             lineHeight: 1.3,
-          }}>VOC\u00ca</div>
+          }}>VOCÊ</div>
         ) : jaSeguiu ? (
           <div style={{
             background: "rgba(0,180,0,0.25)",
