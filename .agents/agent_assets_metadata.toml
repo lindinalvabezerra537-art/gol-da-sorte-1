@@ -66,3 +66,9 @@ id = "DdIauM0y2uwE4_U3jqPQb"
 uri = "file://screenshots/admin-panel-sem-tarjas.jpg"
 type = "image"
 title = "Painel admin sem Valor Acumulado, Prêmios e Tarjas"
+
+[[outputs]]
+id = "in0xrxzWhFoiZWuZsVmKH"
+uri = "file://screenshots/gol-voltou-tela.jpg"
+type = "image"
+title = "Projeto voltou — app ainda na tela"
