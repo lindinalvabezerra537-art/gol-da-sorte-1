@@ -374,6 +374,43 @@ router.put("/:id/ranking-social-link", async (req, res) => {
   res.json({ user: updated });
 });
 
+// ── Atualizar perfil (telefone + link social) ────────────────────────────────
+router.put("/:id/profile", async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (!id || isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+
+  const { phone, rankingSocialLink } = req.body as { phone?: string; rankingSocialLink?: string | null };
+
+  const updateData: Partial<typeof usersTable.$inferInsert> = {};
+
+  if (phone !== undefined) {
+    const cleanPhone = phone.replace(/\D/g, "");
+    if (cleanPhone.length < 10) {
+      res.status(400).json({ error: "Telefone inválido." });
+      return;
+    }
+    // Verifica se o telefone já está em uso por outro usuário
+    const existing = await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.phone, cleanPhone));
+    if (existing.length > 0 && existing[0].id !== id) {
+      res.status(409).json({ error: "Este telefone já está em uso por outro jogador." });
+      return;
+    }
+    updateData.phone = cleanPhone;
+  }
+
+  if (rankingSocialLink !== undefined) {
+    updateData.rankingSocialLink = rankingSocialLink || null;
+  }
+
+  if (Object.keys(updateData).length === 0) {
+    res.status(400).json({ error: "Nenhum campo para atualizar." });
+    return;
+  }
+
+  const [updated] = await db.update(usersTable).set(updateData).where(eq(usersTable.id, id)).returning();
+  res.json({ user: updated });
+});
+
 // —— Ranking público com EXCLUSIVIDADE HIERÁRQUICA ——
 // Regra: um jogador ocupa apenas 1 ranking (Brasil > Estado > Cidade).
 // Se uma pessoa já está no Brasil, ela não ocupa a vaga do Estado/Cidade.

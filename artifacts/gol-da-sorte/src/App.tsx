@@ -8,7 +8,7 @@ import AdminPanel from "./components/AdminPanel";
 import ChatRoom from "./components/ChatRoom";
 import BoardEditor from "./components/BoardEditor";
 import MapaBrasil from "./components/MapaBrasil";
-import EditPhotoModal from "./components/EditPhotoModal";
+import EditProfileModal from "./components/EditProfileModal";
 import MeusPontosModal from "./components/MeusPontosModal";
 import RankingPodium from "./components/RankingPodium";
 import { playZoneSound, playHorrorScream, playChampionFanfare } from "./sounds";
@@ -2349,7 +2349,18 @@ export default function App() {
         <InviteScreen userId={userId} onClose={() => { setShowInviteScreen(false); refreshReferralCount(userId); }} />
       )}
       {showEditPhoto && userId && (
-        <EditPhotoModal userId={userId} onClose={() => setShowEditPhoto(false)} onUpdated={() => { window.location.reload(); }} />
+        <EditProfileModal
+          userId={userId}
+          initialSocialLink={userInfo?.rankingSocialLink}
+          onClose={() => setShowEditPhoto(false)}
+          onUpdated={(updates) => {
+            setUserInfo(prev => prev ? {
+              ...prev,
+              ...(updates.fotoBase64 !== undefined ? { fotoBase64: updates.fotoBase64 } : {}),
+              ...(updates.rankingSocialLink !== undefined ? { rankingSocialLink: updates.rankingSocialLink } : {}),
+            } : prev);
+          }}
+        />
       )}
       {/* ── BOTÃO PROMOÇÃO 100 JOGADAS ── */}
       {showGolDaSorte && (<>
