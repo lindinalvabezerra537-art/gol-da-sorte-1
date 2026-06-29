@@ -90,3 +90,9 @@ id = "hfbZAZuLJimDfH-fHZiG1"
 uri = "file://screenshots/ranking-exclusivo-app.jpg"
 type = "image"
 title = "Ranking exclusivo funcionando"
+
+[[outputs]]
+id = "Ogqjgvc6m6lIvruzSkRE-"
+uri = "file://screenshots/ranking-independente.jpg"
+type = "image"
+title = "Ranking independente - Diana no PI"
