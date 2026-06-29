@@ -2,10 +2,11 @@
 set -e
 
 # Free ports before starting
+pkill -f "dist/index.mjs" 2>/dev/null || true
 fuser -k 8081/tcp 2>/dev/null || true
 fuser -k 5000/tcp 2>/dev/null || true
 fuser -k 24365/tcp 2>/dev/null || true
-sleep 1
+sleep 3
 
 # Build the API server first
 echo "Building API server..."
@@ -44,6 +45,8 @@ trap cleanup SIGTERM SIGINT EXIT
 while true; do
   if ! kill -0 $API_PID 2>/dev/null; then
     echo "API server stopped unexpectedly. Restarting..."
+    fuser -k 8081/tcp 2>/dev/null || true
+    sleep 3
     PORT=8081 node --enable-source-maps /home/runner/workspace/artifacts/api-server/dist/index.mjs &
     API_PID=$!
   fi

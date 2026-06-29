@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { db, paymentsTable, usersTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { db, paymentsTable, usersTable, referralsTable } from "@workspace/db";
+import { eq, and } from "drizzle-orm";
 import { MercadoPagoConfig, Payment } from "mercadopago";
 
 const router = Router();
@@ -200,18 +200,58 @@ async function confirmPayment(txId: string) {
   const [user] = await db.select().from(usersTable).where(eq(usersTable.id, payment.userId));
   if (user) {
     const isFirstPayment = !user.hasPaid;
+
+    // Credita as jogadas e desbloqueia o sistema de indicação após o 1º pagamento
     await db.update(usersTable)
-      .set({ playsRemaining: user.playsRemaining + payment.plays, hasPaid: true })
+      .set({
+        playsRemaining: user.playsRemaining + payment.plays,
+        hasPaid: true,
+        referralUnlocked: isFirstPayment ? true : user.referralUnlocked,
+      })
       .where(eq(usersTable.id, payment.userId));
 
-    // Se é o primeiro pagamento e o usuário foi indicado, dá +10 pts de ranking para quem indicou
+    // Se é o 1º pagamento e o usuário foi indicado:
+    // Nível 1 → indicador direto recebe +5 jogadas +10 pts e referral marcado como rewarded
     if (isFirstPayment && user.referredById) {
-      const [referrer] = await db.select({ rankingPoints: usersTable.rankingPoints }).from(usersTable).where(eq(usersTable.id, user.referredById));
+      const [referrer] = await db
+        .select({ rankingPoints: usersTable.rankingPoints, playsRemaining: usersTable.playsRemaining, referredById: usersTable.referredById })
+        .from(usersTable)
+        .where(eq(usersTable.id, user.referredById));
+
       if (referrer) {
-        const newPoints = (referrer.rankingPoints ?? 0) + 10;
         await db.update(usersTable)
-          .set({ rankingPoints: newPoints })
+          .set({
+            rankingPoints: (referrer.rankingPoints ?? 0) + 10,
+            playsRemaining: (referrer.playsRemaining ?? 0) + 5,
+          })
           .where(eq(usersTable.id, user.referredById));
+
+        // Marca o referral como rewarded
+        await db.update(referralsTable)
+          .set({ rewarded: true })
+          .where(
+            and(
+              eq(referralsTable.referrerId, user.referredById),
+              eq(referralsTable.referredId, user.id),
+            )
+          );
+
+        // Nível 2 → quem indicou o indicador recebe +3 jogadas +3 pts (pirâmide)
+        if (referrer.referredById) {
+          const [grandReferrer] = await db
+            .select({ rankingPoints: usersTable.rankingPoints, playsRemaining: usersTable.playsRemaining })
+            .from(usersTable)
+            .where(eq(usersTable.id, referrer.referredById));
+
+          if (grandReferrer) {
+            await db.update(usersTable)
+              .set({
+                rankingPoints: (grandReferrer.rankingPoints ?? 0) + 3,
+                playsRemaining: (grandReferrer.playsRemaining ?? 0) + 3,
+              })
+              .where(eq(usersTable.id, referrer.referredById));
+          }
+        }
       }
     }
   }

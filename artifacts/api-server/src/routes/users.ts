@@ -71,7 +71,7 @@ router.post("/register", async (req, res) => {
     ipAddress: clientIp,
     referralCode: myCode,
     referredById: referredById ?? undefined,
-    playsRemaining: 5,
+    playsRemaining: 10,
   }).returning();
 
   if (referredById) {
@@ -193,12 +193,9 @@ router.post("/:id/use-play", async (req, res) => {
 
   const plays = Math.max(0, (user.playsRemaining ?? 0) - 1);
   let freePlaysTotalUsed = user.freePlaysTotalUsed ?? 0;
-  let referralUnlocked = user.referralUnlocked ?? false;
-  if ((user.playsRemaining ?? 0) > 0 && freePlaysTotalUsed < 5) {
+  const referralUnlocked = user.referralUnlocked ?? false;
+  if ((user.playsRemaining ?? 0) > 0 && freePlaysTotalUsed < 10) {
     freePlaysTotalUsed += 1;
-  }
-  if (!referralUnlocked && freePlaysTotalUsed >= 5) {
-    referralUnlocked = true;
   }
   const [updated] = await db.update(usersTable).set({ playsRemaining: plays, freePlaysTotalUsed, referralUnlocked }).where(eq(usersTable.id, id)).returning();
   res.json({ user: updated });
@@ -273,7 +270,7 @@ router.get("/:id/referral-info", async (req, res) => {
   const totalFriends = allReferrals.length;
   const rewardedFriends = allReferrals.filter(r => r.rewarded).length;
   const pendingFriends = totalFriends - rewardedFriends;
-  const totalBonusPlays = rewardedFriends * 3;
+  const totalBonusPlays = rewardedFriends * 5;
 
   res.json({
     referralCode: user.referralCode,
@@ -303,12 +300,12 @@ router.post("/:id/referral-reward", async (req, res) => {
     return;
   }
 
-  const bonusPerReferral = 3;
+  const bonusPerReferral = 5;
   const totalBonus = referrals.length * bonusPerReferral;
   const newPlays = (user.playsRemaining ?? 0) + totalBonus;
 
   const [referrerUser] = await db.select({ rankingPoints: usersTable.rankingPoints }).from(usersTable).where(eq(usersTable.id, id));
-  const newRankingPoints = (referrerUser?.rankingPoints ?? 0) + referrals.length * 5;
+  const newRankingPoints = (referrerUser?.rankingPoints ?? 0) + referrals.length * 10;
 
   const [updated] = await db.update(usersTable)
     .set({ playsRemaining: newPlays, referralUnlocked: true, rankingPoints: newRankingPoints })
@@ -319,7 +316,7 @@ router.post("/:id/referral-reward", async (req, res) => {
     .set({ rewarded: true })
     .where(eq(referralsTable.referrerId, id));
 
-  res.json({ user: updated, newReferrals: referrals.length, addedPoints: referrals.length * 5 });
+  res.json({ user: updated, newReferrals: referrals.length, addedPoints: referrals.length * 10 });
 });
 
 // ── RANKING SYSTEM ──
