@@ -81,8 +81,11 @@ export default function InviteScreen({ userId, onClose }: Props) {
             INDIQUE AMIGOS
           </div>
           <div style={{ color: "#ccc", fontSize: 15, marginTop: 8, lineHeight: 1.6 }}>
-            Cada amigo que comprar o 1º pacote<br />
-            você ganha <span style={{ color: "#FFD700", fontWeight: 800, fontSize: 16 }}>+3 jogadas grátis</span>!
+            Cada amigo que comprar o 1º pacote você ganha{" "}
+            <span style={{ color: "#FFD700", fontWeight: 800, fontSize: 16 }}>3 jogadas grátis</span>
+            {" "}+{" "}
+            <span style={{ color: "#FFD700", fontWeight: 800, fontSize: 16 }}>10 pontos</span>
+            {" "}para o ranking!
           </div>
         </div>
 

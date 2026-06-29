@@ -2065,6 +2065,32 @@ export default function App() {
         </div>
       </div>
 
+      {/* ── Texto acima do botão CONVIDAR AGORA ── */}
+      <div
+        style={{
+          ...ov(UI.convidar.x, UI.convidar.y - 0.038, UI.convidar.w, 0.036),
+          zIndex: 31,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          pointerEvents: "none",
+        }}
+      >
+        <span style={{
+          fontSize: Math.max(bounds.w * 0.020, 8),
+          color: "#FFD700",
+          fontWeight: 900,
+          textAlign: "center",
+          textShadow: "0 1px 4px #000, 0 0 8px rgba(0,0,0,0.9)",
+          lineHeight: 1.3,
+          background: "rgba(0,0,0,0.55)",
+          borderRadius: 6,
+          padding: "2px 5px",
+        }}>
+          Indique amigos e ganhe{"\n"}3 jogadas + 10 pts ranking
+        </span>
+      </div>
+
       {/* ══════════════════════════════════════════════
           CONVIDAR AGORA button overlay
           Pixel scan: x=764-1000 (xF≈0.679-0.889), y=1286-1310 (yF≈0.591-0.602)
