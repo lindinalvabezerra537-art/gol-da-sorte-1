@@ -25,21 +25,21 @@ const THEMES = {
     glow: "rgba(168,168,179,0.4)",
     tag: "#c0c0c0",
     tagBg: "rgba(168,168,179,0.15)",
-    crown: "\ud83e\udd48",
+    crown: "🥈",
   },
   gold: {
     border: "#FFD700",
     glow: "rgba(255,215,0,0.5)",
     tag: "#FFD700",
     tagBg: "rgba(255,215,0,0.15)",
-    crown: "\ud83d\udc51",
+    crown: "👑",
   },
   bronze: {
     border: "#cd7f32",
     glow: "rgba(205,127,50,0.4)",
     tag: "#e8a060",
     tagBg: "rgba(205,127,50,0.15)",
-    crown: "\ud83e\udd49",
+    crown: "🥉",
   },
 };
 
