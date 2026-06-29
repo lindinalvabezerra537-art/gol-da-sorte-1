@@ -392,3 +392,18 @@
     inset: -1px;
   }
 }
+
+/* Move o banner "Made with Replit" para o canto superior esquerdo
+   para não cobrir os botões na parte inferior da tela */
+#replit-badge,
+[id^="replit-badge"],
+[class*="replit-badge"],
+[data-replit-badge],
+.__replit_badge,
+.replit-dev-badge,
+iframe[src*="replit.com/badge"] {
+  top: 4px !important;
+  bottom: auto !important;
+  left: 4px !important;
+  right: auto !important;
+}
