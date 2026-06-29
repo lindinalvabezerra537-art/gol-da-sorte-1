@@ -273,7 +273,7 @@ export default function RankingPodium({ cidade, estado, brasil, onClick, onSegui
         textTransform: "uppercase",
         lineHeight: 1,
         flexShrink: 0,
-      }}>\ud83c\udfc6 OS MELHORES</div>
+      }}>🏆 OS MELHORES</div>
 
       <div style={{
         display: "flex",
