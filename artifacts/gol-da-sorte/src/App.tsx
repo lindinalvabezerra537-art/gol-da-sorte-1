@@ -1187,13 +1187,12 @@ export default function App() {
       />
 
 
-      {/* ─── Avatar do usuário — canto superior, sempre visível quando logado ─── */}
+      {/* ─── Avatar do usuário — canto superior esquerdo, sempre visível quando logado ─── */}
       {userId && (
         <div
           style={{
             position: "fixed",
-            left: showGolDaSorte ? undefined : 8,
-            right: showGolDaSorte ? 8 : undefined,
+            left: 8,
             top: 8,
             zIndex: 99999,
             cursor: "pointer",
