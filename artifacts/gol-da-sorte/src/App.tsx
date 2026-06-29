@@ -616,14 +616,22 @@ export default function App() {
           if (!localStorage.getItem(key)) {
             localStorage.setItem(key, "1");
             setRankingEntryScope(rankingData.enteredRanking);
-            setShowRankingEntryModal(true);
+            const existingLink = userInfo?.rankingSocialLink || "";
+            if (existingLink) {
+              // Link já salvo — registra direto, sem mostrar modal
+              setRankingLinkInput(existingLink);
+              showToast("🎉 Você entrou no ranking! Seu link já está salvo.");
+            } else {
+              setShowRankingEntryModal(true);
+            }
           }
         }
       }
     }
-    setTimeout(async () => {
-      const link = userInfo?.rankingSocialLink || "";
-      if (link && userId && userInfo) {
+    const link = userInfo?.rankingSocialLink || "";
+    if (link && userId && userInfo) {
+      // Já tem link salvo — vira campeão automaticamente após 9s
+      setTimeout(async () => {
         await apiCall("/settings/atual-campeao", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -645,17 +653,15 @@ export default function App() {
         setChampionFollowClaimed(String(userId));
         localStorage.setItem("claimedChampionUserId", String(userId));
         showToast("🏆 Você agora é o Atual Campeão!");
-        // Marca como anunciado para evitar duplo no polling
         prevCampeaoUserId.current = String(userId);
         announcingCampeaoRef.current = String(userId);
-        // Anuncia imediatamente para o vencedor
-        const myUid = String(userId);
         const winTTS = `cidade de ${userInfo.cidade}, estado de ${estadoNome(userInfo.estado)}`;
         speakMessage(`Atenção! Nova performance! ${userInfo.name}, ${winTTS}. Siga o novo campeão e ganhe 3 jogadas e 5 pontos para o ranking!`);
-      } else {
-        setShowChampionModal(true);
-      }
-    }, 9000);
+      }, 9000);
+    } else {
+      // Sem link salvo — pede o link imediatamente antes de virar campeão
+      setShowChampionModal(true);
+    }
   }, [userId, championLinkInput, userInfo]);
 
   const reCalc = useCallback(() => {
@@ -2630,11 +2636,13 @@ export default function App() {
             <button
               onClick={async () => {
                 if (!userId || !rankingLinkInput.trim()) return;
+                const savedLink = rankingLinkInput.trim();
                 await apiCall(`/users/${userId}/ranking-social-link`, {
                   method: "PUT",
                   headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ link: rankingLinkInput.trim() }),
+                  body: JSON.stringify({ link: savedLink }),
                 });
+                setUserInfo(prev => prev ? { ...prev, rankingSocialLink: savedLink } : prev);
                 setShowRankingEntryModal(false);
                 setRankingLinkInput("");
                 showToast("🎉 Link salvo! Você está no ranking!");
@@ -2908,6 +2916,15 @@ export default function App() {
               onClick={async () => {
                 const link = championLinkInput.trim();
                 if (!link || !userId || !userInfo) return;
+                // Salva permanentemente no perfil do usuário (uma única vez)
+                await apiCall(`/users/${userId}/ranking-social-link`, {
+                  method: "PUT",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ link }),
+                });
+                // Atualiza o estado local para não pedir novamente
+                setUserInfo(prev => prev ? { ...prev, rankingSocialLink: link } : prev);
+                // Registra como campeão de performance
                 await apiCall("/settings/atual-campeao", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
@@ -2928,8 +2945,13 @@ export default function App() {
                 });
                 setChampionFollowClaimed(String(userId));
                 localStorage.setItem("claimedChampionUserId", String(userId));
+                prevCampeaoUserId.current = String(userId);
+                announcingCampeaoRef.current = String(userId);
                 setShowChampionModal(false);
+                setChampionLinkInput("");
                 showToast("🏆 Você agora é o Atual Campeão!");
+                const winTTS = `cidade de ${userInfo.cidade}, estado de ${estadoNome(userInfo.estado)}`;
+                speakMessage(`Atenção! Nova performance! ${userInfo.name}, ${winTTS}. Siga o novo campeão e ganhe 3 jogadas e 5 pontos para o ranking!`);
               }}
               disabled={!championLinkInput.trim()}
               style={{
@@ -2944,7 +2966,7 @@ export default function App() {
               CONFIRMAR E VIRAR CAMPEÃO
             </button>
             <button
-              onClick={() => setShowChampionModal(false)}
+              onClick={() => { setShowChampionModal(false); setChampionLinkInput(""); }}
               style={{
                 background: "none", border: "none", color: "#666",
                 fontSize: 13, cursor: "pointer", textDecoration: "underline",
