@@ -113,3 +113,15 @@ id = "OETutiIJMU39eM5CA_cCz"
 uri = "file://screenshots/seguir-so-texto.jpg"
 type = "image"
 title = "Botão SEGUIR sem estrela"
+
+[[outputs]]
+id = "D6yaG863VwcrLzwKfn0Ut"
+uri = "file://artifacts/gol-da-sorte/public/icon-512.png"
+type = "image"
+title = "Ícone do App (512x512)"
+
+[[outputs]]
+id = "ezEJ-xqkkY0yNDpR-_eqy"
+uri = "file://artifacts/gol-da-sorte/public/icon-192.png"
+type = "image"
+title = "Ícone do App (192x192)"
