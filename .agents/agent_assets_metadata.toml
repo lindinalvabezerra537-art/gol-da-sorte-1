@@ -4,7 +4,7 @@ uploads = []
 id = "lrh2wcTfOKqHro0TPZ8dG"
 uri = "file://artifacts/gol-da-sorte/public/icon-512.png"
 type = "image"
-title = "generated_image"
+title = "soccer_ball_social_media_icon"
 
 [[outputs]]
 id = "iowOdcqpwDeP-HRskRFM-"
@@ -118,7 +118,7 @@ title = "Botão SEGUIR sem estrela"
 id = "D6yaG863VwcrLzwKfn0Ut"
 uri = "file://artifacts/gol-da-sorte/public/icon-512.png"
 type = "image"
-title = "Ícone do App (512x512)"
+title = "Novo Ícone com Redes Sociais (512x512)"
 
 [[outputs]]
 id = "ezEJ-xqkkY0yNDpR-_eqy"
