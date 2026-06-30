@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { FaWhatsapp } from "react-icons/fa";
 import golDaSorteImg from "@assets/IMG_7715_1780523556282.jpeg";
 import RegisterScreen from "./components/RegisterScreen";
 import PurchaseModal from "./components/PurchaseModal";
@@ -2080,9 +2081,11 @@ export default function App() {
           borderRadius: 8,
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
+          justifyContent: "flex-start",
+          paddingLeft: "6%",
         }}
       >
+        <FaWhatsapp style={{ color: "#25D366", fontSize: "clamp(14px, 4.5vw, 22px)", filter: "drop-shadow(0 0 3px rgba(0,0,0,0.8))", flexShrink: 0 }} />
       </div>
 
       {/* ══════════════════════════════════════════════
