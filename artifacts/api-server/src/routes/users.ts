@@ -476,6 +476,41 @@ router.get("/ranking/brasil", async (_req, res) => {
   res.json({ users: result.brasil });
 });
 
+// ── Top 10 por escopo (sem regra de exclusividade — lista pura por pontos) ──
+
+router.get("/top10/brasil", async (_req, res) => {
+  const users = await db
+    .select({ id: usersTable.id, name: usersTable.name, cidade: usersTable.cidade, estado: usersTable.estado, fotoBase64: usersTable.fotoBase64, rankingPoints: usersTable.rankingPoints })
+    .from(usersTable)
+    .orderBy(desc(usersTable.rankingPoints))
+    .limit(10);
+  res.json({ users });
+});
+
+router.get("/top10/estado/:estado", async (req, res) => {
+  const estado = decodeURIComponent(req.params.estado);
+  if (!estado) { res.status(400).json({ error: "Missing estado" }); return; }
+  const users = await db
+    .select({ id: usersTable.id, name: usersTable.name, cidade: usersTable.cidade, estado: usersTable.estado, fotoBase64: usersTable.fotoBase64, rankingPoints: usersTable.rankingPoints })
+    .from(usersTable)
+    .where(eq(usersTable.estado, estado))
+    .orderBy(desc(usersTable.rankingPoints))
+    .limit(10);
+  res.json({ users });
+});
+
+router.get("/top10/cidade/:cidade", async (req, res) => {
+  const cidade = decodeURIComponent(req.params.cidade);
+  if (!cidade) { res.status(400).json({ error: "Missing cidade" }); return; }
+  const users = await db
+    .select({ id: usersTable.id, name: usersTable.name, cidade: usersTable.cidade, estado: usersTable.estado, fotoBase64: usersTable.fotoBase64, rankingPoints: usersTable.rankingPoints })
+    .from(usersTable)
+    .where(eq(usersTable.cidade, cidade))
+    .orderBy(desc(usersTable.rankingPoints))
+    .limit(10);
+  res.json({ users });
+});
+
 // Posição do usuário no ranking
 router.get("/:id/ranking", async (req, res) => {
   const id = parseInt(req.params.id);

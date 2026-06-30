@@ -325,6 +325,9 @@ export default function App() {
   const [jogadasPop, setJogadasPop] = useState(false);
   const prevPlaysRef = useRef<number | null>(null);
   const [showRankingModal, setShowRankingModal] = useState(false);
+  const [rankingTab, setRankingTab] = useState<"brasil" | "estado" | "cidade">("brasil");
+  const [top10Data, setTop10Data] = useState<{ brasil: any[]; estado: any[]; cidade: any[] } | null>(null);
+  const [top10Loading, setTop10Loading] = useState(false);
   const [rankingData, setRankingData] = useState<{ cidade?: any[]; estado?: any[]; brasil?: any[]; myCity?: string; myState?: string } | null>(null);
   const [rankingMyPosition, setRankingMyPosition] = useState<{ cidadeRank: number; estadoRank: number; brasilRank: number; points: number } | null>(null);
   const [seguindoRanking, setSeguindoRanking] = useState<{ cidade: boolean; estado: boolean; brasil: boolean }>({ cidade: false, estado: false, brasil: false });
@@ -926,6 +929,25 @@ export default function App() {
     const yF = ((clientY - bounds.y) / bounds.h).toFixed(3);
     setCalibTaps(prev => [{ xF, yF }, ...prev].slice(0, 8));
   };
+
+  useEffect(() => {
+    if (!showRankingModal) return;
+    setTop10Loading(true);
+    setTop10Data(null);
+    const cidade = userInfo?.cidade || "";
+    const estado = userInfo?.estado || "";
+    Promise.all([
+      apiCall("/users/top10/brasil"),
+      estado ? apiCall(`/users/top10/estado/${encodeURIComponent(estado)}`) : Promise.resolve({ users: [] }),
+      cidade ? apiCall(`/users/top10/cidade/${encodeURIComponent(cidade)}`) : Promise.resolve({ users: [] }),
+    ]).then(([bData, eData, cData]) => {
+      setTop10Data({
+        brasil: bData?.users || [],
+        estado: eData?.users || [],
+        cidade: cData?.users || [],
+      });
+    }).catch(() => {}).finally(() => setTop10Loading(false));
+  }, [showRankingModal]);
 
   const handleJogar = async () => {
     if (TOUCH_CALIB || !userId) return;
@@ -2451,38 +2473,97 @@ export default function App() {
       </>)}
 
 
-      {/* ── MODAL RANKING — imagem ampliada ao clicar ── */}
+      {/* ── MODAL RANKING — top 10 dinâmico ── */}
       {showRankingModal && (
         <div
           onClick={() => setShowRankingModal(false)}
           style={{
             position: "fixed", inset: 0, zIndex: 600,
-            background: "rgba(0,0,0,0.85)",
+            background: "rgba(0,0,0,0.92)",
             display: "flex", alignItems: "center", justifyContent: "center",
+            padding: "16px",
           }}
         >
-          <div onClick={e => e.stopPropagation()} style={{ position: "relative", maxWidth: "90vw", maxHeight: "90vh" }}>
-            <button
-              onClick={() => setShowRankingModal(false)}
-              style={{
-                position: "absolute", top: -12, right: -12,
-                background: "#222", border: "2px solid #555",
-                color: "#fff", borderRadius: "50%", width: 32, height: 32,
-                fontSize: 16, cursor: "pointer", zIndex: 10,
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}
-            >✕</button>
-            <img
-              src="/ranking_preview.jpeg"
-              alt="Ranking"
-              style={{
-                maxWidth: "90vw",
-                maxHeight: "90vh",
-                borderRadius: 14,
-                objectFit: "contain",
-                display: "block",
-              }}
-            />
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: "linear-gradient(160deg, #0a1a0a, #0d0d1a)",
+              border: "2px solid #FFD700",
+              borderRadius: 20,
+              width: "100%", maxWidth: 420,
+              maxHeight: "88vh",
+              display: "flex", flexDirection: "column",
+              overflow: "hidden",
+              boxShadow: "0 0 40px rgba(255,215,0,0.2)",
+            }}
+          >
+            {/* Cabeçalho */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px 10px", borderBottom: "1px solid rgba(255,215,0,0.2)", flexShrink: 0 }}>
+              <div style={{ color: "#FFD700", fontWeight: 900, fontSize: 16, letterSpacing: 1.5, textTransform: "uppercase" }}>🏆 Ranking</div>
+              <button onClick={() => setShowRankingModal(false)} style={{ background: "none", border: "none", color: "#aaa", fontSize: 22, cursor: "pointer", lineHeight: 1, padding: "0 4px" }}>✕</button>
+            </div>
+
+            {/* Abas */}
+            <div style={{ display: "flex", borderBottom: "1px solid rgba(255,215,0,0.15)", flexShrink: 0 }}>
+              {(["brasil", "estado", "cidade"] as const).map(tab => (
+                <button key={tab} onClick={() => setRankingTab(tab)} style={{
+                  flex: 1, padding: "10px 4px", border: "none", cursor: "pointer",
+                  background: rankingTab === tab ? "rgba(255,215,0,0.12)" : "transparent",
+                  color: rankingTab === tab ? "#FFD700" : "#777",
+                  fontWeight: 900, fontSize: 11, letterSpacing: 0.8,
+                  textTransform: "uppercase",
+                  borderBottom: rankingTab === tab ? "2px solid #FFD700" : "2px solid transparent",
+                  transition: "all 0.15s",
+                }}>
+                  {tab === "brasil" ? "🇧🇷 Brasil" : tab === "estado" ? `📍 ${userInfo?.estado || "Estado"}` : `🏙️ ${userInfo?.cidade || "Cidade"}`}
+                </button>
+              ))}
+            </div>
+
+            {/* Lista */}
+            <div style={{ overflowY: "auto", flex: 1, padding: "8px 0" }}>
+              {top10Loading ? (
+                <div style={{ color: "#666", textAlign: "center", padding: "40px 0", fontSize: 13 }}>Carregando...</div>
+              ) : (() => {
+                const list = top10Data?.[rankingTab] || [];
+                if (list.length === 0) return (
+                  <div style={{ color: "#555", textAlign: "center", padding: "40px 16px", fontSize: 13 }}>Nenhum jogador ainda neste ranking.</div>
+                );
+                return list.map((player: any, idx: number) => {
+                  const isCurrentUser = userId != null && player.id === userId;
+                  const medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : null;
+                  const firstName = (player.name || "").split(" ")[0] || "—";
+                  return (
+                    <div key={player.id} style={{
+                      display: "flex", alignItems: "center", gap: 10,
+                      padding: "8px 16px",
+                      background: isCurrentUser ? "rgba(255,215,0,0.08)" : "transparent",
+                      borderLeft: isCurrentUser ? "3px solid #FFD700" : "3px solid transparent",
+                    }}>
+                      <div style={{ width: 28, textAlign: "center", fontWeight: 900, fontSize: medal ? 18 : 13, color: isCurrentUser ? "#FFD700" : "#666", flexShrink: 0 }}>
+                        {medal || `${idx + 1}º`}
+                      </div>
+                      <div style={{ width: 36, height: 36, borderRadius: 5, overflow: "hidden", border: `1.5px solid ${isCurrentUser ? "#FFD700" : "#333"}`, background: "#1a1a30", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        {player.fotoBase64
+                          ? <img src={player.fotoBase64} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          : <span style={{ fontSize: 16 }}>👤</span>}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ color: isCurrentUser ? "#FFD700" : "#fff", fontWeight: 800, fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {firstName}{isCurrentUser ? " (você)" : ""}
+                        </div>
+                        <div style={{ color: "#666", fontSize: 10, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {player.cidade}{player.estado ? ` — ${player.estado}` : ""}
+                        </div>
+                      </div>
+                      <div style={{ color: "#FFD700", fontWeight: 900, fontSize: 13, flexShrink: 0 }}>
+                        {(player.rankingPoints || 0).toLocaleString("pt-BR")} pts
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
           </div>
         </div>
       )}
