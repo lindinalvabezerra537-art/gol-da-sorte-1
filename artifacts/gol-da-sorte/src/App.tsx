@@ -2562,21 +2562,25 @@ export default function App() {
                         const firstName = (player.name || "—").split(" ")[0];
                         return (
                           <div key={player.id} style={{
-                            display: "flex", flexDirection: "column", alignItems: "center",
-                            padding: "7px 3px 6px",
+                            display: "flex", flexDirection: "row", alignItems: "center", gap: 5,
+                            padding: "4px 5px",
                             background: isMe ? `${color}18` : "transparent",
                             borderBottom: "1px solid rgba(255,255,255,0.04)",
                             borderLeft: isMe ? `2px solid ${color}` : "2px solid transparent",
                           }}>
-                            <div style={{ fontSize: idx < 3 ? 13 : 9, fontWeight: 900, color: isMe ? color : "#555", lineHeight: 1, marginBottom: 3 }}>{medal}</div>
-                            <div style={{ width: 32, height: 32, borderRadius: "50%", overflow: "hidden", border: `1.5px solid ${isMe ? color : "#2a2a2a"}`, background: "#111", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 4, flexShrink: 0 }}>
+                            {/* Medalha/posição */}
+                            <div style={{ fontSize: idx < 3 ? 11 : 8, fontWeight: 900, color: isMe ? color : "#555", lineHeight: 1, flexShrink: 0, width: 14, textAlign: "center" }}>{medal}</div>
+                            {/* Foto */}
+                            <div style={{ width: 24, height: 24, borderRadius: "50%", overflow: "hidden", border: `1.5px solid ${isMe ? color : "#2a2a2a"}`, background: "#111", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                               {player.fotoBase64
                                 ? <img src={player.fotoBase64} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                                : <span style={{ fontSize: 14 }}>👤</span>}
+                                : <span style={{ fontSize: 11 }}>👤</span>}
                             </div>
-                            <div style={{ color: isMe ? color : "#e0e0e0", fontWeight: 800, fontSize: 10, textAlign: "center", width: "100%", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", lineHeight: 1.2, padding: "0 2px" }}>{firstName}</div>
-                            <div style={{ color: "#666", fontSize: 8, textAlign: "center", width: "100%", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", lineHeight: 1.3, padding: "0 2px" }}>{player.cidade} {player.estado}</div>
-                            <div style={{ color: color, fontWeight: 700, fontSize: 9, marginTop: 2, letterSpacing: 0.3 }}>{(player.rankingPoints || 0).toLocaleString("pt-BR")}pts</div>
+                            {/* Nome + pontos */}
+                            <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 1 }}>
+                              <div style={{ color: isMe ? color : "#e0e0e0", fontWeight: 800, fontSize: 9, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", lineHeight: 1.2 }}>{firstName}</div>
+                              <div style={{ color: color, fontWeight: 700, fontSize: 8, lineHeight: 1.2 }}>{(player.rankingPoints || 0).toLocaleString("pt-BR")}pts</div>
+                            </div>
                           </div>
                         );
                       })}
