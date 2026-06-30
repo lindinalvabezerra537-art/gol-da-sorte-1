@@ -1,6 +1,6 @@
 import { Router, Request } from "express";
 import { db, usersTable, referralsTable, rankingFollowsTable } from "@workspace/db";
-import { eq, and, sql, gte, desc } from "drizzle-orm";
+import { eq, and, sql, gte, desc, notInArray } from "drizzle-orm";
 import { sendEvent } from "../app";
 
 const router = Router();
@@ -476,36 +476,88 @@ router.get("/ranking/brasil", async (_req, res) => {
   res.json({ users: result.brasil });
 });
 
-// ── Top 10 por escopo (sem regra de exclusividade — lista pura por pontos) ──
+// ── Top 10 por escopo com regra de exclusividade (Brasil > Estado > Cidade) ──
 
+const TOP10_FIELDS = {
+  id: usersTable.id,
+  name: usersTable.name,
+  cidade: usersTable.cidade,
+  estado: usersTable.estado,
+  fotoBase64: usersTable.fotoBase64,
+  rankingPoints: usersTable.rankingPoints,
+};
+
+// Brasil: top 10 global sem exclusão (é a prioridade máxima)
 router.get("/top10/brasil", async (_req, res) => {
   const users = await db
-    .select({ id: usersTable.id, name: usersTable.name, cidade: usersTable.cidade, estado: usersTable.estado, fotoBase64: usersTable.fotoBase64, rankingPoints: usersTable.rankingPoints })
+    .select(TOP10_FIELDS)
     .from(usersTable)
     .orderBy(desc(usersTable.rankingPoints))
     .limit(10);
   res.json({ users });
 });
 
+// Estado: top 10 do estado, excluindo quem lidera o Brasil
 router.get("/top10/estado/:estado", async (req, res) => {
   const estado = decodeURIComponent(req.params.estado);
   if (!estado) { res.status(400).json({ error: "Missing estado" }); return; }
-  const users = await db
-    .select({ id: usersTable.id, name: usersTable.name, cidade: usersTable.cidade, estado: usersTable.estado, fotoBase64: usersTable.fotoBase64, rankingPoints: usersTable.rankingPoints })
+
+  // Líder do Brasil (representa Brasil, não Estado)
+  const [brasilLider] = await db
+    .select({ id: usersTable.id })
     .from(usersTable)
-    .where(eq(usersTable.estado, estado))
+    .orderBy(desc(usersTable.rankingPoints))
+    .limit(1);
+
+  const excludeIds = brasilLider ? [brasilLider.id] : [];
+
+  const users = await db
+    .select(TOP10_FIELDS)
+    .from(usersTable)
+    .where(
+      excludeIds.length > 0
+        ? and(eq(usersTable.estado, estado), notInArray(usersTable.id, excludeIds))
+        : eq(usersTable.estado, estado)
+    )
     .orderBy(desc(usersTable.rankingPoints))
     .limit(10);
   res.json({ users });
 });
 
+// Cidade: top 10 da cidade, excluindo quem lidera o Estado daquela cidade
 router.get("/top10/cidade/:cidade", async (req, res) => {
   const cidade = decodeURIComponent(req.params.cidade);
   if (!cidade) { res.status(400).json({ error: "Missing cidade" }); return; }
-  const users = await db
-    .select({ id: usersTable.id, name: usersTable.name, cidade: usersTable.cidade, estado: usersTable.estado, fotoBase64: usersTable.fotoBase64, rankingPoints: usersTable.rankingPoints })
+
+  // Descobre o estado da cidade pelo usuário mais bem colocado dela
+  const [topDaCidade] = await db
+    .select({ estado: usersTable.estado })
     .from(usersTable)
     .where(eq(usersTable.cidade, cidade))
+    .orderBy(desc(usersTable.rankingPoints))
+    .limit(1);
+
+  const excludeIds: number[] = [];
+
+  if (topDaCidade?.estado) {
+    // Líder do Estado daquela cidade (representa Estado, não Cidade)
+    const [estadoLider] = await db
+      .select({ id: usersTable.id })
+      .from(usersTable)
+      .where(eq(usersTable.estado, topDaCidade.estado))
+      .orderBy(desc(usersTable.rankingPoints))
+      .limit(1);
+    if (estadoLider) excludeIds.push(estadoLider.id);
+  }
+
+  const users = await db
+    .select(TOP10_FIELDS)
+    .from(usersTable)
+    .where(
+      excludeIds.length > 0
+        ? and(eq(usersTable.cidade, cidade), notInArray(usersTable.id, excludeIds))
+        : eq(usersTable.cidade, cidade)
+    )
     .orderBy(desc(usersTable.rankingPoints))
     .limit(10);
   res.json({ users });
