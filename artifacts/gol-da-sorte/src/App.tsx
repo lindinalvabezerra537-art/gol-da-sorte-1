@@ -34,25 +34,6 @@ const UI = {
 
 type RowDef = { y: [number, number]; x: [number, number][]; label: string };
 
-interface WinnerCard { nome: string; cidadeEstado: string; valor: string; foto: string; }
-
-function WinnerCell({ w, onClick }: { w: WinnerCard; onClick: () => void }) {
-  const firstName = (w.nome || "").split(" ")[0] || "—";
-  return (
-    <div
-      onClick={onClick}
-      style={{ width: "50%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "4px 2px", gap: 2, boxSizing: "border-box", cursor: "pointer" }}
-    >
-      <div style={{ width: 36, height: 48, borderRadius: 4, overflow: "hidden", border: "1.5px solid rgba(255,215,0,0.7)", flexShrink: 0, background: "#1a1a30", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        {w.foto
-          ? <img src={w.foto} style={{ maxWidth: "100%", maxHeight: "100%", width: "auto", height: "auto", display: "block" }} />
-          : <span style={{ fontSize: 13, lineHeight: 1 }}>👤</span>}
-      </div>
-      <span style={{ color: "#fff", fontSize: 9, fontWeight: 800, lineHeight: 1.1, textAlign: "center", width: "100%", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>{firstName}</span>
-      <span style={{ color: "#FFD700", fontSize: 8, fontWeight: 700, lineHeight: 1, textAlign: "center" }}>R${w.valor || "—"}</span>
-    </div>
-  );
-}
 
 const ROWS: RowDef[] = [
   { label: "R0", y: [0.771, 0.855], x: [[0.086, 0.191], [0.200, 0.304], [0.313, 0.415]] },
@@ -343,9 +324,6 @@ export default function App() {
   const playsRemainingRef = useRef<number>(0);
   const [jogadasPop, setJogadasPop] = useState(false);
   const prevPlaysRef = useRef<number | null>(null);
-  const emptyWinner: WinnerCard = { nome: "", cidadeEstado: "", valor: "", foto: "" };
-  const [ganhadores, setGanhadores] = useState<WinnerCard[]>([emptyWinner, emptyWinner, emptyWinner, emptyWinner]);
-  const [selectedWinner, setSelectedWinner] = useState<WinnerCard | null>(null);
   const [showRankingModal, setShowRankingModal] = useState(false);
   const [rankingData, setRankingData] = useState<{ cidade?: any[]; estado?: any[]; brasil?: any[]; myCity?: string; myState?: string } | null>(null);
   const [rankingMyPosition, setRankingMyPosition] = useState<{ cidadeRank: number; estadoRank: number; brasilRank: number; points: number } | null>(null);
@@ -663,11 +641,10 @@ export default function App() {
       apiCall("/settings/ultimo-ganhador"),
       apiCall("/settings/broadcast"),
       apiCall("/settings/promocao"),
-      apiCall("/settings/ultimos-ganhadores"),
       apiCall("/settings/atual-campeao"),
       apiCall("/settings/game-config"),
       apiCall("/settings/pirate-path"),
-    ]).then(([valorData, ugData, broadcastData, promoData, ganhadoresData, campeaoData, gameConfigData, piratePathData]) => {
+    ]).then(([valorData, ugData, broadcastData, promoData, campeaoData, gameConfigData, piratePathData]) => {
       if (valorData?.valor) {
         const num = parseFloat(valorData.valor.replace(",", "."));
         if (!isNaN(num)) {
@@ -699,9 +676,6 @@ export default function App() {
           meta2Jogadas: promoData.meta2Jogadas || "100",
           bonusPorIndicacao: promoData.bonusPorIndicacao || "3",
         });
-      }
-      if (Array.isArray(ganhadoresData) && ganhadoresData.length === 4) {
-        setGanhadores(ganhadoresData);
       }
       if (campeaoData) {
         const newUserId = campeaoData.userId ?? "";
@@ -2474,78 +2448,8 @@ export default function App() {
         </div>
       </div>
 
-      {/* ── TARJA GANHADORES 1 — ao lado direito, abaixo do ranking ── */}
-      <div style={{
-        position: "absolute",
-        left: bounds.x + bounds.w + 113,
-        top: bounds.y + bounds.h * 0.100 + 8,
-        width: bounds.w * 0.290,
-        height: bounds.h * 0.076,
-        zIndex: 89,
-        background: "#000", borderRadius: 14,
-        display: "flex", overflow: "hidden",
-      }}>
-        <WinnerCell w={ganhadores[0]} onClick={() => setSelectedWinner(ganhadores[0])} />
-        <div style={{ width: 1, background: "#2a2a2a", flexShrink: 0, margin: "6px 0" }} />
-        <WinnerCell w={ganhadores[1]} onClick={() => setSelectedWinner(ganhadores[1])} />
-      </div>
-
-      {/* ── TARJA GANHADORES 2 — ao lado direito, abaixo da tarja 1 ── */}
-      <div style={{
-        position: "absolute",
-        left: bounds.x + bounds.w + 113,
-        top: bounds.y + bounds.h * 0.100 + 8 + bounds.h * 0.076 + 8,
-        width: bounds.w * 0.290,
-        height: bounds.h * 0.076,
-        zIndex: 89,
-        background: "#000", borderRadius: 14,
-        display: "flex", overflow: "hidden",
-      }}>
-        <WinnerCell w={ganhadores[2]} onClick={() => setSelectedWinner(ganhadores[2])} />
-        <div style={{ width: 1, background: "#2a2a2a", flexShrink: 0, margin: "6px 0" }} />
-        <WinnerCell w={ganhadores[3]} onClick={() => setSelectedWinner(ganhadores[3])} />
-      </div>
       </>)}
 
-      {/* ── POPUP GANHADOR ── */}
-      {selectedWinner && (
-        <div
-          onClick={() => setSelectedWinner(null)}
-          style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "flex-end", justifyContent: "flex-end", paddingBottom: 180, paddingRight: 16 }}
-        >
-          <div
-            onClick={e => e.stopPropagation()}
-            style={{
-              background: "linear-gradient(160deg, #0d0d0d, #1a1200)",
-              border: "2px solid #FFD700",
-              borderRadius: 16,
-              padding: "14px 16px",
-              width: 200,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 8,
-              boxShadow: "0 0 30px rgba(255,200,0,0.25)",
-              position: "relative",
-            }}
-          >
-            <button onClick={() => setSelectedWinner(null)} style={{ position: "absolute", top: 8, right: 10, background: "none", border: "none", color: "#aaa", fontSize: 18, cursor: "pointer", lineHeight: 1 }}>✕</button>
-            <div style={{ fontSize: 11, color: "#FFD700", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>🏆 Ganhador</div>
-            <div style={{ width: 80, height: 80, borderRadius: 6, overflow: "hidden", border: "2.5px solid #FFD700", background: "#1a1a30", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              {selectedWinner.foto
-                ? <img src={selectedWinner.foto} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-                : <span style={{ fontSize: 28 }}>👤</span>}
-            </div>
-            <div style={{ textAlign: "center" }}>
-              <div style={{ color: "#fff", fontWeight: 800, fontSize: 14, lineHeight: 1.3 }}>{selectedWinner.nome || "—"}</div>
-              <div style={{ color: "#aaa", fontSize: 12, marginTop: 2 }}>{selectedWinner.cidadeEstado || ""}</div>
-            </div>
-            <div style={{ color: "#FFD700", fontWeight: 900, fontSize: 18, textShadow: "0 0 12px rgba(255,200,0,0.5)" }}>
-              R$ {selectedWinner.valor || "—"}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ── MODAL RANKING — imagem ampliada ao clicar ── */}
       {showRankingModal && (
