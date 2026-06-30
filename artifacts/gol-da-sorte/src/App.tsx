@@ -2473,96 +2473,90 @@ export default function App() {
       </>)}
 
 
-      {/* ── MODAL RANKING — top 10 dinâmico ── */}
+      {/* ── MODAL RANKING — 3 colunas lado a lado ── */}
       {showRankingModal && (
         <div
           onClick={() => setShowRankingModal(false)}
           style={{
             position: "fixed", inset: 0, zIndex: 600,
-            background: "rgba(0,0,0,0.92)",
+            background: "rgba(0,0,0,0.93)",
             display: "flex", alignItems: "center", justifyContent: "center",
-            padding: "16px",
+            padding: "12px",
           }}
         >
           <div
             onClick={e => e.stopPropagation()}
             style={{
-              background: "linear-gradient(160deg, #0a1a0a, #0d0d1a)",
+              background: "linear-gradient(160deg, #080f08, #0a0a14)",
               border: "2px solid #FFD700",
-              borderRadius: 20,
-              width: "100%", maxWidth: 420,
-              maxHeight: "88vh",
+              borderRadius: 16,
+              width: "100%", maxWidth: 480,
+              maxHeight: "90vh",
               display: "flex", flexDirection: "column",
               overflow: "hidden",
               boxShadow: "0 0 40px rgba(255,215,0,0.2)",
             }}
           >
             {/* Cabeçalho */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px 10px", borderBottom: "1px solid rgba(255,215,0,0.2)", flexShrink: 0 }}>
-              <div style={{ color: "#FFD700", fontWeight: 900, fontSize: 16, letterSpacing: 1.5, textTransform: "uppercase" }}>🏆 Ranking</div>
-              <button onClick={() => setShowRankingModal(false)} style={{ background: "none", border: "none", color: "#aaa", fontSize: 22, cursor: "pointer", lineHeight: 1, padding: "0 4px" }}>✕</button>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 14px 9px", borderBottom: "1px solid rgba(255,215,0,0.25)", flexShrink: 0 }}>
+              <div style={{ color: "#FFD700", fontWeight: 900, fontSize: 14, letterSpacing: 1.5, textTransform: "uppercase" }}>🏆 OS MELHORES</div>
+              <button onClick={() => setShowRankingModal(false)} style={{ background: "none", border: "none", color: "#888", fontSize: 20, cursor: "pointer", lineHeight: 1 }}>✕</button>
             </div>
 
-            {/* Abas */}
-            <div style={{ display: "flex", borderBottom: "1px solid rgba(255,215,0,0.15)", flexShrink: 0 }}>
-              {(["brasil", "estado", "cidade"] as const).map(tab => (
-                <button key={tab} onClick={() => setRankingTab(tab)} style={{
-                  flex: 1, padding: "10px 4px", border: "none", cursor: "pointer",
-                  background: rankingTab === tab ? "rgba(255,215,0,0.12)" : "transparent",
-                  color: rankingTab === tab ? "#FFD700" : "#777",
-                  fontWeight: 900, fontSize: 11, letterSpacing: 0.8,
-                  textTransform: "uppercase",
-                  borderBottom: rankingTab === tab ? "2px solid #FFD700" : "2px solid transparent",
-                  transition: "all 0.15s",
-                }}>
-                  {tab === "brasil" ? "🇧🇷 Brasil" : tab === "estado" ? `📍 ${userInfo?.estado || "Estado"}` : `🏙️ ${userInfo?.cidade || "Cidade"}`}
-                </button>
-              ))}
-            </div>
+            {/* 3 colunas */}
+            <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+              {([
+                { key: "cidade" as const, label: "CIDADE",  color: "#a8a8b3" },
+                { key: "brasil" as const, label: "BRASIL",  color: "#FFD700" },
+                { key: "estado" as const, label: "ESTADO",  color: "#cd7f32" },
+              ]).map(({ key, label, color }, colIdx) => {
+                const list = top10Data?.[key] || [];
+                return (
+                  <div key={key} style={{ flex: 1, display: "flex", flexDirection: "column", borderLeft: colIdx > 0 ? "1px solid rgba(255,215,0,0.1)" : "none" }}>
+                    {/* Título da coluna */}
+                    <div style={{
+                      padding: "6px 2px", textAlign: "center",
+                      fontWeight: 900, fontSize: 9, letterSpacing: 1.2,
+                      color, textTransform: "uppercase",
+                      background: "rgba(0,0,0,0.35)",
+                      borderBottom: `1px solid ${color}55`,
+                      flexShrink: 0,
+                    }}>{label}</div>
 
-            {/* Lista */}
-            <div style={{ overflowY: "auto", flex: 1, padding: "8px 0" }}>
-              {top10Loading ? (
-                <div style={{ color: "#666", textAlign: "center", padding: "40px 0", fontSize: 13 }}>Carregando...</div>
-              ) : (() => {
-                const list = top10Data?.[rankingTab] || [];
-                if (list.length === 0) return (
-                  <div style={{ color: "#555", textAlign: "center", padding: "40px 16px", fontSize: 13 }}>Nenhum jogador ainda neste ranking.</div>
-                );
-                return list.map((player: any, idx: number) => {
-                  const isCurrentUser = userId != null && player.id === userId;
-                  const medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : null;
-                  const firstName = (player.name || "").split(" ")[0] || "—";
-                  return (
-                    <div key={player.id} style={{
-                      display: "flex", alignItems: "center", gap: 10,
-                      padding: "8px 16px",
-                      background: isCurrentUser ? "rgba(255,215,0,0.08)" : "transparent",
-                      borderLeft: isCurrentUser ? "3px solid #FFD700" : "3px solid transparent",
-                    }}>
-                      <div style={{ width: 28, textAlign: "center", fontWeight: 900, fontSize: medal ? 18 : 13, color: isCurrentUser ? "#FFD700" : "#666", flexShrink: 0 }}>
-                        {medal || `${idx + 1}º`}
-                      </div>
-                      <div style={{ width: 36, height: 36, borderRadius: 5, overflow: "hidden", border: `1.5px solid ${isCurrentUser ? "#FFD700" : "#333"}`, background: "#1a1a30", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        {player.fotoBase64
-                          ? <img src={player.fotoBase64} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                          : <span style={{ fontSize: 16 }}>👤</span>}
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ color: isCurrentUser ? "#FFD700" : "#fff", fontWeight: 800, fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                          {firstName}{isCurrentUser ? " (você)" : ""}
-                        </div>
-                        <div style={{ color: "#666", fontSize: 10, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                          {player.cidade}{player.estado ? ` — ${player.estado}` : ""}
-                        </div>
-                      </div>
-                      <div style={{ color: "#FFD700", fontWeight: 900, fontSize: 13, flexShrink: 0 }}>
-                        {(player.rankingPoints || 0).toLocaleString("pt-BR")} pts
-                      </div>
+                    {/* Jogadores */}
+                    <div style={{ overflowY: "auto", flex: 1 }}>
+                      {top10Loading ? (
+                        <div style={{ color: "#444", textAlign: "center", padding: "24px 0", fontSize: 10 }}>...</div>
+                      ) : list.length === 0 ? (
+                        <div style={{ color: "#444", textAlign: "center", padding: "24px 4px", fontSize: 9, lineHeight: 1.4 }}>Sem jogadores</div>
+                      ) : list.map((player: any, idx: number) => {
+                        const isMe = userId != null && player.id === userId;
+                        const medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `${idx + 1}º`;
+                        const firstName = (player.name || "—").split(" ")[0];
+                        return (
+                          <div key={player.id} style={{
+                            display: "flex", flexDirection: "column", alignItems: "center",
+                            padding: "7px 3px 6px",
+                            background: isMe ? `${color}18` : "transparent",
+                            borderBottom: "1px solid rgba(255,255,255,0.04)",
+                            borderLeft: isMe ? `2px solid ${color}` : "2px solid transparent",
+                          }}>
+                            <div style={{ fontSize: idx < 3 ? 13 : 9, fontWeight: 900, color: isMe ? color : "#555", lineHeight: 1, marginBottom: 3 }}>{medal}</div>
+                            <div style={{ width: 32, height: 32, borderRadius: "50%", overflow: "hidden", border: `1.5px solid ${isMe ? color : "#2a2a2a"}`, background: "#111", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 4, flexShrink: 0 }}>
+                              {player.fotoBase64
+                                ? <img src={player.fotoBase64} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                : <span style={{ fontSize: 14 }}>👤</span>}
+                            </div>
+                            <div style={{ color: isMe ? color : "#e0e0e0", fontWeight: 800, fontSize: 10, textAlign: "center", width: "100%", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", lineHeight: 1.2, padding: "0 2px" }}>{firstName}</div>
+                            <div style={{ color: "#666", fontSize: 8, textAlign: "center", width: "100%", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", lineHeight: 1.3, padding: "0 2px" }}>{player.cidade} {player.estado}</div>
+                            <div style={{ color: color, fontWeight: 700, fontSize: 9, marginTop: 2, letterSpacing: 0.3 }}>{(player.rankingPoints || 0).toLocaleString("pt-BR")}pts</div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  );
-                });
-              })()}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
