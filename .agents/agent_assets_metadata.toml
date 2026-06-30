@@ -1,5 +1,10 @@
 uploads = []
-generated = []
+
+[[generated]]
+id = "lrh2wcTfOKqHro0TPZ8dG"
+uri = "file://artifacts/gol-da-sorte/public/icon-512.png"
+type = "image"
+title = "generated_image"
 
 [[outputs]]
 id = "iowOdcqpwDeP-HRskRFM-"
