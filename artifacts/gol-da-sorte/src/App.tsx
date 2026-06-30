@@ -565,7 +565,7 @@ export default function App() {
     if (isJogadas) {
       speakMessage("Parabéns! Você acaba de ganhar 50 jogadas e 50 pontos para o ranking!");
       if (userInfo) {
-        const tts2 = `Atenção! Nova performance! ${userInfo.name}, ${userInfo.cidade} - ${estadoNome(userInfo.estado)}. Siga o novo líder e ganhe 3 pontos para concorrer no ranking!`;
+        const tts2 = `Atenção! Nova performance! ${userInfo.name}, ${userInfo.cidade} - ${estadoNome(userInfo.estado)}. Siga o novo líder e ganhe 3 jogadas e mais 10 pontos para concorrer no ranking!`;
         speakMessage(tts2, 4000);
       }
       showToast("🎉 +50 jogadas e +50 pts no ranking!");
@@ -763,7 +763,7 @@ export default function App() {
             lastAnnouncedChampId.current = newUserId;
             const [cidade, estado] = newCidadeEstado.split(" - ");
             const estadoExtenso = estado ? estadoNome(estado) : "";
-            const tts = `Atenção! Nova performance! ${newNome}, ${cidade || ""} - ${estadoExtenso}. Siga o novo líder e ganhe 3 pontos para concorrer no ranking!`;
+            const tts = `Atenção! Nova performance! ${newNome}, ${cidade || ""} - ${estadoExtenso}. Siga o novo líder e ganhe 3 jogadas e mais 10 pontos para concorrer no ranking!`;
             speakMessage(tts, 0);
           }
         }
