@@ -2082,7 +2082,7 @@ export default function App() {
           display: "flex",
           alignItems: "center",
           justifyContent: "flex-start",
-          paddingLeft: "6%",
+          paddingLeft: "44%",
         }}
       >
         <FaWhatsapp style={{ color: "#25D366", fontSize: "clamp(14px, 4.5vw, 22px)", filter: "drop-shadow(0 0 3px rgba(0,0,0,0.8))", flexShrink: 0 }} />
