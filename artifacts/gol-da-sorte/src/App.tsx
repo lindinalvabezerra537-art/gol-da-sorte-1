@@ -246,14 +246,41 @@ function playMegaFanfare() {
   });
 }
 
+let cachedFemaleVoice: SpeechSynthesisVoice | null = null;
+
+function pickFemaleVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null {
+  const ptVoices = voices.filter(v => v.lang.toLowerCase().startsWith("pt"));
+  // 1ª prioridade: voz explicitamente feminina em PT
+  const explicit = ptVoices.find(v =>
+    /female|feminina|luciana|francisca|maria|helena|vitoria|vitória/i.test(v.name)
+  );
+  if (explicit) return explicit;
+  // 2ª prioridade: Google PT (por padrão feminina no Android/Chrome)
+  const googlePt = ptVoices.find(v => /google/i.test(v.name));
+  if (googlePt) return googlePt;
+  // 3ª prioridade: qualquer voz PT
+  return ptVoices[0] || null;
+}
+
 function getFemaleVoice(): SpeechSynthesisVoice | null {
   if (!("speechSynthesis" in window)) return null;
+  if (cachedFemaleVoice) return cachedFemaleVoice;
   const voices = window.speechSynthesis.getVoices();
-  const female = voices.find(v =>
-    v.lang.toLowerCase().startsWith("pt") &&
-    (/female|feminina|maria|luciana|francisca|helena/i.test(v.name) || /google.*pt/i.test(v.name))
-  );
-  return female || voices.find(v => v.lang.toLowerCase().startsWith("pt")) || null;
+  if (voices.length > 0) {
+    cachedFemaleVoice = pickFemaleVoice(voices);
+    return cachedFemaleVoice;
+  }
+  return null;
+}
+
+// Pré-carrega a voz feminina assim que o navegador disponibilizar
+if ("speechSynthesis" in window) {
+  const loadVoices = () => {
+    const voices = window.speechSynthesis.getVoices();
+    if (voices.length > 0) cachedFemaleVoice = pickFemaleVoice(voices);
+  };
+  window.speechSynthesis.addEventListener("voiceschanged", loadVoices);
+  loadVoices();
 }
 
 function estadoNome(sigla: string): string {
@@ -277,8 +304,8 @@ function speakMessage(text: string, delayMs = 1400) {
   const voice = getFemaleVoice();
   if (voice) utter.voice = voice;
   utter.lang = "pt-BR";
-  utter.rate = 0.88;
-  utter.pitch = 1.1;
+  utter.rate = 0.92;
+  utter.pitch = 1.15;
   utter.volume = 1.0;
   if (delayMs > 0) {
     setTimeout(() => window.speechSynthesis.speak(utter), delayMs);
