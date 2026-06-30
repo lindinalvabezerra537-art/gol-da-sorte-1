@@ -4,7 +4,7 @@ uploads = []
 id = "lrh2wcTfOKqHro0TPZ8dG"
 uri = "file://artifacts/gol-da-sorte/public/icon-512.png"
 type = "image"
-title = "soccer_6social_ring_icon"
+title = "soccer_6social_spread_ring"
 
 [[outputs]]
 id = "iowOdcqpwDeP-HRskRFM-"
@@ -118,7 +118,7 @@ title = "Botão SEGUIR sem estrela"
 id = "D6yaG863VwcrLzwKfn0Ut"
 uri = "file://artifacts/gol-da-sorte/public/icon-512.png"
 type = "image"
-title = "Ícone com YouTube, Facebook, TikTok, Instagram, WhatsApp, Kwai"
+title = "Ícone com ícones espaçados no anel"
 
 [[outputs]]
 id = "ezEJ-xqkkY0yNDpR-_eqy"
