@@ -2801,8 +2801,8 @@ export default function App() {
         </div>
       )}
 
-      {/* ── BOTÃO VOLTAR — só aparece no modo Gol da Sorte ── */}
-      {showGolDaSorte && (
+      {/* ── BOTÃO VOLTAR — só aparece no modo Gol da Sorte e para o admin ── */}
+      {showGolDaSorte && isPhoneAdmin && (
         <button
           onClick={() => { setShowGolDaSorte(false); setGameActive(false); setCorrectPicks([]); setErrorBall(null); setCurrentRow(0); }}
           style={{
@@ -3248,8 +3248,8 @@ export default function App() {
 
 
 
-      {/* Botão Admin — canto inferior esquerdo, longe dos elementos do jogo */}
-      <button
+      {/* Botão Admin — visível apenas para o admin */}
+      {isPhoneAdmin && <button
         onClick={(e) => { e.stopPropagation(); setShowAdmin(true); }}
         style={{
           position: "fixed", bottom: 12, left: 12, zIndex: 2147483639,
@@ -3261,7 +3261,7 @@ export default function App() {
           backdropFilter: "blur(4px)",
         }}
         title="Painel Admin"
-      >⚙️</button>
+      >⚙️</button>}
 
       <style>{`
         @keyframes bonusPop {
