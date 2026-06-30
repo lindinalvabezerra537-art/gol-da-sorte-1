@@ -30,18 +30,23 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-      /* Bloqueia cliques no emblema "Made with Replit" e move para canto superior esquerdo */
-      #replit-badge, .replit-badge, [id*="replit"], iframe[src*="replit.com/badge"],
-      iframe[src*="replit"], div[style*="z-index: 9999"] iframe {
+      /* Esconde completamente o badge "Made with Replit" */
+      #replit-badge,
+      .replit-badge,
+      [id*="replit-badge"],
+      [class*="replit-badge"],
+      [data-replit-badge],
+      .__replit_badge,
+      .replit-dev-badge,
+      iframe[src*="replit.com/badge"],
+      iframe[src*="replit"][src*="badge"] {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
         pointer-events: none !important;
-      }
-      #replit-badge, .replit-badge, [id*="replit-badge"], [class*="replit-badge"] {
-        position: fixed !important;
-        top: 4px !important;
-        left: 4px !important;
-        bottom: auto !important;
-        right: auto !important;
-        z-index: 9999 !important;
+        width: 0 !important;
+        height: 0 !important;
+        overflow: hidden !important;
       }
     </style>
   </head>

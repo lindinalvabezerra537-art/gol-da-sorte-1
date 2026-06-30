@@ -2411,7 +2411,7 @@ export default function App() {
       )}
 
       {/* ── RANKING PÓDIO — pódio compacto Cidade / Brasil / Estado ── */}
-      <div style={{ ...ov(0.614, 0.730, 0.350, 0.270), zIndex: 89 }}>
+      <div style={{ ...ov(0.614, 0.700, 0.350, 0.255), zIndex: 89 }}>
         <RankingPodium
           cidade={rankingData?.cidade?.[0] ? {
             nome: rankingData.cidade[0].name,
