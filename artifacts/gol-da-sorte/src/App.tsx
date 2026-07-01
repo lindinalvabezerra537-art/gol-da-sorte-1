@@ -918,6 +918,12 @@ export default function App() {
               estado: estTop && seguidos.includes(estTop),
               brasil: braTop && seguidos.includes(braTop),
             });
+            // Restaura estado "SEGUINDO" do campeão se já seguiu
+            const champId = prevCampeaoUserId.current;
+            if (champId && seguidos.includes(Number(champId))) {
+              setChampionFollowClaimed(champId);
+              localStorage.setItem("claimedChampionUserId", champId);
+            }
           }).catch(() => {});
         }
       } else {
