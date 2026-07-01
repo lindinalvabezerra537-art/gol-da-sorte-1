@@ -1370,17 +1370,15 @@ export default function App() {
     return (
       <>
         <RegisterScreen referralCode={referralCodeFromUrl || undefined} onRegistered={handleRegistered} />
-        {isAdminMode && (
-          <button
-            onClick={() => setShowAdmin(true)}
-            style={{
-              position: "fixed", bottom: 16, right: 16, zIndex: 2147483638,
-              background: "#1a1a1a", border: "2px solid gold",
-              borderRadius: 10, color: "gold", fontSize: 14, fontWeight: "bold",
-              padding: "8px 14px", cursor: "pointer", boxShadow: "0 0 12px rgba(255,215,0,0.4)",
-            }}
-          >⚙️ ADMIN</button>
-        )}
+        <button
+          onClick={() => setShowAdmin(true)}
+          style={{
+            position: "fixed", bottom: 16, right: 16, zIndex: 2147483638,
+            background: "#1a1a1a", border: "2px solid gold",
+            borderRadius: 10, color: "gold", fontSize: 14, fontWeight: "bold",
+            padding: "8px 14px", cursor: "pointer", boxShadow: "0 0 12px rgba(255,215,0,0.4)",
+          }}
+        >⚙️ ADMIN</button>
       </>
     );
   }
