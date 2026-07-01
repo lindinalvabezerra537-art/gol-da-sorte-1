@@ -28,8 +28,9 @@ const TOUCH_CALIB = false;
 // JOGADAS number "12":   x=786-881 (xF=0.699-0.783), y=240-274 (yF=0.110-0.126)
 // CONVIDAR AGORA button: x=764-1000 (xF=0.679-0.889), y=1286-1310 (yF=0.591-0.602)
 const UI = {
-  jogadasNum:   { x: 0.675, y: 0.188, w: 0.130, h: 0.048 },  // real counter overlay
-  jogadasPlus:  { x: 0.795, y: 0.188, w: 0.080, h: 0.048 },  // "+" buy button
+  jogadasNum:   { x: 0.675, y: 0.188, w: 0.115, h: 0.048 },  // real counter overlay (reduzido)
+  jogadasPlus:  { x: 0.790, y: 0.188, w: 0.055, h: 0.048 },  // "+" buy button (reduzido)
+  shareIcon:    { x: 0.845, y: 0.188, w: 0.045, h: 0.048 },  // compartilhar redes sociais
   convidar:     { x: 0.608, y: 0.569, w: 0.272, h: 0.052 },  // CONVIDAR AGORA button
 };
 
@@ -393,6 +394,7 @@ export default function App() {
   );
   const [userInfo, setUserInfo] = useState<{ name: string; cidade: string; estado: string; fotoBase64?: string | null; rankingSocialLink?: string | null } | null>(null);
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [showInviteScreen, setShowInviteScreen] = useState(false);
   const [userLoaded, setUserLoaded] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -1968,8 +1970,7 @@ export default function App() {
 
       {showGolDaSorte && (<>
       {/* ══════════════════════════════════════════════
-          JOGADAS — botão contador + comprar mais
-          Cobre jogadasNum + jogadasPlus (x: 0.675→0.875)
+          JOGADAS — contador (reduzido) + comprar mais + compartilhar
           ══════════════════════════════════════════════ */}
       <div
         onClick={() => setShowPurchaseModal(true)}
@@ -2022,6 +2023,28 @@ export default function App() {
           {playsRemaining}
         </span>
       </div>
+
+      {/* ── ICONE COMPARTILHAR (Facebook + Instagram) ── */}
+      <button
+        onClick={(e) => { e.stopPropagation(); setShowShareModal(true); }}
+        onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); setShowShareModal(true); }}
+        style={{
+          ...ov(UI.shareIcon.x, UI.shareIcon.y, UI.shareIcon.w, UI.shareIcon.h),
+          zIndex: 31,
+          cursor: "pointer",
+          background: "linear-gradient(135deg, #1a1a2e, #0f0f1a)",
+          border: "1.5px solid rgba(255,215,0,0.5)",
+          borderRadius: 8,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "0 0 10px rgba(255,215,0,0.25)",
+          padding: 0,
+        }}
+        title="Compartilhar nas redes sociais"
+      >
+        <span style={{ fontSize: Math.max(bounds.w * 0.028, 14) }}>🔗</span>
+      </button>
 
       {/* ── VIDEO PROMO — autoplay, mudo, expande ao clicar ── */}
       <div
@@ -2566,6 +2589,9 @@ export default function App() {
       )}
       {showInviteScreen && userId && (
         <InviteScreen userId={userId} onClose={() => { setShowInviteScreen(false); refreshReferralCount(userId); }} />
+      )}
+      {showShareModal && userId && (
+        <ShareScreen userId={userId} onClose={() => setShowShareModal(false)} />
       )}
       {showEditPhoto && userId && (
         <EditProfileModal
