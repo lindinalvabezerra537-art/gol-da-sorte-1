@@ -74,6 +74,40 @@ function formatPhone(val: string) {
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
 }
 
+const VALID_DDDS = new Set([
+  11,12,13,14,15,16,17,18,19,
+  21,22,24,
+  27,28,
+  31,32,33,34,35,37,38,
+  41,42,43,44,45,46,
+  47,48,49,
+  51,53,54,55,
+  61,62,63,64,65,66,67,68,69,
+  71,73,74,75,77,79,
+  81,82,83,84,85,86,87,88,89,
+  91,92,93,94,95,96,97,98,99,
+]);
+
+function isValidBrazilianPhone(digits: string): boolean {
+  if (digits.length !== 10 && digits.length !== 11) return false;
+  const ddd = parseInt(digits.slice(0, 2));
+  if (!VALID_DDDS.has(ddd)) return false;
+  const numberPart = digits.slice(2);
+  // Não pode ser tudo o mesmo dígito
+  if (new Set(numberPart).size === 1) return false;
+  if (digits.length === 11) {
+    // Celular: 3º dígito deve ser 9, 4º deve ser 6-9
+    if (digits[2] !== "9") return false;
+    if (parseInt(digits[3]) < 6) return false;
+  }
+  if (digits.length === 10) {
+    // Fixo: 3º dígito deve ser 2-5
+    const third = parseInt(digits[2]);
+    if (third < 2 || third > 5) return false;
+  }
+  return true;
+}
+
 export default function RegisterScreen({ referralCode, onRegistered }: Props) {
   const [mode, setMode] = useState<"choice" | "register" | "login">("choice");
 
@@ -124,7 +158,7 @@ export default function RegisterScreen({ referralCode, onRegistered }: Props) {
     setError("");
     if (!fotoBase64) { setError("A foto de perfil é obrigatória. Clique no círculo acima para escolher."); return; }
     if (!name.trim()) { setError("Informe seu nome completo."); return; }
-    if (phone.replace(/\D/g, "").length < 10) { setError("Telefone incompleto."); return; }
+    if (!isValidBrazilianPhone(phone.replace(/\D/g, ""))) { setError("Número de telefone inválido. Use um celular brasileiro válido com DDD. Ex: (11) 99876-5432"); return; }
     if (phone !== phoneConfirm) { setError("Os telefones não conferem."); return; }
     if (!cidade.trim()) { setError("Informe sua cidade."); return; }
     if (!estado) { setError("Selecione seu estado."); return; }
@@ -160,8 +194,8 @@ export default function RegisterScreen({ referralCode, onRegistered }: Props) {
   };
 
   const handleLogin = async () => {
-    if (phone.replace(/\D/g, "").length < 10) {
-      setError("Digite seu telefone completo.");
+    if (!isValidBrazilianPhone(phone.replace(/\D/g, ""))) {
+      setError("Número de telefone inválido. Ex: (11) 99876-5432");
       return;
     }
     setLoading(true);

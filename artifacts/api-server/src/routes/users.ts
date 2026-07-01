@@ -5,6 +5,35 @@ import { sendEvent, broadcastEvent } from "../app";
 
 const router = Router();
 
+const VALID_DDDS = new Set([
+  11,12,13,14,15,16,17,18,19,
+  21,22,24,27,28,
+  31,32,33,34,35,37,38,
+  41,42,43,44,45,46,47,48,49,
+  51,53,54,55,
+  61,62,63,64,65,66,67,68,69,
+  71,73,74,75,77,79,
+  81,82,83,84,85,86,87,88,89,
+  91,92,93,94,95,96,97,98,99,
+]);
+
+function isValidBrazilianPhone(digits: string): boolean {
+  if (digits.length !== 10 && digits.length !== 11) return false;
+  const ddd = parseInt(digits.slice(0, 2));
+  if (!VALID_DDDS.has(ddd)) return false;
+  const numberPart = digits.slice(2);
+  if (new Set(numberPart).size === 1) return false;
+  if (digits.length === 11) {
+    if (digits[2] !== "9") return false;
+    if (parseInt(digits[3]) < 6) return false;
+  }
+  if (digits.length === 10) {
+    const third = parseInt(digits[2]);
+    if (third < 2 || third > 5) return false;
+  }
+  return true;
+}
+
 function generateReferralCode(length = 8): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let code = "";
@@ -40,8 +69,8 @@ router.post("/register", async (req, res) => {
   }
 
   const cleanPhone = phone.replace(/\D/g, "");
-  if (cleanPhone.length < 10) {
-    res.status(400).json({ error: "Telefone inválido." });
+  if (!isValidBrazilianPhone(cleanPhone)) {
+    res.status(400).json({ error: "Número de telefone inválido. Use um celular brasileiro com DDD. Ex: 11987654321" });
     return;
   }
 
