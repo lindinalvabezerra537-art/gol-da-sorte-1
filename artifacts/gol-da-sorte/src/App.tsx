@@ -30,7 +30,7 @@ const TOUCH_CALIB = false;
 const UI = {
   jogadasNum:   { x: 0.675, y: 0.188, w: 0.115, h: 0.048 },  // real counter overlay (reduzido)
   jogadasPlus:  { x: 0.790, y: 0.188, w: 0.055, h: 0.048 },  // "+" buy button (reduzido)
-  shareIcon:    { x: 0.845, y: 0.188, w: 0.045, h: 0.048 },  // compartilhar redes sociais
+  shareIcon:    { x: 0.895, y: 0.166, w: 0.068, h: 0.062 },  // compartilhar redes sociais
   convidar:     { x: 0.608, y: 0.569, w: 0.272, h: 0.052 },  // CONVIDAR AGORA button
 };
 
@@ -2045,8 +2045,8 @@ export default function App() {
         title="Compartilhar"
       >
         <svg
-          width={Math.max(bounds.w * 0.030, 22)}
-          height={Math.max(bounds.w * 0.030, 22)}
+          width={Math.max(bounds.w * 0.045, 28)}
+          height={Math.max(bounds.w * 0.045, 28)}
           viewBox="0 0 24 24"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
