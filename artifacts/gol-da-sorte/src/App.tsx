@@ -2025,6 +2025,44 @@ export default function App() {
       </div>
 
 
+      {/* ── ICONE COMPARTILHAR — 3 bolinhas interligadas ── */}
+      <button
+        onClick={(e) => { e.stopPropagation(); setShowShareModal(true); }}
+        onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); setShowShareModal(true); }}
+        style={{
+          ...ov(UI.shareIcon.x, UI.shareIcon.y, UI.shareIcon.w, UI.shareIcon.h),
+          zIndex: 31,
+          cursor: "pointer",
+          background: "linear-gradient(135deg, #1a1a2e, #0f0f1a)",
+          border: "1.5px solid rgba(255,215,0,0.6)",
+          borderRadius: 10,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "0 0 14px rgba(255,215,0,0.35), inset 0 0 6px rgba(255,215,0,0.08)",
+          padding: 0,
+        }}
+        title="Compartilhar"
+      >
+        <svg
+          width={Math.max(bounds.w * 0.030, 22)}
+          height={Math.max(bounds.w * 0.030, 22)}
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          {/* Linhas de conexão */}
+          <line x1="7.5" y1="9" x2="16.5" y2="5" stroke="#FFD700" strokeWidth="1.8" strokeLinecap="round"/>
+          <line x1="7.5" y1="15" x2="16.5" y2="19" stroke="#FFD700" strokeWidth="1.8" strokeLinecap="round"/>
+          {/* Bolinha esquerda (central) */}
+          <circle cx="5" cy="12" r="3" fill="#FFD700" stroke="#FFA500" strokeWidth="1"/>
+          {/* Bolinha superior direita */}
+          <circle cx="19" cy="4.5" r="3" fill="#FFD700" stroke="#FFA500" strokeWidth="1"/>
+          {/* Bolinha inferior direita */}
+          <circle cx="19" cy="19.5" r="3" fill="#FFD700" stroke="#FFA500" strokeWidth="1"/>
+        </svg>
+      </button>
+
       {/* ── VIDEO PROMO — autoplay, mudo, expande ao clicar ── */}
       <div
         style={{
