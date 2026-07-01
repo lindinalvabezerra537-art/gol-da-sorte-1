@@ -817,7 +817,7 @@ export default function App() {
         .catch(() => {});
     };
     fetchOnline();
-    const interval = setInterval(fetchOnline, 30_000);
+    const interval = setInterval(fetchOnline, 8_000);
     return () => clearInterval(interval);
   }, []);
 
@@ -868,6 +868,48 @@ export default function App() {
     const interval = setInterval(fetchChatCount, 15_000);
     return () => clearInterval(interval);
   }, []);
+
+  // ── Polling automático: jogadas + pontos + ranking a cada 10s ────────────────
+  useEffect(() => {
+    if (!userId) return;
+    const refresh = async () => {
+      const [userData, myRank, segData] = await Promise.all([
+        apiCall(`/users/${userId}`),
+        apiCall(`/users/${userId}/ranking`),
+        apiCall(`/users/${userId}/seguidos`),
+      ]);
+      if (userData?.user) {
+        setPlaysRemaining(userData.user.playsRemaining);
+      }
+      if (myRank?.user) {
+        setRankingMyPosition(prev => prev ? {
+          ...prev,
+          cidadeRank: myRank.cidadeRank,
+          estadoRank: myRank.estadoRank,
+          brasilRank: myRank.brasilRank,
+          points: myRank.user.rankingPoints,
+        } : prev);
+      }
+      if (segData?.seguidos) {
+        const seguidos: number[] = segData.seguidos;
+        setSeguidosList(seguidos);
+        setRankingData(prev => {
+          if (!prev) return prev;
+          const cidTop = prev.cidade?.[0]?.id;
+          const estTop = prev.estado?.[0]?.id;
+          const braTop = prev.brasil?.[0]?.id;
+          setSeguindoRanking({
+            cidade: !!(cidTop && seguidos.includes(cidTop)),
+            estado: !!(estTop && seguidos.includes(estTop)),
+            brasil: !!(braTop && seguidos.includes(braTop)),
+          });
+          return prev;
+        });
+      }
+    };
+    const interval = setInterval(refresh, 10_000);
+    return () => clearInterval(interval);
+  }, [userId]);
 
   useEffect(() => {
     playsRemainingRef.current = playsRemaining;
