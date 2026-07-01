@@ -643,8 +643,12 @@ export default function App() {
     setTimeout(() => {
       setShowMegaCelebration(false);
       const existingLink = userInfo?.rankingSocialLink || "";
-      if (existingLink) setChampionLinkInput(existingLink);
-      setShowChampionModal(true);
+      if (existingLink) {
+        // Já tem link salvo — não mostra o modal de campeão
+        setChampionLinkInput(existingLink);
+      } else {
+        setShowChampionModal(true);
+      }
     }, 3500);
   }, [userId, userInfo]);
 
