@@ -49,11 +49,16 @@ export default function ShareScreen({ userId, onClose }: Props) {
     }
   };
 
-  const handleFacebook = () => {
-    const text = `🏆 Jogue o GOL DA SORTE comigo e ganhe 5 jogadas grátis! ${inviteLink}`;
-    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(inviteLink)}&quote=${encodeURIComponent(text)}`;
-    window.open(url, "_blank", "width=600,height=400");
-    onClose();
+  const [fbCopied, setFbCopied] = useState(false);
+
+  const handleFacebook = async () => {
+    const text = `🏆 Jogue o GOL DA SORTE comigo e ganhe 5 jogadas grátis!\n${inviteLink}`;
+    try {
+      await navigator.clipboard.writeText(text);
+      setFbCopied(true);
+    } catch {}
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(inviteLink)}`;
+    window.open(url, "_blank", "width=600,height=500");
   };
 
   const handleWhatsApp = () => {
@@ -165,12 +170,22 @@ export default function ShareScreen({ userId, onClose }: Props) {
               style={{
                 width: "100%", background: "linear-gradient(135deg, #1877F2, #166fe5)",
                 color: "#fff", border: "none", borderRadius: 12, padding: "13px",
-                fontSize: 15, fontWeight: 900, cursor: "pointer", marginBottom: 8,
+                fontSize: 15, fontWeight: 900, cursor: "pointer", marginBottom: fbCopied ? 4 : 8,
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
               }}
             >
               <span style={{ fontSize: 18 }}>📘</span> COMPARTILHAR NO FACEBOOK
             </button>
+            {fbCopied && (
+              <div style={{
+                background: "rgba(24,119,242,0.15)",
+                border: "1px solid rgba(24,119,242,0.4)",
+                borderRadius: 8, padding: "8px 12px", marginBottom: 8,
+                color: "#90b8ff", fontSize: 12, textAlign: "center", lineHeight: 1.5,
+              }}>
+                ✅ Texto copiado! No Facebook, clique em <strong>"No que você está pensando?"</strong> e cole com <strong>Ctrl+V</strong> (ou toque longo → Colar)
+              </div>
+            )}
 
             {/* Instagram — copia e abre */}
             <button
