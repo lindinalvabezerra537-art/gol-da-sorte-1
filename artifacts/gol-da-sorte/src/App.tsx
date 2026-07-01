@@ -2024,27 +2024,6 @@ export default function App() {
         </span>
       </div>
 
-      {/* ── ICONE COMPARTILHAR (Facebook + Instagram) ── */}
-      <button
-        onClick={(e) => { e.stopPropagation(); setShowShareModal(true); }}
-        onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); setShowShareModal(true); }}
-        style={{
-          ...ov(UI.shareIcon.x, UI.shareIcon.y, UI.shareIcon.w, UI.shareIcon.h),
-          zIndex: 31,
-          cursor: "pointer",
-          background: "linear-gradient(135deg, #1a1a2e, #0f0f1a)",
-          border: "1.5px solid rgba(255,215,0,0.5)",
-          borderRadius: 8,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          boxShadow: "0 0 10px rgba(255,215,0,0.25)",
-          padding: 0,
-        }}
-        title="Compartilhar nas redes sociais"
-      >
-        <span style={{ fontSize: Math.max(bounds.w * 0.028, 14) }}>🔗</span>
-      </button>
 
       {/* ── VIDEO PROMO — autoplay, mudo, expande ao clicar ── */}
       <div
