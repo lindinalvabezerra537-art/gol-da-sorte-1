@@ -33,7 +33,7 @@ export default function InviteScreen({ userId, onClose }: Props) {
     : "";
 
   const handleShare = async () => {
-    const text = `🏆 Jogue o GOL DA SORTE comigo e ganhe 5 jogadas grátis!\n${inviteLink}`;
+    const text = `🏆 Jogue o GOL DA SORTE comigo e ganhe 10 jogadas grátis!\n${inviteLink}`;
     if (navigator.share) {
       try {
         await navigator.share({ title: "Gol da Sorte", text, url: inviteLink });
@@ -50,7 +50,7 @@ export default function InviteScreen({ userId, onClose }: Props) {
   };
 
   const handleWhatsApp = () => {
-    const text = encodeURIComponent(`🏆 Jogue o GOL DA SORTE comigo e ganhe 5 jogadas grátis!\n${inviteLink}`);
+    const text = encodeURIComponent(`🏆 Jogue o GOL DA SORTE comigo e ganhe 10 jogadas grátis!\n${inviteLink}`);
     window.open(`https://wa.me/?text=${text}`, "_blank");
     onClose();
   };

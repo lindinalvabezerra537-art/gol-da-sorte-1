@@ -32,14 +32,14 @@ export default function ShareScreen({ userId, onClose }: Props) {
     ? `${window.location.origin}${window.location.pathname}?ref=${info.referralCode}`
     : "";
 
-  const shareText = `🏆 Jogue o GOL DA SORTE comigo e ganhe 5 jogadas grátis!\n${inviteLink}`;
+  const shareText = `🏆 Jogue o GOL DA SORTE comigo e ganhe 10 jogadas grátis!\n${inviteLink}`;
 
   const handleNativeShare = async () => {
     if (navigator.share) {
       try {
         await navigator.share({
           title: "GOL DA SORTE",
-          text: "🏆 Jogue o GOL DA SORTE comigo e ganhe 5 jogadas grátis!",
+          text: "🏆 Jogue o GOL DA SORTE comigo e ganhe 10 jogadas grátis!",
           url: inviteLink,
         });
         onClose();
@@ -52,7 +52,7 @@ export default function ShareScreen({ userId, onClose }: Props) {
   const [fbCopied, setFbCopied] = useState(false);
 
   const handleFacebook = async () => {
-    const text = `🏆 Jogue o GOL DA SORTE comigo e ganhe 5 jogadas grátis!\n${inviteLink}`;
+    const text = `🏆 Jogue o GOL DA SORTE comigo e ganhe 10 jogadas grátis!\n${inviteLink}`;
     try {
       await navigator.clipboard.writeText(text);
       setFbCopied(true);
