@@ -1127,6 +1127,7 @@ export default function App() {
     }
     if (data?.user) {
       setSeguindoRanking(prev => ({ ...prev, [scope]: true }));
+      setRankingMyPosition(prev => prev ? { ...prev, points: data.user.rankingPoints ?? prev.points } : prev);
       showToast(`🎉 +5 pts! Você seguiu ${topPlayer.name || "o líder do " + scope.toUpperCase()}!`);
     }
   }, [userId, rankingData]);
@@ -2037,9 +2038,10 @@ export default function App() {
               });
               if (data?.user) {
                 setPlaysRemaining(data.user.playsRemaining);
+                setRankingMyPosition(prev => prev ? { ...prev, points: data.user.rankingPoints ?? prev.points } : prev);
                 setChampionFollowClaimed(atualCampeao.userId);
                 localStorage.setItem("claimedChampionUserId", atualCampeao.userId);
-                showToast("🎉 +3 jogadas creditadas!");
+                showToast("🎉 +3 jogadas e +5 pts creditados!");
               } else if (data?.error) {
                 if (data.error.includes("já resgatou")) {
                   setChampionFollowClaimed(atualCampeao.userId);
