@@ -108,6 +108,99 @@ function isValidBrazilianPhone(digits: string): boolean {
   return true;
 }
 
+function TermsModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.88)",
+        zIndex: 99999,
+        display: "flex",
+        alignItems: "flex-start",
+        justifyContent: "center",
+        padding: "20px 16px",
+        overflowY: "auto",
+      }}
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: "#0e0c00",
+          border: "1.5px solid rgba(255,200,0,0.3)",
+          borderRadius: 16,
+          padding: "28px 22px 32px",
+          maxWidth: 480,
+          width: "100%",
+          color: "#ccc",
+          fontSize: 13,
+          lineHeight: 1.7,
+        }}
+      >
+        <div style={{ color: "#FFD700", fontWeight: 900, fontSize: 16, letterSpacing: 1, marginBottom: 18, textAlign: "center" }}>
+          TERMOS DE USO E POLÍTICA DE PRIVACIDADE
+        </div>
+
+        {[
+          {
+            title: "1. ACEITAÇÃO DOS TERMOS",
+            text: "Ao se cadastrar e utilizar a plataforma Gol da Sorte, o usuário declara ter lido, compreendido e concordado integralmente com estes Termos de Uso. O acesso e uso da plataforma estão condicionados à aceitação destes termos.",
+          },
+          {
+            title: "2. RESTRIÇÃO DE IDADE",
+            text: "A participação na plataforma Gol da Sorte é exclusiva para maiores de 18 (dezoito) anos. Ao se cadastrar, o usuário declara expressamente ser maior de 18 anos e assume total responsabilidade por essa declaração. Caso seja constatado que o usuário é menor de idade, sua conta será imediatamente encerrada.",
+          },
+          {
+            title: "3. DIREITO DE IMAGEM",
+            text: "Ao enviar sua foto de perfil para a plataforma, o usuário concede ao Gol da Sorte autorização gratuita, não exclusiva e por prazo indeterminado para: exibir sua imagem dentro da plataforma como peão no jogo; exibir sua imagem em rankings, quadros de ganhadores e comunicações promocionais relacionadas à plataforma; divulgar sua participação como ganhador nas redes sociais oficiais da plataforma.\n\nO usuário declara ser o titular dos direitos sobre a imagem enviada ou ter autorização para seu uso, isentando o Gol da Sorte de qualquer responsabilidade por eventual violação de direitos de terceiros.",
+          },
+          {
+            title: "4. DADOS PESSOAIS",
+            text: "Os dados cadastrais (nome, telefone, cidade e estado) são coletados exclusivamente para fins de identificação e operação da plataforma, não sendo vendidos ou compartilhados com terceiros para fins comerciais.",
+          },
+          {
+            title: "5. RESPONSABILIDADE DO USUÁRIO",
+            text: "O usuário é responsável pelo sigilo de suas credenciais de acesso e pelo uso adequado da plataforma, comprometendo-se a não utilizar mecanismos que fraudem ou prejudiquem outros participantes.",
+          },
+          {
+            title: "6. ALTERAÇÕES NOS TERMOS",
+            text: "O Gol da Sorte reserva-se o direito de alterar estes termos a qualquer momento, sendo o usuário notificado pelas vias disponíveis na plataforma.",
+          },
+        ].map((item) => (
+          <div key={item.title} style={{ marginBottom: 18 }}>
+            <div style={{ color: "#FFD700", fontWeight: 700, fontSize: 12, letterSpacing: 0.5, marginBottom: 6 }}>
+              {item.title}
+            </div>
+            {item.text.split("\n\n").map((p, i) => (
+              <p key={i} style={{ margin: "0 0 8px 0" }}>{p}</p>
+            ))}
+          </div>
+        ))}
+
+        <button
+          onClick={onClose}
+          style={{
+            width: "100%",
+            marginTop: 8,
+            background: "linear-gradient(135deg, #FFD700, #FF8C00)",
+            color: "#000",
+            border: "none",
+            borderRadius: 12,
+            padding: "14px",
+            fontSize: 14,
+            fontWeight: 900,
+            cursor: "pointer",
+            letterSpacing: 1,
+          }}
+        >
+          FECHAR
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function RegisterScreen({ referralCode, onRegistered }: Props) {
   const [mode, setMode] = useState<"choice" | "register" | "login">("choice");
 
@@ -120,6 +213,7 @@ export default function RegisterScreen({ referralCode, onRegistered }: Props) {
   const [fotoPreview, setFotoPreview] = useState<string | null>(null);
   const [aceitaTermos, setAceitaTermos] = useState(false);
   const [maisDe18, setMaisDe18] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -230,6 +324,7 @@ export default function RegisterScreen({ referralCode, onRegistered }: Props) {
         padding: "28px 20px 48px",
       }}
     >
+      {showTerms && <TermsModal onClose={() => setShowTerms(false)} />}
       {/* Logo */}
       <div style={{ textAlign: "center", marginBottom: 28 }}>
         <div style={{ fontSize: 52, lineHeight: 1, marginBottom: 8 }}>⚽</div>
@@ -504,8 +599,20 @@ export default function RegisterScreen({ referralCode, onRegistered }: Props) {
                 style={{ width: 18, height: 18, marginTop: 1, accentColor: G.gold, flexShrink: 0 }}
               />
               <span style={{ color: "#ccc", fontSize: 13, lineHeight: 1.4 }}>
-                Li e aceito os <strong style={{ color: G.gold }}>Termos de Uso</strong> e a{" "}
-                <strong style={{ color: G.gold }}>Política de Privacidade</strong>
+                Li e aceito os{" "}
+                <strong
+                  style={{ color: G.gold, cursor: "pointer", textDecoration: "underline" }}
+                  onClick={(e) => { e.preventDefault(); setShowTerms(true); }}
+                >
+                  Termos de Uso
+                </strong>{" "}
+                e a{" "}
+                <strong
+                  style={{ color: G.gold, cursor: "pointer", textDecoration: "underline" }}
+                  onClick={(e) => { e.preventDefault(); setShowTerms(true); }}
+                >
+                  Política de Privacidade
+                </strong>
               </span>
             </label>
           </div>
