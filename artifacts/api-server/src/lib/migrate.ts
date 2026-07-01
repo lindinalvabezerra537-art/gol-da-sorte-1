@@ -135,4 +135,7 @@ export async function runMigrations() {
       UNIQUE (target_user_id, follower_user_id)
     )
   `);
+
+  await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS warnings INTEGER NOT NULL DEFAULT 0`);
+  await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS warning_message TEXT`);
 }
