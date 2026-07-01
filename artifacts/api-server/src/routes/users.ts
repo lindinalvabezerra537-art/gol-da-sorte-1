@@ -396,10 +396,8 @@ router.post("/:id/add-points", async (req, res) => {
     }
   }
 
-  // Se entrou no ranking, notifica todos para atualizarem o ranking
-  if (enteredRanking) {
-    broadcastEvent({ type: "ranking_changed", data: { scope: enteredRanking, userId: id } });
-  }
+  // Sempre notifica TODOS os clientes para atualizarem o ranking em tempo real
+  broadcastEvent({ type: "ranking_changed", data: { scope: enteredRanking ?? "update", userId: id } });
 
   res.json({ user: updated, added: addPoints, total: newPoints, enteredRanking });
 });
