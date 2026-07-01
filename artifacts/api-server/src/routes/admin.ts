@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { db } from "@workspace/db";
 import { usersTable, paymentsTable, settingsTable } from "@workspace/db";
 import { eq, gte, and, sql, ilike, or, desc } from "drizzle-orm";
+import { sendEvent } from "../app";
 
 const router = Router();
 
@@ -104,6 +105,7 @@ router.post("/users/:id/block", async (req, res) => {
   if (!checkAdmin(req, res)) return;
   const id = parseInt(req.params.id);
   await db.update(usersTable).set({ bloqueado: true }).where(eq(usersTable.id, id));
+  sendEvent(id, { type: "admin_blocked", data: { message: "Sua conta foi bloqueada pelo administrador." } });
   res.json({ ok: true });
 });
 
@@ -112,6 +114,42 @@ router.post("/users/:id/unblock", async (req, res) => {
   const id = parseInt(req.params.id);
   await db.update(usersTable).set({ bloqueado: false }).where(eq(usersTable.id, id));
   res.json({ ok: true });
+});
+
+router.post("/users/:id/warn", async (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  try {
+    const id = parseInt(req.params.id);
+    const { message } = req.body as { message?: string };
+    if (!id || isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+    const [user] = await db.select({ warnings: usersTable.warnings }).from(usersTable).where(eq(usersTable.id, id));
+    if (!user) { res.status(404).json({ error: "Usuário não encontrado" }); return; }
+    const warningMessage = message?.trim() || "Você recebeu uma advertência do administrador. Comporte-se adequadamente.";
+    const newWarnings = (user.warnings ?? 0) + 1;
+    const [updated] = await db.update(usersTable)
+      .set({ warnings: newWarnings, warningMessage })
+      .where(eq(usersTable.id, id))
+      .returning();
+    sendEvent(id, { type: "admin_warning", data: { message: warningMessage, count: newWarnings } });
+    res.json({ ok: true, user: updated });
+  } catch (err) {
+    res.status(500).json({ error: "Erro ao enviar advertência" });
+  }
+});
+
+router.post("/users/:id/clear-warnings", async (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  try {
+    const id = parseInt(req.params.id);
+    if (!id || isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+    const [updated] = await db.update(usersTable)
+      .set({ warnings: 0, warningMessage: null })
+      .where(eq(usersTable.id, id))
+      .returning();
+    res.json({ ok: true, user: updated });
+  } catch (err) {
+    res.status(500).json({ error: "Erro ao limpar advertências" });
+  }
 });
 
 router.post("/users/:id/plays", async (req, res) => {

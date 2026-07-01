@@ -26,6 +26,8 @@ export const usersTable = pgTable("users", {
   rankingSocialLink: text("ranking_social_link"),
   onlineMinutesToday: integer("online_minutes_today").notNull().default(0),
   lastOnlineDate: timestamp("last_online_date"),
+  warnings: integer("warnings").notNull().default(0),
+  warningMessage: text("warning_message"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

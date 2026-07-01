@@ -431,6 +431,7 @@ export default function App() {
   });
   const r5PrizeBallsRef = useRef<number[]>([]);
   const [showBrindeModal, setShowBrindeModal] = useState(false);
+  const [warningModal, setWarningModal] = useState<{ message: string; count: number } | null>(null);
   const [brindeText, setBrindeText] = useState("");
   const [onlineUsers, setOnlineUsers] = useState<{ id: number; name: string; cidade: string; fotoBase64?: string | null }[]>([]);
   const [showChatRoom, setShowChatRoom] = useState(false);
@@ -1112,6 +1113,17 @@ export default function App() {
             const m = msg.data.message as string;
             if (m) showToast(m);
             setPiratePos(0);
+            break;
+          }
+          case "admin_warning": {
+            const warnMsg = msg.data.message as string;
+            const warnCount = msg.data.count as number;
+            setWarningModal({ message: warnMsg, count: warnCount });
+            break;
+          }
+          case "admin_blocked": {
+            const blockMsg = msg.data.message as string;
+            setWarningModal({ message: blockMsg, count: -1 });
             break;
           }
           default:
@@ -3406,6 +3418,55 @@ export default function App() {
       )}
 
       {/* ── MODAL BRINDE ── */}
+      {/* ── MODAL ADVERTÊNCIA / BLOQUEIO ADMIN ── */}
+      {warningModal && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 2147483647,
+          background: "rgba(0,0,0,0.92)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          padding: "24px",
+        }}>
+          <div style={{
+            background: "linear-gradient(135deg, #1a0a0a 0%, #2a1010 100%)",
+            border: `2px solid ${warningModal.count === -1 ? "#ef4444" : "#f59e0b"}`,
+            borderRadius: 20, maxWidth: 340, width: "100%",
+            padding: "32px 24px", textAlign: "center",
+            boxShadow: `0 0 60px ${warningModal.count === -1 ? "rgba(239,68,68,0.5)" : "rgba(245,158,11,0.5)"}`,
+          }}>
+            <div style={{ fontSize: 52, marginBottom: 12 }}>
+              {warningModal.count === -1 ? "🔒" : "⚠️"}
+            </div>
+            <div style={{
+              color: warningModal.count === -1 ? "#ef4444" : "#f59e0b",
+              fontWeight: 900, fontSize: 20, marginBottom: 12,
+              letterSpacing: 1, textTransform: "uppercase",
+            }}>
+              {warningModal.count === -1 ? "Conta Bloqueada" : `Advertência${warningModal.count > 1 ? ` (${warningModal.count}ª)` : ""}`}
+            </div>
+            <div style={{
+              color: "#e2e2e2", fontSize: 15, lineHeight: 1.6,
+              marginBottom: 24, padding: "14px 16px",
+              background: "rgba(255,255,255,0.05)", borderRadius: 12,
+              border: "1px solid rgba(255,255,255,0.1)",
+            }}>
+              {warningModal.message}
+            </div>
+            {warningModal.count !== -1 && (
+              <button
+                onClick={() => setWarningModal(null)}
+                style={{
+                  background: "#f59e0b", border: "none", borderRadius: 12,
+                  color: "#000", fontWeight: 900, fontSize: 16,
+                  padding: "14px 32px", cursor: "pointer", width: "100%",
+                }}
+              >
+                ENTENDIDO
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {showBrindeModal && (
         <div style={{
           position: "fixed", inset: 0, zIndex: 2147483641,

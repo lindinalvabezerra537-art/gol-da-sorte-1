@@ -62,6 +62,8 @@ interface UserRow {
   saldo: number;
   createdAt: string;
   rankingPoints?: number | null;
+  warnings?: number;
+  warningMessage?: string | null;
 }
 
 interface RankingPlayer {
@@ -195,6 +197,7 @@ export default function AdminPanel({ onClose, skipAuth }: { onClose: () => void;
   const [nameSearchResults, setNameSearchResults] = useState<UserRow[] | null>(null);
   const [namePointsDelta, setNamePointsDelta] = useState<Record<number, string>>({});
   const [namePointsEditing, setNamePointsEditing] = useState<number | null>(null);
+  const [warnMsg, setWarnMsg] = useState("");
 
   const isLoggedIn = !!token;
 
@@ -437,13 +440,70 @@ export default function AdminPanel({ onClose, skipAuth }: { onClose: () => void;
               </div>
             </Card>
 
-            {/* Ferramentas */}
-            <div style={{ color: C.gold, fontWeight: 700, fontSize: 13, marginBottom: 8 }}>🔧 Ferramentas</div>
+            {/* Moderação */}
+            <div style={{ color: C.gold, fontWeight: 700, fontSize: 13, marginBottom: 8 }}>🛡️ Moderação</div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
-              <Btn small label="✅ Desbloquear" color={C.green} onClick={() => doUserAction("unblock")} />
-              <Btn small label="🔒 Bloquear" color={C.red} onClick={() => doUserAction("block")} />
-            </div>
+            {/* Status de advertências */}
+            {(selectedUser.warnings ?? 0) > 0 && (
+              <Card style={{ marginBottom: 10, borderColor: "#f59e0b", background: "#1a1500" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div>
+                    <div style={{ color: "#f59e0b", fontWeight: 700, fontSize: 13 }}>
+                      ⚠️ {selectedUser.warnings} advertência{(selectedUser.warnings ?? 0) > 1 ? "s" : ""}
+                    </div>
+                    {selectedUser.warningMessage && (
+                      <div style={{ color: C.muted, fontSize: 11, marginTop: 3 }}>
+                        Última: "{selectedUser.warningMessage}"
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => doUserAction("clear-warnings")}
+                    style={{ background: "none", border: `1px solid ${C.border}`, borderRadius: 6, color: C.muted, fontSize: 11, padding: "4px 8px", cursor: "pointer" }}
+                  >
+                    Limpar
+                  </button>
+                </div>
+              </Card>
+            )}
+
+            {/* Advertir */}
+            <Card style={{ marginBottom: 10, borderColor: "#f59e0b" }}>
+              <div style={{ color: "#f59e0b", fontWeight: 700, fontSize: 12, marginBottom: 8 }}>⚠️ Enviar Advertência</div>
+              <textarea
+                value={warnMsg}
+                onChange={e => setWarnMsg(e.target.value)}
+                placeholder="Mensagem da advertência (opcional)..."
+                rows={2}
+                style={{
+                  width: "100%", boxSizing: "border-box", background: "#1a1a25",
+                  border: `1px solid ${C.border}`, borderRadius: 8, color: C.text,
+                  padding: "8px 10px", fontSize: 13, outline: "none",
+                  resize: "none", marginBottom: 8, fontFamily: "inherit",
+                }}
+              />
+              <Btn
+                label="⚠️ Advertir Usuário"
+                color="#d97706"
+                onClick={() => {
+                  doUserAction("warn", { message: warnMsg || undefined });
+                  setWarnMsg("");
+                }}
+              />
+            </Card>
+
+            {/* Bloquear / Desbloquear */}
+            <Card style={{ marginBottom: 12, borderColor: selectedUser.bloqueado ? C.green : C.red }}>
+              <div style={{ color: selectedUser.bloqueado ? C.green : C.red, fontWeight: 700, fontSize: 12, marginBottom: 8 }}>
+                {selectedUser.bloqueado ? "🔓 Conta Bloqueada" : "🔒 Bloquear Conta"}
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                <Btn small label="✅ Desbloquear" color={C.green} onClick={() => doUserAction("unblock")} />
+                <Btn small label="🔒 Bloquear" color={C.red} onClick={() => doUserAction("block")} />
+              </div>
+            </Card>
+
+            <div style={{ color: C.gold, fontWeight: 700, fontSize: 13, marginBottom: 8 }}>🔧 Ferramentas</div>
 
             <Card style={{ marginBottom: 10 }}>
               <div style={{ color: C.muted, fontSize: 12, marginBottom: 8 }}>Jogadas (número positivo = adicionar, negativo = remover)</div>
