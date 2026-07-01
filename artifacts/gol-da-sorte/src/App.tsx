@@ -3108,12 +3108,14 @@ export default function App() {
               <button
                 disabled={!hasClickedChampionLink}
                 onClick={async () => {
-                  if (!userId || !atualCampeao.userId) return;
+                  if (!userId) { showToast("⚠️ Faça seu cadastro primeiro!"); return; }
+                  if (!atualCampeao.userId) { showToast("⚠️ Erro: campeão sem ID. Tente novamente."); return; }
                   const data = await apiCall(`/users/${userId}/seguir-campeao`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ campeonUserId: Number(atualCampeao.userId) }),
                   });
+                  if (!data) { showToast("⚠️ Erro de conexão. Tente novamente."); return; }
                   if (data?.error) {
                     if (data.error.includes("já resgatou")) {
                       setChampionFollowClaimed(atualCampeao.userId);
