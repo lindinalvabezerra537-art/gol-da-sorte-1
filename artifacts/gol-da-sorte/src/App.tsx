@@ -644,12 +644,35 @@ export default function App() {
     }
     // Mostrar plaquinha de parabéns por 3s, depois abrir modal do campeão
     setShowMegaCelebration(true);
-    setTimeout(() => {
+    setTimeout(async () => {
       setShowMegaCelebration(false);
       const existingLink = userInfo?.rankingSocialLink || "";
       if (existingLink) {
-        // Já tem link salvo — não mostra o modal de campeão
+        // Link já salvo — registra campeão automaticamente sem mostrar modal
         setChampionLinkInput(existingLink);
+        if (userId && userInfo) {
+          await apiCall("/settings/atual-campeao", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              nome: userInfo.name,
+              cidadeEstado: `${userInfo.cidade} - ${userInfo.estado}`,
+              foto: userInfo.fotoBase64 || "",
+              linkSocial: existingLink,
+              userId: String(userId),
+            }),
+          });
+          setAtualCampeao({
+            nome: userInfo.name,
+            cidadeEstado: `${userInfo.cidade} - ${userInfo.estado}`,
+            foto: userInfo.fotoBase64 || "",
+            linkSocial: existingLink,
+            userId: String(userId),
+          });
+          prevCampeaoUserId.current = String(userId);
+          announcingCampeaoRef.current = String(userId);
+          showToast("🏆 Você é o Atual Campeão de Performance!");
+        }
       } else {
         setShowChampionModal(true);
       }
