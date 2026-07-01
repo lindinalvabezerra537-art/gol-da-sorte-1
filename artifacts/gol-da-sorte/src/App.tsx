@@ -3674,8 +3674,8 @@ export default function App() {
 
 
 
-      {/* Botão Admin — visível apenas para o admin */}
-      {isPhoneAdmin && <button
+      {/* Botão Admin — sempre visível no canto */}
+      <button
         onClick={(e) => { e.stopPropagation(); setShowAdmin(true); }}
         style={{
           position: "fixed", bottom: 12, left: 12, zIndex: 2147483639,
@@ -3687,7 +3687,7 @@ export default function App() {
           backdropFilter: "blur(4px)",
         }}
         title="Painel Admin"
-      >⚙️</button>}
+      >⚙️</button>
 
       <style>{`
         @keyframes bonusPop {
