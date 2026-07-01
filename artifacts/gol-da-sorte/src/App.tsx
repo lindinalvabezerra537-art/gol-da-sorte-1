@@ -2339,7 +2339,7 @@ export default function App() {
           paddingLeft: "calc(6% + 7.5mm)",
         }}
       >
-        <FaWhatsapp style={{ color: "#25D366", fontSize: "clamp(9px, 2.5vw, 14px)", filter: "drop-shadow(0 0 3px rgba(0,0,0,0.8))", flexShrink: 0 }} />
+        <FaWhatsapp style={{ color: "#25D366", fontSize: "clamp(14px, 4vw, 22px)", filter: "drop-shadow(0 0 4px rgba(0,0,0,0.9))", flexShrink: 0 }} />
       </div>
 
       {/* ══════════════════════════════════════════════
