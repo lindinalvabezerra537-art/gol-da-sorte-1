@@ -2336,7 +2336,7 @@ export default function App() {
           display: "flex",
           alignItems: "center",
           justifyContent: "flex-start",
-          paddingLeft: "calc(6% + 7mm)",
+          paddingLeft: "calc(6% + 7.5mm)",
         }}
       >
         <FaWhatsapp style={{ color: "#25D366", fontSize: "clamp(9px, 2.5vw, 14px)", filter: "drop-shadow(0 0 3px rgba(0,0,0,0.8))", flexShrink: 0 }} />
