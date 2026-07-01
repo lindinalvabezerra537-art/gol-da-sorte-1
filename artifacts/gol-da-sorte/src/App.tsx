@@ -12,6 +12,7 @@ import MapaBrasil from "./components/MapaBrasil";
 import EditProfileModal from "./components/EditProfileModal";
 import MeusPontosModal from "./components/MeusPontosModal";
 import RankingPodium from "./components/RankingPodium";
+import ShareScreen from "./components/ShareScreen";
 import { playZoneSound, playHorrorScream, playChampionFanfare } from "./sounds";
 
 // ── Image dimensions ──
