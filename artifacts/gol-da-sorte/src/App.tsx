@@ -361,6 +361,7 @@ export default function App() {
   const [rankingMyPosition, setRankingMyPosition] = useState<{ cidadeRank: number; estadoRank: number; brasilRank: number; points: number } | null>(null);
   const [seguindoRanking, setSeguindoRanking] = useState<{ cidade: boolean; estado: boolean; brasil: boolean }>({ cidade: false, estado: false, brasil: false });
   const [seguidosList, setSeguidosList] = useState<number[]>([]);
+  const [rankingFollowModal, setRankingFollowModal] = useState<{ scope: "cidade" | "estado" | "brasil"; nome: string; link: string; targetId: number; linkClicked: boolean } | null>(null);
   const [showRankingEntryModal, setShowRankingEntryModal] = useState(false);
   const [rankingEntryScope, setRankingEntryScope] = useState<"cidade" | "estado" | "brasil" | null>(null);
   const [rankingLinkInput, setRankingLinkInput] = useState("");
@@ -1317,13 +1318,12 @@ export default function App() {
     });
   };
 
-  const handleSeguirRanking = useCallback(async (scope: "cidade" | "estado" | "brasil") => {
+  const handleSeguirRanking = useCallback((scope: "cidade" | "estado" | "brasil") => {
     if (!userId || !rankingData) return;
     const topPlayer = rankingData[scope]?.[0];
     if (!topPlayer || !topPlayer.id) return;
     if (topPlayer.id === userId) { showToast("Você é o líder! Não precisa seguir a si mesmo."); return; }
 
-    // Primeiro abrir link social em nova aba
     const rawLink = topPlayer.link || topPlayer.rankingSocialLink || topPlayer.linkSocial || topPlayer.ranking_social_link || "";
     const trimmed = rawLink.trim();
     const link = trimmed.startsWith("http://") || trimmed.startsWith("https://")
@@ -1335,26 +1335,8 @@ export default function App() {
       showToast("📞 Este jogador ainda não cadastrou seu link social.");
       return;
     }
-    window.open(link, "_blank");
-
-    // Depois chamar API para seguir e ganhar pontos
-    const data = await apiCall(`/users/${userId}/seguir-ranking`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ targetUserId: topPlayer.id }),
-    });
-    if (data?.error) {
-      showToast(data.error);
-      return;
-    }
-    if (data?.user) {
-      setSeguindoRanking(prev => ({ ...prev, [scope]: true }));
-      setRankingMyPosition(prev => prev ? { ...prev, points: data.user.rankingPoints ?? prev.points } : prev);
-      setSeguidosList(prev => prev.includes(topPlayer.id) ? prev : [...prev, topPlayer.id]);
-      showToast(`🎉 +5 pts! Você seguiu ${topPlayer.name || "o líder do " + scope.toUpperCase()}!`);
-    } else if (data?.error) {
-      showToast(data.error);
-    }
+    // Abre modal de 2 passos (confiável em qualquer navegador/celular)
+    setRankingFollowModal({ scope, nome: topPlayer.name || "Líder", link, targetId: topPlayer.id, linkClicked: false });
   }, [userId, rankingData]);
 
   const handlePurchased = (newPlays: number) => {
@@ -3441,6 +3423,97 @@ export default function App() {
       )}
 
       {/* ── MODAL BRINDE ── */}
+      {/* ── MODAL SEGUIR RANKING (2 passos, confiável no celular) ── */}
+      {rankingFollowModal && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 2147483645,
+          background: "rgba(0,0,0,0.88)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          padding: "24px",
+        }}>
+          <div style={{
+            background: "linear-gradient(135deg, #0d1a0d 0%, #0a0f0a 100%)",
+            border: "2px solid #4ade80",
+            borderRadius: 20, maxWidth: 340, width: "100%",
+            padding: "28px 20px", textAlign: "center",
+            boxShadow: "0 0 60px rgba(74,222,128,0.3)",
+          }}>
+            <div style={{ fontSize: 40, marginBottom: 8 }}>🏆</div>
+            <div style={{ color: "#4ade80", fontWeight: 900, fontSize: 17, marginBottom: 6, textTransform: "uppercase" }}>
+              Siga {rankingFollowModal.nome}
+            </div>
+            <div style={{ color: "#ccc", fontSize: 13, marginBottom: 20, lineHeight: 1.5 }}>
+              Siga nas redes sociais e ganhe{" "}
+              <strong style={{ color: "#FFD700" }}>3 jogadas + 5 pontos</strong> no ranking!
+            </div>
+
+            {/* Passo 1: abrir perfil */}
+            <a
+              href={rankingFollowModal.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setRankingFollowModal(prev => prev ? { ...prev, linkClicked: true } : null)}
+              style={{
+                display: "block", width: "100%", boxSizing: "border-box",
+                background: "linear-gradient(135deg, #4ade80, #22c55e)",
+                color: "#000", fontWeight: 900, fontSize: 15,
+                borderRadius: 12, padding: "13px 0",
+                textDecoration: "none", marginBottom: 10,
+                boxShadow: "0 0 16px rgba(74,222,128,0.4)",
+              }}
+            >
+              ① Abrir perfil de {rankingFollowModal.nome} 📱
+            </a>
+
+            {/* Passo 2: receber recompensa */}
+            <button
+              disabled={!rankingFollowModal.linkClicked}
+              onClick={async () => {
+                const modal = rankingFollowModal;
+                if (!modal || !userId) return;
+                const data = await apiCall(`/users/${userId}/seguir-ranking`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ targetUserId: modal.targetId }),
+                });
+                if (data?.error) {
+                  showToast(data.error === "Você já seguiu este jogador" ? "Você já recebeu essa recompensa antes!" : data.error);
+                  setRankingFollowModal(null);
+                  return;
+                }
+                if (data?.user) {
+                  setSeguindoRanking(prev => ({ ...prev, [modal.scope]: true }));
+                  setRankingMyPosition(prev => prev ? { ...prev, points: data.user.rankingPoints ?? prev.points } : prev);
+                  setSeguidosList(prev => prev.includes(modal.targetId) ? prev : [...prev, modal.targetId]);
+                  setPlaysRemaining(data.user.playsRemaining ?? playsRemaining);
+                  showToast(`🎉 +3 jogadas e +5 pts! Você seguiu ${modal.nome}!`);
+                }
+                setRankingFollowModal(null);
+              }}
+              style={{
+                width: "100%", padding: "13px 0",
+                background: rankingFollowModal.linkClicked ? "#FFD700" : "#333",
+                color: rankingFollowModal.linkClicked ? "#000" : "#555",
+                fontWeight: 900, fontSize: 15,
+                border: "none", borderRadius: 12,
+                cursor: rankingFollowModal.linkClicked ? "pointer" : "not-allowed",
+                marginBottom: 10,
+                transition: "background 0.3s",
+              }}
+            >
+              {rankingFollowModal.linkClicked ? "② Já segui! Receber recompensa 🎁" : "① Abra o perfil primeiro"}
+            </button>
+
+            <button
+              onClick={() => setRankingFollowModal(null)}
+              style={{ background: "none", border: "none", color: "#666", fontSize: 13, cursor: "pointer", textDecoration: "underline" }}
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ── MODAL ADVERTÊNCIA / BLOQUEIO ADMIN ── */}
       {warningModal && (
         <div style={{

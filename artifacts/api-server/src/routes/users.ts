@@ -691,17 +691,18 @@ router.post("/:id/seguir-ranking", async (req, res) => {
 
   await db.insert(rankingFollowsTable).values({ targetUserId, followerUserId: id });
 
-  const [user] = await db.select({ rankingPoints: usersTable.rankingPoints }).from(usersTable).where(eq(usersTable.id, id));
+  const [user] = await db.select({ rankingPoints: usersTable.rankingPoints, playsRemaining: usersTable.playsRemaining }).from(usersTable).where(eq(usersTable.id, id));
   if (!user) { res.status(404).json({ error: "User not found" }); return; }
   const newPoints = (user.rankingPoints ?? 0) + 5;
+  const newPlays = (user.playsRemaining ?? 0) + 3;
   const [updated] = await db.update(usersTable)
-    .set({ rankingPoints: newPoints })
+    .set({ rankingPoints: newPoints, playsRemaining: newPlays })
     .where(eq(usersTable.id, id))
     .returning();
 
-  // Notifica o seguidor sobre os pontos recebidos
-  sendEvent(id, { type: "follow_reward", data: { addedPoints: 5 } });
-  res.json({ user: updated, addedPoints: 5 });
+  // Notifica o seguidor sobre os pontos e jogadas recebidos
+  sendEvent(id, { type: "follow_reward", data: { addedPoints: 5, addedPlays: 3 } });
+  res.json({ user: updated, addedPoints: 5, addedPlays: 3 });
 });
 
 // ── Verificar se já seguiu um jogador ──
