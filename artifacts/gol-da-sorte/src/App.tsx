@@ -2008,22 +2008,38 @@ export default function App() {
           {/* 4 — Botão SEGUIR / SEGUINDO */}
           <button
             type="button"
-            onClick={e => {
+            onClick={async e => {
               e.stopPropagation();
               e.preventDefault();
-              if (!userId) { showToast("Faça login para seguir o campeão!"); return; }
+              if (!userId || !atualCampeao?.userId) return;
+              if (atualCampeao?.userId && championFollowClaimed === atualCampeao?.userId) return;
               const rawLink = (atualCampeao?.linkSocial || "").trim();
               const link = rawLink.startsWith("http://") || rawLink.startsWith("https://") ? rawLink : (rawLink ? `https://${rawLink}` : "");
-              if (!link || !rawLink) { showToast("Este campeão ainda não cadastrou o link social."); return; }
-              const a = document.createElement("a");
-              a.href = link;
-              a.target = "_blank";
-              a.rel = "noopener noreferrer";
-              document.body.appendChild(a);
-              a.click();
-              document.body.removeChild(a);
-              setHasClickedChampionLink(true);
-              if (atualCampeao?.nome) setShowChampionFollowModal(true);
+              if (link) {
+                const a = document.createElement("a");
+                a.href = link;
+                a.target = "_blank";
+                a.rel = "noopener noreferrer";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+              }
+              const data = await apiCall(`/users/${userId}/seguir-campeao`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ campeonUserId: Number(atualCampeao.userId) }),
+              });
+              if (data?.user) {
+                setPlaysRemaining(data.user.playsRemaining);
+                setChampionFollowClaimed(atualCampeao.userId);
+                localStorage.setItem("claimedChampionUserId", atualCampeao.userId);
+                showToast("🎉 +3 jogadas creditadas!");
+              } else if (data?.error) {
+                if (data.error.includes("já resgatou")) {
+                  setChampionFollowClaimed(atualCampeao.userId);
+                  localStorage.setItem("claimedChampionUserId", atualCampeao.userId);
+                }
+              }
             }}
             style={{
               marginTop: "auto",
