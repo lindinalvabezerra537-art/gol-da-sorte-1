@@ -1,7 +1,7 @@
 import { Router, Request } from "express";
 import { db, usersTable, referralsTable, rankingFollowsTable } from "@workspace/db";
 import { eq, and, sql, gte, desc, notInArray } from "drizzle-orm";
-import { sendEvent } from "../app";
+import { sendEvent, broadcastEvent } from "../app";
 
 const router = Router();
 
@@ -172,6 +172,8 @@ router.patch("/:id/pirate-pos", async (req, res) => {
   if (pos === 0) {
     sendEvent(id, { type: "knockback", data: { pos: 0, message: "Você foi derrubado e voltou para o início!" } });
   }
+  // Notifica todos os jogadores sobre mudança de posição no tabuleiro pirata
+  broadcastEvent({ type: "pirate_moved", data: { userId: id, piratePos: updated?.piratePos ?? pos } });
   res.json({ ok: true, piratePos: updated?.piratePos ?? pos });
 });
 
@@ -209,6 +211,7 @@ router.post("/:id/credit-plays", async (req, res) => {
   if (!user) { res.status(404).json({ error: "Usuário não encontrado" }); return; }
   const newPlays = Math.max(0, (user.playsRemaining ?? 0) + amount);
   const [updated] = await db.update(usersTable).set({ playsRemaining: newPlays }).where(eq(usersTable.id, id)).returning();
+  sendEvent(id, { type: "plays_updated", data: { playsRemaining: newPlays } });
   res.json({ user: updated });
 });
 
@@ -337,6 +340,9 @@ router.post("/:id/add-points", async (req, res) => {
   const newPoints = (user.rankingPoints ?? 0) + addPoints;
   const [updated] = await db.update(usersTable).set({ rankingPoints: newPoints }).where(eq(usersTable.id, id)).returning();
 
+  // Notifica o usuário sobre atualização de pontos
+  sendEvent(id, { type: "points_updated", data: { rankingPoints: newPoints, added: addPoints } });
+
   // Verificar se SUPEROU um LÍDER EXISTENTE (com pontos > 0) em algum escopo
   let enteredRanking: string | null = null;
   const oldPoints = user.rankingPoints ?? 0;
@@ -359,6 +365,11 @@ router.post("/:id/add-points", async (req, res) => {
         enteredRanking = "cidade";
       }
     }
+  }
+
+  // Se entrou no ranking, notifica todos para atualizarem o ranking
+  if (enteredRanking) {
+    broadcastEvent({ type: "ranking_changed", data: { scope: enteredRanking, userId: id } });
   }
 
   res.json({ user: updated, added: addPoints, total: newPoints, enteredRanking });
@@ -628,6 +639,8 @@ router.post("/:id/seguir-campeao", async (req, res) => {
     .where(eq(usersTable.id, id))
     .returning();
 
+  // Notifica o seguidor sobre os créditos recebidos
+  sendEvent(id, { type: "follow_reward", data: { addedPoints: 5, addedPlays: 3 } });
   res.json({ user: updated, addedPoints: 5, addedPlays: 3 });
 });
 
@@ -657,6 +670,8 @@ router.post("/:id/seguir-ranking", async (req, res) => {
     .where(eq(usersTable.id, id))
     .returning();
 
+  // Notifica o seguidor sobre os pontos recebidos
+  sendEvent(id, { type: "follow_reward", data: { addedPoints: 5 } });
   res.json({ user: updated, addedPoints: 5 });
 });
 

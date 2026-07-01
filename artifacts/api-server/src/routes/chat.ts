@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { sql } from "drizzle-orm";
+import { broadcastEvent } from "../app";
 
 const router = Router();
 
@@ -36,7 +37,10 @@ router.post("/", async (req, res) => {
     RETURNING id, user_id, user_name, user_foto, message, created_at
   `);
 
-  res.json({ message: rows.rows[0] });
+  const msg = rows.rows[0] as Record<string, unknown>;
+  // Notifica TODOS os clientes sobre a nova mensagem no chat
+  broadcastEvent({ type: "chat_message", data: msg });
+  res.json({ message: msg });
 });
 
 router.delete("/:id", async (req, res) => {

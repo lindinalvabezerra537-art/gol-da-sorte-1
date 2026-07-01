@@ -36,7 +36,23 @@ export default function ChatRoom({ userId, userName, userFoto, onClose }: Props)
   useEffect(() => {
     fetchMessages();
     const interval = setInterval(fetchMessages, 3000);
-    return () => clearInterval(interval);
+
+    // Escuta mensagens em tempo real via SSE do App.tsx
+    const onSseMessage = (e: Event) => {
+      const detail = (e as CustomEvent).detail as ChatMessage;
+      if (detail && detail.id) {
+        setMessages(prev => {
+          if (prev.some(m => m.id === detail.id)) return prev;
+          return [...prev, detail];
+        });
+      }
+    };
+    window.addEventListener("sse-chat-message", onSseMessage);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("sse-chat-message", onSseMessage);
+    };
   }, []);
 
   useEffect(() => {

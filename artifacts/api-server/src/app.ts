@@ -52,6 +52,18 @@ export function sendEvent(userId: number, event: { type: string; data: unknown }
   }
 }
 
+/** Envia um evento para TODOS os clientes conectados (broadcast) */
+export function broadcastEvent(event: { type: string; data: unknown }) {
+  const payload = `data: ${JSON.stringify(event)}\n\n`;
+  for (const [, client] of clients) {
+    try {
+      client.write(payload);
+    } catch {
+      // ignora clientes desconectados
+    }
+  }
+}
+
 app.use("/api", router);
 
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {

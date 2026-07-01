@@ -990,6 +990,140 @@ export default function App() {
     });
   }, [userId]);
 
+  // ── SSE (Server-Sent Events) ── atualizações em tempo real ──
+  useEffect(() => {
+    if (!userId) return;
+    const es = new EventSource(`/api/events?userId=${userId}`);
+    es.onmessage = (ev) => {
+      try {
+        const msg = JSON.parse(ev.data) as { type: string; data: Record<string, unknown> };
+        switch (msg.type) {
+          case "plays_updated": {
+            const plays = msg.data.playsRemaining as number;
+            if (typeof plays === "number") setPlaysRemaining(plays);
+            break;
+          }
+          case "points_updated": {
+            const pts = msg.data.rankingPoints as number;
+            if (typeof pts === "number") {
+              setRankingMyPosition(prev => prev ? { ...prev, points: pts } : prev);
+            }
+            break;
+          }
+          case "ranking_changed": {
+            // Atualiza o ranking completo
+            const scope = msg.data.scope as string;
+            if (userInfo?.cidade && userInfo?.estado) {
+              Promise.all([
+                apiCall(`/users/ranking/cidade/${encodeURIComponent(userInfo.cidade)}`),
+                apiCall(`/users/ranking/estado/${encodeURIComponent(userInfo.estado)}`),
+                apiCall(`/users/ranking/brasil`),
+                apiCall(`/users/${userId}/ranking`),
+                apiCall(`/users/${userId}/seguidos`),
+              ]).then(([cData, eData, bData, myData, segData]) => {
+                setRankingData({
+                  cidade: cData?.users?.slice(0, 3),
+                  estado: eData?.users?.slice(0, 3),
+                  brasil: bData?.users?.slice(0, 3),
+                  myCity: userInfo.cidade,
+                  myState: userInfo.estado,
+                });
+                if (myData?.user) {
+                  setRankingMyPosition({
+                    cidadeRank: myData.cidadeRank,
+                    estadoRank: myData.estadoRank,
+                    brasilRank: myData.brasilRank,
+                    points: myData.user.rankingPoints,
+                  });
+                }
+                const seguidos: number[] = segData?.seguidos || [];
+                setSeguidosList(seguidos);
+                const cidTop = cData?.users?.[0]?.id;
+                const estTop = eData?.users?.[0]?.id;
+                const braTop = bData?.users?.[0]?.id;
+                setSeguindoRanking({
+                  cidade: !!(cidTop && seguidos.includes(cidTop)),
+                  estado: !!(estTop && seguidos.includes(estTop)),
+                  brasil: !!(braTop && seguidos.includes(braTop)),
+                });
+              }).catch(() => {});
+            }
+            if (scope) showToast(`🏆 Novo líder no ranking ${scope === "brasil" ? "do Brasil" : scope === "estado" ? "do Estado" : "da Cidade"}!`);
+            break;
+          }
+          case "atual_campeao": {
+            const d = msg.data;
+            setAtualCampeao({
+              nome: (d.nome as string) || "",
+              cidadeEstado: (d.cidadeEstado as string) || "",
+              foto: (d.foto as string) || "",
+              linkSocial: (d.linkSocial as string) || "",
+              userId: (d.userId as string) || "",
+            });
+            break;
+          }
+          case "ultimo_ganhador": {
+            const d = msg.data;
+            setUltimoGanhador({
+              nome: (d.nome as string) || "",
+              cidadeEstado: (d.cidadeEstado as string) || "",
+              valor: (d.valor as string) || "",
+              foto: (d.foto as string) || "",
+            });
+            break;
+          }
+          case "valor_acumulado": {
+            const v = msg.data.valor as string;
+            if (v) setValorAcumulado(v);
+            break;
+          }
+          case "follow_reward": {
+            const addedPoints = (msg.data.addedPoints as number) ?? 0;
+            const addedPlays = (msg.data.addedPlays as number) ?? 0;
+            if (addedPoints && addedPlays) {
+              showToast(`🎁 +${addedPoints} pts e +${addedPlays} jogadas!`);
+            } else if (addedPoints) {
+              showToast(`🎁 +${addedPoints} pts no ranking!`);
+            }
+            break;
+          }
+          case "referral_reward": {
+            const addedPoints = (msg.data.addedPoints as number) ?? 0;
+            const addedPlays = (msg.data.addedPlays as number) ?? 0;
+            showToast(`🎉 Seu indicado pagou! +${addedPlays} jogadas e +${addedPoints} pts!`);
+            break;
+          }
+          case "payment_confirmed": {
+            const uid = msg.data.userId as number;
+            if (uid && uid !== userId) {
+              showToast(`💰 Nova compra confirmada no app!`);
+            }
+            break;
+          }
+          case "chat_message": {
+            // Repassa a mensagem do chat para o ChatRoom via CustomEvent
+            window.dispatchEvent(new CustomEvent("sse-chat-message", { detail: msg.data }));
+            break;
+          }
+          case "knockback": {
+            const m = msg.data.message as string;
+            if (m) showToast(m);
+            setPiratePos(0);
+            break;
+          }
+          default:
+            break;
+        }
+      } catch {
+        // ignora mensagens malformadas
+      }
+    };
+    es.onerror = () => {
+      // reconexão automática do EventSource
+    };
+    return () => { es.close(); };
+  }, [userId, userInfo]);
+
   // ── Overlay helper: positions an element over a fraction of the rendered image ──
   const ov = (xF: number, yF: number, wF: number, hF: number): React.CSSProperties => ({
     position: "absolute",

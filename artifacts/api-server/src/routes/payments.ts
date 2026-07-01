@@ -2,6 +2,7 @@ import { Router } from "express";
 import { db, paymentsTable, usersTable, referralsTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
 import { MercadoPagoConfig, Payment } from "mercadopago";
+import { sendEvent, broadcastEvent } from "../app";
 
 const router = Router();
 
@@ -210,6 +211,9 @@ async function confirmPayment(txId: string) {
       })
       .where(eq(usersTable.id, payment.userId));
 
+    // Notifica o usuário em tempo real sobre as jogadas creditadas
+    sendEvent(payment.userId, { type: "plays_updated", data: { playsRemaining: user.playsRemaining + payment.plays } });
+
     // Se é o 1º pagamento e o usuário foi indicado:
     // Nível 1 → indicador direto recebe +5 jogadas +10 pts e referral marcado como rewarded
     if (isFirstPayment && user.referredById) {
@@ -225,6 +229,9 @@ async function confirmPayment(txId: string) {
             playsRemaining: (referrer.playsRemaining ?? 0) + 5,
           })
           .where(eq(usersTable.id, user.referredById));
+
+        // Notifica o indicador em tempo real
+        sendEvent(user.referredById, { type: "referral_reward", data: { addedPlays: 5, addedPoints: 10 } });
 
         // Marca o referral como rewarded
         await db.update(referralsTable)
@@ -250,11 +257,16 @@ async function confirmPayment(txId: string) {
                 playsRemaining: (grandReferrer.playsRemaining ?? 0) + 3,
               })
               .where(eq(usersTable.id, referrer.referredById));
+
+            // Notifica o avô do indicado em tempo real
+            sendEvent(referrer.referredById, { type: "referral_reward", data: { addedPlays: 3, addedPoints: 3 } });
           }
         }
       }
     }
   }
+  // Notifica todos sobre uma nova compra (atualiza ranking, valor acumulado, etc)
+  broadcastEvent({ type: "payment_confirmed", data: { userId: payment.userId, plays: payment.plays, amountCents: payment.amountCents } });
   return payment;
 }
 

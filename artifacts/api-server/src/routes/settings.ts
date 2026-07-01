@@ -3,6 +3,7 @@ import { db } from "@workspace/db";
 import { settingsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { readFile, writeFile } from "node:fs/promises";
+import { broadcastEvent } from "../app";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -58,6 +59,7 @@ router.post("/valor-acumulado", async (req, res) => {
       res.status(400).json({ error: "Valor inválido" }); return;
     }
     await setSetting("valor_acumulado", valor);
+    broadcastEvent({ type: "valor_acumulado", data: { valor } });
     res.json({ ok: true, valor }); return;
   } catch {
     res.status(500).json({ error: "Erro ao atualizar valor acumulado" }); return;
@@ -89,6 +91,7 @@ router.post("/ultimo-ganhador", async (req, res) => {
       valor !== undefined ? setSetting("ug_valor", valor) : Promise.resolve(),
       foto !== undefined ? setSetting("ug_foto", foto) : Promise.resolve(),
     ]);
+    broadcastEvent({ type: "ultimo_ganhador", data: { nome, cidadeEstado, valor, foto } });
     res.json({ ok: true });
   } catch {
     res.status(500).json({ error: "Erro ao atualizar último ganhador" });
@@ -251,6 +254,7 @@ router.post("/atual-campeao", async (req, res) => {
       linkSocial !== undefined ? setSetting("campeon_link_social", linkSocial) : Promise.resolve(),
       userId !== undefined ? setSetting("campeon_user_id", String(userId)) : Promise.resolve(),
     ]);
+    broadcastEvent({ type: "atual_campeao", data: { nome, cidadeEstado, foto, linkSocial, userId: String(userId) } });
     res.json({ ok: true });
   } catch {
     res.status(500).json({ error: "Erro ao atualizar campeão" });
