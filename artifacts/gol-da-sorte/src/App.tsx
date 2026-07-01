@@ -318,7 +318,6 @@ function speakMessage(text: string, delayMs = 1400) {
 async function apiCall(path: string, opts?: RequestInit) {
   try {
     const res = await fetch(`/api${path}`, opts);
-    if (!res.ok) return null;
     return await res.json();
   } catch {
     return null;
@@ -359,6 +358,7 @@ export default function App() {
   const [rankingData, setRankingData] = useState<{ cidade?: any[]; estado?: any[]; brasil?: any[]; myCity?: string; myState?: string } | null>(null);
   const [rankingMyPosition, setRankingMyPosition] = useState<{ cidadeRank: number; estadoRank: number; brasilRank: number; points: number } | null>(null);
   const [seguindoRanking, setSeguindoRanking] = useState<{ cidade: boolean; estado: boolean; brasil: boolean }>({ cidade: false, estado: false, brasil: false });
+  const [seguidosList, setSeguidosList] = useState<number[]>([]);
   const [showRankingEntryModal, setShowRankingEntryModal] = useState(false);
   const [rankingEntryScope, setRankingEntryScope] = useState<"cidade" | "estado" | "brasil" | null>(null);
   const [rankingLinkInput, setRankingLinkInput] = useState("");
@@ -800,6 +800,15 @@ export default function App() {
     return () => clearInterval(pollChamp);
   }, [fetchSettings]);
 
+  // Restaura SEGUINDO do campeão assim que ambos seguidosList e atualCampeao estiverem disponíveis
+  useEffect(() => {
+    if (!atualCampeao?.userId || seguidosList.length === 0) return;
+    if (seguidosList.includes(Number(atualCampeao.userId))) {
+      setChampionFollowClaimed(atualCampeao.userId);
+      localStorage.setItem("claimedChampionUserId", atualCampeao.userId);
+    }
+  }, [seguidosList, atualCampeao?.userId]);
+
   useEffect(() => {
     const fetchOnline = () => {
       fetch("/api/users/online")
@@ -910,6 +919,7 @@ export default function App() {
               });
             }
             const seguidos: number[] = segData?.seguidos || [];
+            setSeguidosList(seguidos);
             const cidTop = cData?.users?.[0]?.id;
             const estTop = eData?.users?.[0]?.id;
             const braTop = bData?.users?.[0]?.id;
@@ -918,12 +928,6 @@ export default function App() {
               estado: estTop && seguidos.includes(estTop),
               brasil: braTop && seguidos.includes(braTop),
             });
-            // Restaura estado "SEGUINDO" do campeão se já seguiu
-            const champId = prevCampeaoUserId.current;
-            if (champId && seguidos.includes(Number(champId))) {
-              setChampionFollowClaimed(champId);
-              localStorage.setItem("claimedChampionUserId", champId);
-            }
           }).catch(() => {});
         }
       } else {
@@ -1128,7 +1132,10 @@ export default function App() {
     if (data?.user) {
       setSeguindoRanking(prev => ({ ...prev, [scope]: true }));
       setRankingMyPosition(prev => prev ? { ...prev, points: data.user.rankingPoints ?? prev.points } : prev);
+      setSeguidosList(prev => prev.includes(topPlayer.id) ? prev : [...prev, topPlayer.id]);
       showToast(`🎉 +5 pts! Você seguiu ${topPlayer.name || "o líder do " + scope.toUpperCase()}!`);
+    } else if (data?.error) {
+      showToast(data.error);
     }
   }, [userId, rankingData]);
 
@@ -2040,11 +2047,13 @@ export default function App() {
                 setPlaysRemaining(data.user.playsRemaining);
                 setRankingMyPosition(prev => prev ? { ...prev, points: data.user.rankingPoints ?? prev.points } : prev);
                 setChampionFollowClaimed(atualCampeao.userId);
+                setSeguidosList(prev => prev.includes(Number(atualCampeao.userId)) ? prev : [...prev, Number(atualCampeao.userId)]);
                 localStorage.setItem("claimedChampionUserId", atualCampeao.userId);
                 showToast("🎉 +3 jogadas e +5 pts creditados!");
               } else if (data?.error) {
-                if (data.error.includes("já resgatou")) {
+                if (data.error.includes("já resgatou") || data.error.includes("já seguiu")) {
                   setChampionFollowClaimed(atualCampeao.userId);
+                  setSeguidosList(prev => prev.includes(Number(atualCampeao.userId)) ? prev : [...prev, Number(atualCampeao.userId)]);
                   localStorage.setItem("claimedChampionUserId", atualCampeao.userId);
                 }
               }
