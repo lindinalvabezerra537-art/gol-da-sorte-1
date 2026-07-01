@@ -905,10 +905,15 @@ export default function App() {
   useEffect(() => {
     if (!userId) return;
     const refresh = async () => {
-      const [userData, myRank, segData] = await Promise.all([
+      const city = userInfo?.cidade || "";
+      const state = userInfo?.estado || "";
+      const [userData, myRank, segData, cidadeRank, estadoRank, brasilRank] = await Promise.all([
         apiCall(`/users/${userId}`),
         apiCall(`/users/${userId}/ranking`),
         apiCall(`/users/${userId}/seguidos`),
+        city ? apiCall(`/users/ranking/cidade/${encodeURIComponent(city)}`) : Promise.resolve(null),
+        state ? apiCall(`/users/ranking/estado/${encodeURIComponent(state)}`) : Promise.resolve(null),
+        apiCall(`/users/ranking/brasil`),
       ]);
       if (userData?.user) {
         setPlaysRemaining(userData.user.playsRemaining);
@@ -921,6 +926,17 @@ export default function App() {
           brasilRank: myRank.brasilRank,
           points: myRank.user.rankingPoints,
         } : prev);
+      }
+      // Atualiza líderes do ranking automaticamente
+      if (cidadeRank || estadoRank || brasilRank) {
+        setRankingData(prev => ({
+          ...prev,
+          ...(cidadeRank?.users !== undefined ? { cidade: cidadeRank.users } : {}),
+          ...(estadoRank?.users !== undefined ? { estado: estadoRank.users } : {}),
+          ...(brasilRank?.users !== undefined ? { brasil: brasilRank.users } : {}),
+          myCity: prev?.myCity,
+          myState: prev?.myState,
+        }));
       }
       if (segData?.seguidos) {
         const seguidos: number[] = segData.seguidos;
