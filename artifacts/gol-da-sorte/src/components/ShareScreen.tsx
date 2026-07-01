@@ -50,7 +50,8 @@ export default function ShareScreen({ userId, onClose }: Props) {
   };
 
   const handleFacebook = () => {
-    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(inviteLink)}`;
+    const text = `🏆 Jogue o GOL DA SORTE comigo e ganhe 5 jogadas grátis! ${inviteLink}`;
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(inviteLink)}&quote=${encodeURIComponent(text)}`;
     window.open(url, "_blank", "width=600,height=400");
     onClose();
   };
