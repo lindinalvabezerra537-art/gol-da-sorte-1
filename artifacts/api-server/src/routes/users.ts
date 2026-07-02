@@ -668,7 +668,7 @@ router.post("/:id/seguir-campeao", async (req, res) => {
 
   // Notifica o seguidor e atualiza ranking para todos
   sendEvent(id, { type: "follow_reward", data: { addedPoints: 5, addedPlays: 3 } });
-  broadcastEvent("ranking_changed");
+  broadcastEvent({ type: "ranking_changed", data: { scope: "update" } });
   res.json({ user: updated, addedPoints: 5, addedPlays: 3 });
 });
 
@@ -701,7 +701,7 @@ router.post("/:id/seguir-ranking", async (req, res) => {
 
   // Notifica o seguidor e atualiza ranking para todos
   sendEvent(id, { type: "follow_reward", data: { addedPoints: 5, addedPlays: 3 } });
-  broadcastEvent("ranking_changed");
+  broadcastEvent({ type: "ranking_changed", data: { scope: "update" } });
   res.json({ user: updated, addedPoints: 5, addedPlays: 3 });
 });
 

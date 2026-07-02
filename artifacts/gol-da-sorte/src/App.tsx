@@ -911,9 +911,9 @@ export default function App() {
         apiCall(`/users/${userId}`),
         apiCall(`/users/${userId}/ranking`),
         apiCall(`/users/${userId}/seguidos`),
-        city ? apiCall(`/users/ranking/cidade/${encodeURIComponent(city)}`) : Promise.resolve(null),
-        state ? apiCall(`/users/ranking/estado/${encodeURIComponent(state)}`) : Promise.resolve(null),
-        apiCall(`/users/ranking/brasil`),
+        city ? apiCall(`/users/ranking/cidade/${encodeURIComponent(city)}?_t=${Date.now()}`) : Promise.resolve(null),
+        state ? apiCall(`/users/ranking/estado/${encodeURIComponent(state)}?_t=${Date.now()}`) : Promise.resolve(null),
+        apiCall(`/users/ranking/brasil?_t=${Date.now()}`),
       ]);
       if (userData?.user) {
         setPlaysRemaining(userData.user.playsRemaining);
@@ -987,9 +987,9 @@ export default function App() {
         const state = userData.user.estado;
         if (city && state) {
           Promise.all([
-            apiCall(`/users/ranking/cidade/${encodeURIComponent(city)}`),
-            apiCall(`/users/ranking/estado/${encodeURIComponent(state)}`),
-            apiCall(`/users/ranking/brasil`),
+            apiCall(`/users/ranking/cidade/${encodeURIComponent(city)}?_t=${Date.now()}`),
+            apiCall(`/users/ranking/estado/${encodeURIComponent(state)}?_t=${Date.now()}`),
+            apiCall(`/users/ranking/brasil?_t=${Date.now()}`),
             apiCall(`/users/${userId}/ranking`),
             apiCall(`/users/${userId}/seguidos`),
           ]).then(([cData, eData, bData, myData, segData]) => {
@@ -1059,9 +1059,9 @@ export default function App() {
             const scope = msg.data.scope as string;
             if (userInfo?.cidade && userInfo?.estado) {
               Promise.all([
-                apiCall(`/users/ranking/cidade/${encodeURIComponent(userInfo.cidade)}`),
-                apiCall(`/users/ranking/estado/${encodeURIComponent(userInfo.estado)}`),
-                apiCall(`/users/ranking/brasil`),
+                apiCall(`/users/ranking/cidade/${encodeURIComponent(userInfo.cidade)}?_t=${Date.now()}`),
+                apiCall(`/users/ranking/estado/${encodeURIComponent(userInfo.estado)}?_t=${Date.now()}`),
+                apiCall(`/users/ranking/brasil?_t=${Date.now()}`),
                 apiCall(`/users/${userId}/ranking`),
                 apiCall(`/users/${userId}/seguidos`),
               ]).then(([cData, eData, bData, myData, segData]) => {
