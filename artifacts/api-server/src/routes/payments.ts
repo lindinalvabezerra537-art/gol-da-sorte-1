@@ -17,7 +17,7 @@ function getMpClient() {
 // ── Criar pagamento PIX via Mercado Pago ──────────────────────────────────────
 
 router.post("/create", async (req, res) => {
-  const { userId, plays } = req.body as { userId: number; plays: number };
+  const { userId, plays, cpf } = req.body as { userId: number; plays: number; cpf: string };
 
   const amountCents = PACKAGES[plays];
   if (!amountCents) {

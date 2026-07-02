@@ -26,6 +26,18 @@ interface PixData {
   qrCode: string;
 }
 
+function formatCpf(value: string) {
+  const d = value.replace(/\D/g, "").slice(0, 11);
+  if (d.length <= 3) return d;
+  if (d.length <= 6) return `${d.slice(0,3)}.${d.slice(3)}`;
+  if (d.length <= 9) return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6)}`;
+  return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6,9)}-${d.slice(9)}`;
+}
+
+function isValidCpf(cpf: string) {
+  return cpf.replace(/\D/g, "").length === 11;
+}
+
 export default function PurchaseModal({ userId, onPurchased, onClose }: Props) {
   const [selected, setSelected] = useState<number>(15);
   const [step, setStep]         = useState<"choose" | "pix" | "waiting" | "done">("choose");
@@ -34,6 +46,7 @@ export default function PurchaseModal({ userId, onPurchased, onClose }: Props) {
   const [error, setError]       = useState("");
   const [copied, setCopied]     = useState(false);
   const [copiedQr, setCopiedQr] = useState(false);
+  const [cpf, setCpf]           = useState("");
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Poll payment status while waiting
@@ -61,13 +74,14 @@ export default function PurchaseModal({ userId, onPurchased, onClose }: Props) {
   }, [step, pixData, userId, onPurchased]);
 
   const handleGeneratePix = async () => {
+    if (!isValidCpf(cpf)) { setError("Informe seu CPF completo (11 dígitos)."); return; }
     setLoading(true);
     setError("");
     try {
       const res = await fetch(apiUrl("/payments/create"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, plays: selected }),
+        body: JSON.stringify({ userId, plays: selected, cpf: cpf.replace(/\D/g, "") }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Erro ao gerar PIX."); return; }
