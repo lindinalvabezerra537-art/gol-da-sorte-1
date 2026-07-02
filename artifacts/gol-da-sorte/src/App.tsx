@@ -2253,17 +2253,18 @@ export default function App() {
             📍 {atualCampeao?.cidadeEstado || ""}
           </div>
 
-          {/* 3 — "SIGA E GANHE 3 JOGADAS" — texto destacado, sem fundo */}
+          {/* 3 — "SIGA E GANHE 3 JOGADAS +10 PONTOS" — texto destacado, sem fundo */}
           <div style={{
             color: "#FF8C00",
             fontWeight: 900,
-            fontSize: Math.max(bounds.w * 0.023, 8),
+            fontSize: Math.max(bounds.w * 0.020, 7),
             textAlign: "center",
-            lineHeight: 1.2,
-            letterSpacing: 0.4,
+            lineHeight: 1.3,
+            letterSpacing: 0.3,
             textShadow: "0 0 10px rgba(255,120,0,0.7)",
           }}>
-            SIGA E GANHE 3 JOGADAS
+            SIGA E GANHE 3 JOGADAS<br />
+            <span style={{ color: "#FFD700", fontSize: Math.max(bounds.w * 0.022, 7.5) }}>+10 PONTOS</span>
           </div>
 
           {/* 4 — Botão SEGUIR / SEGUINDO */}
