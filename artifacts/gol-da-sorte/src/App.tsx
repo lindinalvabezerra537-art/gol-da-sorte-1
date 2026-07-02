@@ -2264,7 +2264,7 @@ export default function App() {
             textShadow: "0 0 10px rgba(255,120,0,0.7)",
           }}>
             SIGA E GANHE 3 JOGADAS<br />
-            <span style={{ color: "#FFD700", fontSize: Math.max(bounds.w * 0.022, 7.5) }}>+10 PONTOS</span>
+            <span style={{ fontSize: Math.max(bounds.w * 0.022, 7.5) }}>+10 PONTOS</span>
           </div>
 
           {/* 4 — Botão SEGUIR / SEGUINDO */}
