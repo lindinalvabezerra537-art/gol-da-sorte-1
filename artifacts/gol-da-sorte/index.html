@@ -38,8 +38,10 @@
       [data-replit-badge],
       .__replit_badge,
       .replit-dev-badge,
-      iframe[src*="replit.com/badge"],
-      iframe[src*="replit"][src*="badge"] {
+      [id*="replit"],
+      [class*="replit"],
+      iframe[src*="replit.com"],
+      iframe[src*="replit"] {
         display: none !important;
         visibility: hidden !important;
         opacity: 0 !important;
@@ -47,6 +49,12 @@
         width: 0 !important;
         height: 0 !important;
         overflow: hidden !important;
+        position: absolute !important;
+        left: -9999px !important;
+      }
+      /* Qualquer iframe injetado direto no body (o badge do Replit) */
+      body > iframe {
+        display: none !important;
       }
     </style>
   </head>
