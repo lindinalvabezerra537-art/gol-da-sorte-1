@@ -3664,7 +3664,7 @@ export default function App() {
 
 
       {/* Botão Admin — apenas para o admin */}
-      {isPhoneAdmin && (
+      {(isPhoneAdmin || isAdminMode) && (
         <button
           onClick={(e) => { e.stopPropagation(); setShowAdmin(true); }}
           style={{
