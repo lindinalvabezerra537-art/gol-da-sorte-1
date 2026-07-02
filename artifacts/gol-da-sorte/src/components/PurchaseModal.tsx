@@ -5,8 +5,8 @@ function apiUrl(path: string) {
 }
 
 const PACKAGES = [
-  { plays: 5,  price: "R$ 5,00",  label: "STARTER",  highlight: false },
-  { plays: 15, price: "R$ 10,00", label: "POPULAR",   highlight: true  },
+  { plays: 5,  price: "R$ 5,00",  label: "STARTER",  highlight: true  },
+  { plays: 15, price: "R$ 10,00", label: "POPULAR",   highlight: false },
   { plays: 30, price: "R$ 20,00", label: "PRO",       highlight: false },
 ];
 
@@ -27,7 +27,7 @@ interface PixData {
 }
 
 export default function PurchaseModal({ userId, onPurchased, onClose }: Props) {
-  const [selected, setSelected] = useState<number>(15);
+  const [selected, setSelected] = useState<number>(5);
   const [step, setStep]         = useState<"choose" | "pix" | "waiting" | "done">("choose");
   const [pixData, setPixData]   = useState<PixData | null>(null);
   const [loading, setLoading]   = useState(false);
