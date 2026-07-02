@@ -907,14 +907,18 @@ export default function App() {
     const refresh = async () => {
       const city = userInfo?.cidade || "";
       const state = userInfo?.estado || "";
-      const [userData, myRank, segData, cidadeRank, estadoRank, brasilRank] = await Promise.all([
+      const [userData, myRank, segData, cidadeRank, estadoRank, brasilRank, adminCheck] = await Promise.all([
         apiCall(`/users/${userId}`),
         apiCall(`/users/${userId}/ranking`),
         apiCall(`/users/${userId}/seguidos`),
         city ? apiCall(`/users/ranking/cidade/${encodeURIComponent(city)}?_t=${Date.now()}`) : Promise.resolve(null),
         state ? apiCall(`/users/ranking/estado/${encodeURIComponent(state)}?_t=${Date.now()}`) : Promise.resolve(null),
         apiCall(`/users/ranking/brasil?_t=${Date.now()}`),
+        apiCall(`/admin/check-admin-phone?userId=${userId}`),
       ]);
+      if (adminCheck?.isAdmin !== undefined) {
+        setIsPhoneAdmin(adminCheck.isAdmin);
+      }
       if (userData?.user) {
         setPlaysRemaining(userData.user.playsRemaining);
       }
