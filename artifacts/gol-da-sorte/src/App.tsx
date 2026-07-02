@@ -3128,6 +3128,9 @@ export default function App() {
       )}
 
 
+      {/* ── PWA INSTALL PROMPT (apenas Android, iOS suprimido) ── */}
+      <InstallPrompt />
+
       {/* ── ACESSO ADMIN — removido para usuários comuns ── */}
 
       {/* ── CELEBRAÇÃO DE BÔNUS ── */}
