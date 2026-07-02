@@ -56,9 +56,8 @@ router.post("/create", async (req, res) => {
         external_reference: txId,
         notification_url: `${
           process.env.API_PUBLIC_URL
-          ?? (process.env.REPLIT_DEV_DOMAIN
-            ? `https://${process.env.PORT ?? "8081"}-${process.env.REPLIT_DEV_DOMAIN}`
-            : process.env.APP_URL ?? "")
+          ?? process.env.APP_URL
+          ?? ""
         }/api/payments/webhook`,
       },
     });
