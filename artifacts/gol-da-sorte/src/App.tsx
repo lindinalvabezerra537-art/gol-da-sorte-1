@@ -1365,7 +1365,7 @@ export default function App() {
     showToast(`✅ Compra realizada! ${newPlays} jogadas disponíveis.`);
   };
 
-  if (showAdmin) return <AdminPanel onClose={() => { setShowAdmin(false); window.history.replaceState({}, "", window.location.pathname + window.location.search); fetchSettings(); }} skipAuth={isAdminMode || isPhoneAdmin} />;
+  if (showAdmin) return <AdminPanel onClose={() => { setShowAdmin(false); window.history.replaceState({}, "", window.location.pathname + window.location.search); fetchSettings(); }} skipAuth={true} />;
 
   if (showBoardEditor) return (
     <BoardEditor
@@ -3663,22 +3663,20 @@ export default function App() {
 
 
 
-      {/* Botão Admin — apenas para o admin */}
-      {(isPhoneAdmin || isAdminMode) && (
-        <button
-          onClick={(e) => { e.stopPropagation(); setShowAdmin(true); }}
-          style={{
-            position: "fixed", top: 12, right: 12, zIndex: 2147483639,
-            background: "rgba(10,10,20,0.9)", border: "1.5px solid rgba(255,215,0,0.6)",
-            borderRadius: "50%", color: "gold", fontSize: 18,
-            width: 40, height: 40, cursor: "pointer",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.7)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            backdropFilter: "blur(4px)",
-          }}
-          title="Painel Admin"
-        >⚙️</button>
-      )}
+      {/* Botão Admin */}
+      <button
+        onClick={(e) => { e.stopPropagation(); setShowAdmin(true); }}
+        style={{
+          position: "fixed", top: 12, right: 12, zIndex: 2147483639,
+          background: "rgba(10,10,20,0.9)", border: "1.5px solid rgba(255,215,0,0.6)",
+          borderRadius: "50%", color: "gold", fontSize: 18,
+          width: 40, height: 40, cursor: "pointer",
+          boxShadow: "0 2px 10px rgba(0,0,0,0.7)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          backdropFilter: "blur(4px)",
+        }}
+        title="Painel Admin"
+      >⚙️</button>
 
       <style>{`
         @keyframes bonusPop {
