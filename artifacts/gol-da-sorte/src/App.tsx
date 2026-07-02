@@ -3668,7 +3668,7 @@ export default function App() {
         <button
           onClick={(e) => { e.stopPropagation(); setShowAdmin(true); }}
           style={{
-            position: "fixed", bottom: 12, left: 12, zIndex: 2147483639,
+            position: "fixed", top: 12, right: 12, zIndex: 2147483639,
             background: "rgba(10,10,20,0.9)", border: "1.5px solid rgba(255,215,0,0.6)",
             borderRadius: "50%", color: "gold", fontSize: 18,
             width: 40, height: 40, cursor: "pointer",
