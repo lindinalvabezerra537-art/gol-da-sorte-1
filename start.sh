@@ -1,41 +1,22 @@
 #!/bin/bash
-set -e
 
-# Agressively kill anything holding our ports
+# Kill anything holding our ports
 echo "Liberando portas..."
 pkill -9 -f "dist/index.mjs" 2>/dev/null || true
 pkill -9 -f "api-server" 2>/dev/null || true
-
-# Use node to find and kill processes on port 8081
-node -e "
-const net = require('net');
-const { execSync } = require('child_process');
-try {
-  const out = execSync('ss -tlnp 2>/dev/null || netstat -tlnp 2>/dev/null || cat /proc/net/tcp 2>/dev/null', {encoding:'utf-8'});
-  console.log('Port scan done');
-} catch(e) {}
-try { execSync('pkill -9 -f \"dist/index.mjs\"', {stdio:'ignore'}); } catch(e) {}
-" 2>/dev/null || true
-
-sleep 3
+sleep 1
 
 # Build the API server first
 echo "Building API server..."
 cd /home/runner/workspace/artifacts/api-server && pnpm run build
 cd /home/runner/workspace
 
-# Function to start API server
-start_api() {
-  # Kill anything on 8081 before starting
-  pkill -9 -f "dist/index.mjs" 2>/dev/null || true
-  sleep 1
-  PORT=8081 node --enable-source-maps /home/runner/workspace/artifacts/api-server/dist/index.mjs &
-  echo $!
-}
-
 # Start API server in background (port 8081)
 echo "Starting API server..."
-API_PID=$(start_api)
+pkill -9 -f "dist/index.mjs" 2>/dev/null || true
+sleep 1
+PORT=8081 node --enable-source-maps /home/runner/workspace/artifacts/api-server/dist/index.mjs &
+API_PID=$!
 
 # Wait for API server to be ready (up to 30s)
 echo "Waiting for API server on port 8081..."
@@ -53,7 +34,8 @@ if [ "$READY" -eq 0 ]; then
   echo "API server failed to start. Killing and retrying..."
   pkill -9 -f "dist/index.mjs" 2>/dev/null || true
   sleep 2
-  API_PID=$(start_api)
+  PORT=8081 node --enable-source-maps /home/runner/workspace/artifacts/api-server/dist/index.mjs &
+  API_PID=$!
   sleep 5
 fi
 
@@ -77,7 +59,8 @@ while true; do
     echo "API server stopped unexpectedly. Restarting..."
     pkill -9 -f "dist/index.mjs" 2>/dev/null || true
     sleep 2
-    API_PID=$(start_api)
+    PORT=8081 node --enable-source-maps /home/runner/workspace/artifacts/api-server/dist/index.mjs &
+    API_PID=$!
   fi
   if ! kill -0 $VITE_PID 2>/dev/null; then
     echo "Frontend stopped. Exiting."
