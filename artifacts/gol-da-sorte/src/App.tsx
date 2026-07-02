@@ -3127,8 +3127,6 @@ export default function App() {
         </button>
       )}
 
-      {/* ── PWA INSTALL PROMPT ── */}
-      <InstallPrompt />
 
       {/* ── ACESSO ADMIN — removido para usuários comuns ── */}
 
