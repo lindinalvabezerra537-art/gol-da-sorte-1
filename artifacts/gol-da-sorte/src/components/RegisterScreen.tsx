@@ -352,7 +352,7 @@ export default function RegisterScreen({ referralCode, onRegistered }: Props) {
               fontWeight: 600,
             }}
           >
-            🎁 Você ganhou <strong>5 jogadas grátis</strong>!
+            🎁 Você ganhou <strong>10 jogadas grátis</strong>!
           </div>
         )}
       </div>
