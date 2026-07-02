@@ -26,6 +26,19 @@ interface PixData {
   qrCode: string;
 }
 
+function formatCpf(value: string) {
+  const digits = value.replace(/\D/g, "").slice(0, 11);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `${digits.slice(0,3)}.${digits.slice(3)}`;
+  if (digits.length <= 9) return `${digits.slice(0,3)}.${digits.slice(3,6)}.${digits.slice(6)}`;
+  return `${digits.slice(0,3)}.${digits.slice(3,6)}.${digits.slice(6,9)}-${digits.slice(9)}`;
+}
+
+function isValidCpf(cpf: string) {
+  const d = cpf.replace(/\D/g, "");
+  return d.length === 11;
+}
+
 export default function PurchaseModal({ userId, onPurchased, onClose }: Props) {
   const [selected, setSelected] = useState<number>(15);
   const [step, setStep]         = useState<"choose" | "pix" | "waiting" | "done">("choose");
@@ -34,6 +47,7 @@ export default function PurchaseModal({ userId, onPurchased, onClose }: Props) {
   const [error, setError]       = useState("");
   const [copied, setCopied]     = useState(false);
   const [copiedQr, setCopiedQr] = useState(false);
+  const [cpf, setCpf]           = useState("");
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Poll payment status while waiting
@@ -61,13 +75,14 @@ export default function PurchaseModal({ userId, onPurchased, onClose }: Props) {
   }, [step, pixData, userId, onPurchased]);
 
   const handleGeneratePix = async () => {
+    if (!isValidCpf(cpf)) { setError("Informe seu CPF (11 dígitos) para gerar o PIX."); return; }
     setLoading(true);
     setError("");
     try {
       const res = await fetch(apiUrl("/payments/create"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, plays: selected }),
+        body: JSON.stringify({ userId, plays: selected, cpf: cpf.replace(/\D/g, "") }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Erro ao gerar PIX."); return; }
@@ -163,6 +178,26 @@ export default function PurchaseModal({ userId, onPurchased, onClose }: Props) {
                   )}
                 </div>
               ))}
+            </div>
+
+            {/* CPF */}
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ color: "#aaa", fontSize: 11, fontWeight: 700, letterSpacing: 0.5, marginBottom: 5 }}>
+                SEU CPF (obrigatório para PIX)
+              </div>
+              <input
+                value={cpf}
+                onChange={e => setCpf(formatCpf(e.target.value))}
+                placeholder="000.000.000-00"
+                inputMode="numeric"
+                style={{
+                  width: "100%", boxSizing: "border-box",
+                  background: "rgba(255,255,255,0.06)",
+                  border: "1.5px solid rgba(255,200,0,0.35)",
+                  borderRadius: 10, color: "#fff", fontSize: 15,
+                  padding: "12px 14px", outline: "none", fontFamily: "inherit",
+                }}
+              />
             </div>
 
             {error && <div style={{ color: "#ff6060", fontSize: 13, textAlign: "center", marginBottom: 10 }}>{error}</div>}
