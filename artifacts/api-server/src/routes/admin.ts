@@ -216,14 +216,12 @@ router.post("/plays-by-phone", async (req, res) => {
 
 router.get("/check-admin-phone", async (req, res) => {
   try {
+    const ADMIN_PHONE = "82993526160";
     const userId = Number(req.query.userId);
     if (!userId) { res.json({ isAdmin: false }); return; }
-    const [adminPhoneSetting] = await db.select().from(settingsTable).where(eq(settingsTable.key, "admin_phone"));
-    const adminPhone = (adminPhoneSetting?.value || "").replace(/\D/g, "");
-    if (!adminPhone) { res.json({ isAdmin: false }); return; }
     const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId));
     if (!user) { res.json({ isAdmin: false }); return; }
-    const isAdmin = user.phone.replace(/\D/g, "") === adminPhone;
+    const isAdmin = user.phone.replace(/\D/g, "") === ADMIN_PHONE;
     res.json({ isAdmin }); return;
   } catch {
     res.json({ isAdmin: false }); return;
