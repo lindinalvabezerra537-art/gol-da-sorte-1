@@ -57,7 +57,12 @@
       (function() {
         var removed = new WeakSet();
         function zapBadge() {
-          var selectors = ['#replit-badge','.replit-badge','[id*="replit-badge"]','[class*="replit-badge"]','[class*="replit-ui"]'];
+          var selectors = [
+            '#replit-badge','.replit-badge',
+            '[id*="replit-badge"]','[class*="replit-badge"]',
+            '[class*="replit-ui"]','[id*="replit"]',
+            '[class*="replit"]','[data-replit]'
+          ];
           selectors.forEach(function(sel) {
             document.querySelectorAll(sel).forEach(function(el) {
               if (!removed.has(el) && el.parentNode) {
@@ -68,7 +73,17 @@
           });
           document.querySelectorAll('iframe').forEach(function(el) {
             var src = el.src || '';
-            if (src.indexOf('replit') !== -1 && src.indexOf('badge') !== -1) {
+            if (src.indexOf('replit') !== -1) {
+              var target = el.parentElement && el.parentElement !== document.body ? el.parentElement : el;
+              if (!removed.has(target) && target.parentNode) {
+                target.parentNode.removeChild(target);
+                removed.add(target);
+              }
+            }
+          });
+          document.querySelectorAll('a, div, span, aside, footer, section').forEach(function(el) {
+            var txt = (el.textContent || '').toLowerCase().replace(/\s+/g,'');
+            if ((txt.includes('madewithreplit') || txt.includes('builtwithr') || txt.includes('replit')) && el.children.length === 0) {
               var target = el.parentElement && el.parentElement !== document.body ? el.parentElement : el;
               if (!removed.has(target) && target.parentNode) {
                 target.parentNode.removeChild(target);
