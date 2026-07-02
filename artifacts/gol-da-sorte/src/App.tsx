@@ -2273,6 +2273,7 @@ export default function App() {
               e.stopPropagation();
               e.preventDefault();
               if (!userId || !atualCampeao?.userId) return;
+              if (String(userId) === String(atualCampeao?.userId)) return;
               if (atualCampeao?.userId && championFollowClaimed === atualCampeao?.userId) return;
               const rawLink = (atualCampeao?.linkSocial || "").trim();
               const link = rawLink.startsWith("http://") || rawLink.startsWith("https://") ? rawLink : (rawLink ? `https://${rawLink}` : "");
@@ -2314,32 +2315,42 @@ export default function App() {
               padding: `${Math.max(bounds.h * 0.006, 3)}px 4px`,
               background: !atualCampeao?.nome
                 ? "linear-gradient(180deg, #1e1e1e, #141414)"
-                : (atualCampeao?.userId && championFollowClaimed === atualCampeao?.userId)
-                  ? "linear-gradient(180deg, #1a5c1a, #0f3a0f)"
-                  : "linear-gradient(180deg, #00e676, #00c853)",
+                : String(userId) === String(atualCampeao?.userId)
+                  ? "linear-gradient(180deg, #1a2a4a, #0f1a30)"
+                  : (atualCampeao?.userId && championFollowClaimed === atualCampeao?.userId)
+                    ? "linear-gradient(180deg, #1a5c1a, #0f3a0f)"
+                    : "linear-gradient(180deg, #00e676, #00c853)",
               color: !atualCampeao?.nome
                 ? "#333"
-                : (atualCampeao?.userId && championFollowClaimed === atualCampeao?.userId) ? "#5dff5d" : "#003300",
+                : String(userId) === String(atualCampeao?.userId)
+                  ? "#4a90d9"
+                  : (atualCampeao?.userId && championFollowClaimed === atualCampeao?.userId) ? "#5dff5d" : "#003300",
               fontWeight: 900,
               fontSize: Math.max(bounds.w * 0.028, 9),
               whiteSpace: "nowrap",
               border: !atualCampeao?.nome
                 ? "1px solid #2a2a2a"
-                : (atualCampeao?.userId && championFollowClaimed === atualCampeao?.userId)
-                  ? "1px solid #2d7a2d"
-                  : "1px solid #00ff7f",
+                : String(userId) === String(atualCampeao?.userId)
+                  ? "1px solid #2a5a8a"
+                  : (atualCampeao?.userId && championFollowClaimed === atualCampeao?.userId)
+                    ? "1px solid #2d7a2d"
+                    : "1px solid #00ff7f",
               borderRadius: 6,
-              cursor: atualCampeao?.nome ? "pointer" : "default",
+              cursor: (atualCampeao?.nome && String(userId) !== String(atualCampeao?.userId)) ? "pointer" : "default",
               letterSpacing: 1,
               textTransform: "uppercase",
               boxShadow: !atualCampeao?.nome
                 ? "none"
-                : (atualCampeao?.userId && championFollowClaimed === atualCampeao?.userId)
-                  ? "0 2px 8px rgba(0,200,0,0.2)"
-                  : "0 2px 0 #007a30, 0 3px 10px rgba(0,230,120,0.4)",
+                : String(userId) === String(atualCampeao?.userId)
+                  ? "none"
+                  : (atualCampeao?.userId && championFollowClaimed === atualCampeao?.userId)
+                    ? "0 2px 8px rgba(0,200,0,0.2)"
+                    : "0 2px 0 #007a30, 0 3px 10px rgba(0,230,120,0.4)",
             }}
           >
-            {(atualCampeao?.userId && championFollowClaimed === atualCampeao?.userId) ? "SEGUINDO" : "SEGUIR"}
+            {String(userId) === String(atualCampeao?.userId)
+              ? "É VOCÊ"
+              : (atualCampeao?.userId && championFollowClaimed === atualCampeao?.userId) ? "SEGUINDO" : "SEGUIR"}
           </button>
         </div>
       </div>
