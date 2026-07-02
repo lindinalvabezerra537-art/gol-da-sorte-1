@@ -1,20 +1,24 @@
 import { Router } from "express";
 import { db, paymentsTable, usersTable, referralsTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
-import { MercadoPagoConfig, Payment } from "mercadopago";
 import { sendEvent, broadcastEvent } from "../app";
 
 const router = Router();
 
 const PACKAGES: Record<number, number> = { 5: 500, 15: 1000, 30: 2000 };
 
-function getMpClient() {
-  const token = process.env.MP_ACCESS_TOKEN ?? "";
-  if (!token) throw new Error("MP_ACCESS_TOKEN não configurado.");
-  return new MercadoPagoConfig({ accessToken: token });
+const OPENPIX_BASE = "https://api.woovi.com/api/v1";
+
+function getOpenPixHeaders() {
+  const appId = process.env.OPENPIX_APP_ID ?? "";
+  if (!appId) throw new Error("OPENPIX_APP_ID não configurado.");
+  return {
+    "Content-Type": "application/json",
+    "Authorization": appId,
+  };
 }
 
-// ── Criar pagamento PIX via Mercado Pago ──────────────────────────────────────
+// ── Criar cobrança PIX via OpenPix ────────────────────────────────────────────
 
 router.post("/create", async (req, res) => {
   const { userId, plays } = req.body as { userId: number; plays: number };
@@ -31,70 +35,56 @@ router.post("/create", async (req, res) => {
     return;
   }
 
-  if (!process.env.MP_ACCESS_TOKEN) {
+  if (!process.env.OPENPIX_APP_ID) {
     res.status(503).json({ error: "Pagamento não configurado. Fale com o administrador." });
     return;
   }
 
   const txId = `GOL${Date.now()}${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
-  const amount = amountCents / 100;
 
   try {
-    const client = getMpClient();
-    const paymentClient = new Payment(client);
-
-    const mpPayment = await paymentClient.create({
-      body: {
-        transaction_amount: amount,
-        description: `Gol da Sorte - ${plays} jogadas`,
-        payment_method_id: "pix",
-        payer: {
-          email: `jogador${userId}@goldaorte.app`,
-          first_name: user.name.split(" ")[0] ?? "Jogador",
-          last_name: user.name.split(" ").slice(1).join(" ") || "GolDaSorte",
-        },
-        external_reference: txId,
-        notification_url: `${
-          process.env.API_PUBLIC_URL
-          ?? process.env.APP_URL
-          ?? ""
-        }/api/payments/webhook`,
-      },
+    const response = await fetch(`${OPENPIX_BASE}/charge`, {
+      method: "POST",
+      headers: getOpenPixHeaders(),
+      body: JSON.stringify({
+        correlationID: txId,
+        value: amountCents,
+        comment: `Gol da Sorte - ${plays} jogadas`,
+        expiresIn: 3600,
+      }),
     });
 
-    if (!mpPayment.id) {
-      res.status(502).json({ error: "Erro ao criar pagamento no Mercado Pago." });
+    const data = await response.json() as Record<string, unknown>;
+
+    if (!response.ok || !data.charge) {
+      console.error("OpenPix create error:", JSON.stringify(data));
+      res.status(502).json({ error: "Erro ao criar cobrança PIX.", detail: data });
       return;
     }
 
-    const pixData = mpPayment.point_of_interaction?.transaction_data;
-    const qrCodeBase64 = pixData?.qr_code_base64
-      ? `data:image/png;base64,${pixData.qr_code_base64}`
-      : null;
-    const qrCodeText = pixData?.qr_code ?? null;
+    const charge = data.charge as Record<string, unknown>;
+    const brCode = charge.brCode as string ?? null;
+    const qrCodeImage = charge.qrCodeImage as string ?? null;
 
     await db.insert(paymentsTable).values({
       userId,
       plays,
       amountCents,
       txId,
-      mpPaymentId: String(mpPayment.id),
+      mpPaymentId: txId,
       status: "pending",
     });
 
     res.json({
       txId,
-      mpPaymentId: String(mpPayment.id),
-      amount: amount.toFixed(2),
+      amount: (amountCents / 100).toFixed(2),
       plays,
-      pixPayload: qrCodeText,
-      qrCode: qrCodeBase64,
+      pixPayload: brCode,
+      qrCode: qrCodeImage,
     });
   } catch (err: unknown) {
-    console.error("MP create error:", JSON.stringify(err, Object.getOwnPropertyNames(err as object)));
-    const mpErr = err as Record<string, unknown>;
-    const detail = mpErr?.cause ?? mpErr?.message ?? String(err);
-    res.status(502).json({ error: "Erro ao criar pagamento.", detail });
+    console.error("OpenPix create error:", err);
+    res.status(502).json({ error: "Erro ao criar cobrança PIX.", detail: String(err) });
   }
 });
 
@@ -108,60 +98,53 @@ router.get("/:txId/status", async (req, res) => {
     return;
   }
 
-  // Se já confirmado no banco, retorna direto
   if (payment.status === "confirmed") {
     res.json({ status: "confirmed", plays: payment.plays });
     return;
   }
 
-  // Consulta o Mercado Pago para status atualizado
-  if (payment.mpPaymentId && process.env.MP_ACCESS_TOKEN) {
+  if (process.env.OPENPIX_APP_ID) {
     try {
-      const client = getMpClient();
-      const paymentClient = new Payment(client);
-      const mpPayment = await paymentClient.get({ id: Number(payment.mpPaymentId) });
+      const response = await fetch(`${OPENPIX_BASE}/charge/${txId}`, {
+        headers: getOpenPixHeaders(),
+      });
+      const data = await response.json() as Record<string, unknown>;
+      const charge = data.charge as Record<string, unknown> | undefined;
 
-      if (mpPayment.status === "approved") {
+      if (charge?.status === "COMPLETED") {
         await confirmPayment(txId);
         res.json({ status: "confirmed", plays: payment.plays });
         return;
       }
     } catch (err) {
-      console.error("MP status check error:", err);
+      console.error("OpenPix status check error:", err);
     }
   }
 
   res.json({ status: payment.status, plays: payment.plays });
 });
 
-// ── Webhook Mercado Pago ──────────────────────────────────────────────────────
+// ── Webhook OpenPix ───────────────────────────────────────────────────────────
 
 router.post("/webhook", async (req, res) => {
-  // Mercado Pago envia: { type: "payment", data: { id: "123456" } }
   const body = req.body as Record<string, unknown>;
 
   try {
-    // Formato novo (notifications v2)
-    if (body.type === "payment" && body.data) {
-      const mpId = (body.data as Record<string, unknown>).id;
-      if (mpId && process.env.MP_ACCESS_TOKEN) {
-        const client = getMpClient();
-        const paymentClient = new Payment(client);
-        const mpPayment = await paymentClient.get({ id: Number(mpId) });
+    const event = body.event as string | undefined;
 
-        if (mpPayment.status === "approved" && mpPayment.external_reference) {
-          await confirmPayment(mpPayment.external_reference);
-        }
+    if (event === "OPENPIX:CHARGE_COMPLETED") {
+      const charge = body.charge as Record<string, unknown> | undefined;
+      const correlationID = charge?.correlationID as string | undefined;
+      if (correlationID) {
+        await confirmPayment(correlationID);
       }
       res.json({ ok: true });
       return;
     }
 
-    // Formato legado — txId direto no body
     const txId =
       (body.txId as string) ||
-      (body.referenceLabel as string) ||
-      (body.reference as string) ||
+      (body.correlationID as string) ||
       (body.external_reference as string);
 
     if (txId) {
@@ -201,7 +184,6 @@ async function confirmPayment(txId: string) {
   if (user) {
     const isFirstPayment = !user.hasPaid;
 
-    // Credita as jogadas e desbloqueia o sistema de indicação após o 1º pagamento
     await db.update(usersTable)
       .set({
         playsRemaining: user.playsRemaining + payment.plays,
@@ -210,11 +192,8 @@ async function confirmPayment(txId: string) {
       })
       .where(eq(usersTable.id, payment.userId));
 
-    // Notifica o usuário em tempo real sobre as jogadas creditadas
     sendEvent(payment.userId, { type: "plays_updated", data: { playsRemaining: user.playsRemaining + payment.plays } });
 
-    // Se é o 1º pagamento e o usuário foi indicado:
-    // Nível 1 → indicador direto recebe +5 jogadas +10 pts e referral marcado como rewarded
     if (isFirstPayment && user.referredById) {
       const [referrer] = await db
         .select({ rankingPoints: usersTable.rankingPoints, playsRemaining: usersTable.playsRemaining, referredById: usersTable.referredById })
@@ -229,10 +208,8 @@ async function confirmPayment(txId: string) {
           })
           .where(eq(usersTable.id, user.referredById));
 
-        // Notifica o indicador em tempo real
         sendEvent(user.referredById, { type: "referral_reward", data: { addedPlays: 5, addedPoints: 10 } });
 
-        // Marca o referral como rewarded
         await db.update(referralsTable)
           .set({ rewarded: true })
           .where(
@@ -242,7 +219,6 @@ async function confirmPayment(txId: string) {
             )
           );
 
-        // Nível 2 → quem indicou o indicador recebe +3 jogadas +3 pts (pirâmide)
         if (referrer.referredById) {
           const [grandReferrer] = await db
             .select({ rankingPoints: usersTable.rankingPoints, playsRemaining: usersTable.playsRemaining })
@@ -257,14 +233,13 @@ async function confirmPayment(txId: string) {
               })
               .where(eq(usersTable.id, referrer.referredById));
 
-            // Notifica o avô do indicado em tempo real
             sendEvent(referrer.referredById, { type: "referral_reward", data: { addedPlays: 3, addedPoints: 3 } });
           }
         }
       }
     }
   }
-  // Notifica todos sobre uma nova compra (atualiza ranking, valor acumulado, etc)
+
   broadcastEvent({ type: "payment_confirmed", data: { userId: payment.userId, plays: payment.plays, amountCents: payment.amountCents } });
   return payment;
 }

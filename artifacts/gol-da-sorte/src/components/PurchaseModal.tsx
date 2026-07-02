@@ -230,25 +230,6 @@ export default function PurchaseModal({ userId, onPurchased, onClose }: Props) {
               </button>
             </div>
 
-            {/* Chave PIX */}
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ color: "#aaa", fontSize: 11, marginBottom: 5, letterSpacing: 0.5 }}>
-                CHAVE PIX
-              </div>
-              <div style={inputStyle}>{pixData.pixKey}</div>
-              <button
-                onClick={copyKey}
-                style={{
-                  width: "100%", marginTop: 6,
-                  background: copied ? "rgba(0,200,83,0.15)" : "rgba(255,255,255,0.07)",
-                  border: `1px solid ${copied ? "#00c853" : "rgba(255,200,0,0.3)"}`,
-                  borderRadius: 8, color: copied ? "#00e676" : "#FFD700",
-                  fontSize: 13, fontWeight: 700, padding: "8px", cursor: "pointer",
-                }}
-              >
-                {copied ? "✅ COPIADO!" : "📋 COPIAR CHAVE PIX"}
-              </button>
-            </div>
 
             <div style={{
               background: "rgba(255,200,0,0.08)", border: "1px solid rgba(255,200,0,0.2)",
