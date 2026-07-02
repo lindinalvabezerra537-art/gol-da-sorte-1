@@ -3362,27 +3362,7 @@ export default function App() {
               Siga o campeão nas redes sociais e ganhe <strong style={{ color: "#FFD700" }}>3 jogadas grátis!</strong>
             </div>
 
-            {/* Etapa 1: abrir link */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                if (atualCampeao.linkSocial) {
-                  window.open(atualCampeao.linkSocial, "_blank");
-                  setHasClickedChampionLink(true);
-                }
-              }}
-              style={{
-                width: "100%", padding: "12px",
-                background: "#1a1a2e", border: "1.5px solid #4a90d9",
-                color: "#4a90d9", fontWeight: 700, fontSize: 15,
-                borderRadius: 12, cursor: "pointer", marginBottom: 10,
-              }}
-            >
-              📱 Abrir perfil e seguir
-            </button>
-
-            {/* Etapa 2: confirmar que seguiu */}
+            {/* Abrir perfil e já creditar bônus automaticamente */}
             {(atualCampeao.userId && championFollowClaimed === atualCampeao.userId) ? (
               <div style={{
                 background: "rgba(0,200,0,0.1)", border: "1px solid #0c0",
@@ -3393,10 +3373,14 @@ export default function App() {
               </div>
             ) : (
               <button
-                disabled={!hasClickedChampionLink}
-                onClick={async () => {
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
                   if (!userId) { showToast("⚠️ Faça seu cadastro primeiro!"); return; }
                   if (!atualCampeao.userId) { showToast("⚠️ Erro: campeão sem ID. Tente novamente."); return; }
+                  if (atualCampeao.linkSocial) {
+                    window.open(atualCampeao.linkSocial, "_blank");
+                  }
                   const data = await apiCall(`/users/${userId}/seguir-campeao`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -3422,14 +3406,12 @@ export default function App() {
                 }}
                 style={{
                   width: "100%", padding: "12px",
-                  background: hasClickedChampionLink ? "#FFD700" : "#333",
-                  color: hasClickedChampionLink ? "#000" : "#666",
+                  background: "#FFD700", color: "#000",
                   fontWeight: 800, fontSize: 15,
-                  border: "none", borderRadius: 12,
-                  cursor: hasClickedChampionLink ? "pointer" : "not-allowed",
+                  border: "none", borderRadius: 12, cursor: "pointer",
                 }}
               >
-                {hasClickedChampionLink ? "✅ Já segui! Quero minhas 3 jogadas" : "① Abra o perfil acima primeiro"}
+                📱 Seguir o campeão e ganhar 3 jogadas
               </button>
             )}
           </div>
@@ -3461,30 +3443,15 @@ export default function App() {
               <strong style={{ color: "#FFD700" }}>3 jogadas + 5 pontos</strong> no ranking!
             </div>
 
-            {/* Passo 1: abrir perfil */}
+            {/* Passo 1: abrir perfil e já creditar bônus automaticamente */}
             <a
               href={rankingFollowModal.link}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={() => setRankingFollowModal(prev => prev ? { ...prev, linkClicked: true } : null)}
-              style={{
-                display: "block", width: "100%", boxSizing: "border-box",
-                background: "linear-gradient(135deg, #4ade80, #22c55e)",
-                color: "#000", fontWeight: 900, fontSize: 15,
-                borderRadius: 12, padding: "13px 0",
-                textDecoration: "none", marginBottom: 10,
-                boxShadow: "0 0 16px rgba(74,222,128,0.4)",
-              }}
-            >
-              ① Abrir perfil de {rankingFollowModal.nome} 📱
-            </a>
-
-            {/* Passo 2: receber recompensa */}
-            <button
-              disabled={!rankingFollowModal.linkClicked}
               onClick={async () => {
                 const modal = rankingFollowModal;
                 if (!modal || !userId) return;
+                setRankingFollowModal(prev => prev ? { ...prev, linkClicked: true } : null);
                 const data = await apiCall(`/users/${userId}/seguir-ranking`, {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
@@ -3501,22 +3468,21 @@ export default function App() {
                   setSeguidosList(prev => prev.includes(modal.targetId) ? prev : [...prev, modal.targetId]);
                   setPlaysRemaining(data.user.playsRemaining ?? playsRemaining);
                   showToast(`🎉 +3 jogadas e +5 pts! Você seguiu ${modal.nome}!`);
+                  setRankingFollowModal(null);
                 }
-                setRankingFollowModal(null);
               }}
               style={{
-                width: "100%", padding: "13px 0",
-                background: rankingFollowModal.linkClicked ? "#FFD700" : "#333",
-                color: rankingFollowModal.linkClicked ? "#000" : "#555",
-                fontWeight: 900, fontSize: 15,
-                border: "none", borderRadius: 12,
-                cursor: rankingFollowModal.linkClicked ? "pointer" : "not-allowed",
-                marginBottom: 10,
-                transition: "background 0.3s",
+                display: "block", width: "100%", boxSizing: "border-box",
+                background: "linear-gradient(135deg, #4ade80, #22c55e)",
+                color: "#000", fontWeight: 900, fontSize: 15,
+                borderRadius: 12, padding: "13px 0",
+                textDecoration: "none", marginBottom: 10,
+                boxShadow: "0 0 16px rgba(74,222,128,0.4)",
               }}
             >
-              {rankingFollowModal.linkClicked ? "② Já segui! Receber recompensa 🎁" : "① Abra o perfil primeiro"}
-            </button>
+              ① Abrir perfil de {rankingFollowModal.nome} 📱
+            </a>
+
 
             <button
               onClick={() => setRankingFollowModal(null)}
