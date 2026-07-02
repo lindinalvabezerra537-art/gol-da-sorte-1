@@ -23,9 +23,8 @@ export default function InstallPrompt() {
     if (isStandalone()) { setInstalled(true); return; }
 
     if (isIOS()) {
-      if (!sessionStorage.getItem("pwa-install-dismissed")) {
-        setTimeout(() => setVisible(true), 2000);
-      }
+      // Sempre mostra no iOS — sem guardar estado de dispensado
+      setTimeout(() => setVisible(true), 2000);
       return;
     }
 
@@ -39,11 +38,6 @@ export default function InstallPrompt() {
     return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
 
-  const dismiss = () => {
-    sessionStorage.setItem("pwa-install-dismissed", "1");
-    setVisible(false);
-  };
-
   const handleAndroidInstall = async () => {
     if (!deferredPrompt) return;
     await deferredPrompt.prompt();
@@ -55,7 +49,7 @@ export default function InstallPrompt() {
 
   if (installed || !visible) return null;
 
-  // ── iOS: instruções visuais, sem botão de instalar ──
+  // ── iOS: instruções — Apple não permite instalação por botão ──
   if (isIOS()) {
     return (
       <div style={{
@@ -70,7 +64,7 @@ export default function InstallPrompt() {
             <span style={{ fontSize: 26 }}>⚽</span>
             <span style={{ color: "#FFD700", fontWeight: 900, fontSize: 14 }}>INSTALAR GOL DA SORTE</span>
           </div>
-          <button onClick={dismiss} style={{
+          <button onClick={() => setVisible(false)} style={{
             background: "transparent", border: "none",
             color: "#666", fontSize: 20, cursor: "pointer", padding: "0 4px",
           }}>✕</button>
@@ -79,7 +73,7 @@ export default function InstallPrompt() {
           background: "rgba(255,215,0,0.08)",
           border: "1px solid rgba(255,215,0,0.3)",
           borderRadius: 10, padding: "10px 14px",
-          color: "#ddd", fontSize: 13, lineHeight: 1.7,
+          color: "#ddd", fontSize: 13, lineHeight: 1.8,
         }}>
           <span style={{ color: "#FFD700" }}>1.</span> Toque em <strong style={{ color: "#fff", fontSize: 15 }}>⬆️</strong> na barra inferior do Safari<br />
           <span style={{ color: "#FFD700" }}>2.</span> Toque em <strong style={{ color: "#fff" }}>"Adicionar à Tela de Início"</strong><br />
@@ -108,7 +102,7 @@ export default function InstallPrompt() {
           Adicione à tela inicial e jogue sempre!
         </div>
       </div>
-      <button onClick={dismiss} style={{
+      <button onClick={() => setVisible(false)} style={{
         background: "transparent", border: "none",
         color: "#555", fontSize: 18, cursor: "pointer", padding: "4px 8px", flexShrink: 0,
       }}>✕</button>
