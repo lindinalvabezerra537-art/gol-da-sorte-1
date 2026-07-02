@@ -18,14 +18,13 @@ export default function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
   const [installed, setInstalled] = useState(false);
-  const [showIOS, setShowIOS] = useState(false);
 
   useEffect(() => {
     if (isStandalone()) { setInstalled(true); return; }
 
     if (isIOS()) {
-      if (!sessionStorage.getItem("pwa-ios-dismissed")) {
-        setTimeout(() => setShowIOS(true), 2000);
+      if (!sessionStorage.getItem("pwa-install-dismissed")) {
+        setTimeout(() => setVisible(true), 2000);
       }
       return;
     }
@@ -41,6 +40,17 @@ export default function InstallPrompt() {
   }, []);
 
   const handleInstall = async () => {
+    if (isIOS()) {
+      // Abre o menu de Compartilhar do Safari — o usuário toca "Adicionar à Tela de Início"
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: "Gol da Sorte", url: window.location.href });
+        } catch {
+          // usuário cancelou
+        }
+      }
+      return;
+    }
     if (!deferredPrompt) return;
     await deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
@@ -50,60 +60,49 @@ export default function InstallPrompt() {
   };
 
   const dismiss = () => {
-    sessionStorage.setItem("pwa-ios-dismissed", "1");
-    setShowIOS(false);
+    sessionStorage.setItem("pwa-install-dismissed", "1");
     setVisible(false);
   };
 
-  if (installed) return null;
+  if (installed || !visible) return null;
 
-  const banner = (content: React.ReactNode) => (
+  return (
     <div style={{
       position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 9000,
-      padding: "12px 16px",
       background: "linear-gradient(135deg, #1a1200, #2a1f00)",
       borderTop: "2px solid rgba(255,200,0,0.6)",
-      display: "flex", alignItems: "center", gap: 12,
       boxShadow: "0 -4px 30px rgba(255,180,0,0.25)",
-    }}>{content}</div>
-  );
+      padding: "14px 16px",
+      display: "flex", alignItems: "center", gap: 12,
+    }}>
+      <div style={{ fontSize: 30, flexShrink: 0 }}>⚽</div>
 
-  if (showIOS) return banner(
-    <>
-      <div style={{ fontSize: 28, flexShrink: 0 }}>⚽</div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ color: "#FFD700", fontWeight: 900, fontSize: 13 }}>INSTALAR GOL DA SORTE</div>
-        <div style={{ color: "#ccc", fontSize: 11, marginTop: 3 }}>
-          Toque em <strong style={{ color: "#fff" }}>⬆️ Compartilhar</strong> → <strong style={{ color: "#fff" }}>Adicionar à Tela de Início</strong>
+        <div style={{ color: "#FFD700", fontWeight: 900, fontSize: 13, letterSpacing: 0.5 }}>
+          GOL DA SORTE
+        </div>
+        <div style={{ color: "#aaa", fontSize: 11, marginTop: 1 }}>
+          {isIOS() ? "Toque INSTALAR → depois 'Adicionar à Tela de Início'" : "Adicione à tela inicial!"}
         </div>
       </div>
+
       <button onClick={dismiss} style={{
-        background: "transparent", border: "1px solid rgba(255,255,255,0.2)",
-        borderRadius: 8, color: "#888", fontSize: 11, padding: "7px 10px", cursor: "pointer", flexShrink: 0,
+        background: "transparent", border: "none",
+        color: "#555", fontSize: 18, cursor: "pointer",
+        padding: "4px 8px", flexShrink: 0, lineHeight: 1,
       }}>✕</button>
-    </>
-  );
 
-  if (!visible) return null;
-
-  return banner(
-    <>
-      <div style={{ fontSize: 32, flexShrink: 0 }}>⚽</div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ color: "#FFD700", fontWeight: 900, fontSize: 13, letterSpacing: 0.5 }}>INSTALAR GOL DA SORTE</div>
-        <div style={{ color: "#aaa", fontSize: 11, marginTop: 1 }}>Adicione à tela inicial e jogue sempre!</div>
-      </div>
-      <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-        <button onClick={dismiss} style={{
-          background: "transparent", border: "1px solid rgba(255,255,255,0.2)",
-          borderRadius: 8, color: "#888", fontSize: 11, padding: "7px 10px", cursor: "pointer",
-        }}>Agora não</button>
-        <button onClick={handleInstall} style={{
-          background: "linear-gradient(135deg, #FFD700, #FF8C00)", border: "none",
-          borderRadius: 8, color: "#000", fontSize: 12, fontWeight: 900,
-          padding: "7px 14px", cursor: "pointer", letterSpacing: 0.5,
-        }}>INSTALAR</button>
-      </div>
-    </>
+      <button onClick={handleInstall} style={{
+        background: "linear-gradient(135deg, #FFD700, #FF8C00)",
+        border: "none", borderRadius: 10,
+        color: "#000", fontSize: 14, fontWeight: 900,
+        padding: "10px 18px", cursor: "pointer",
+        letterSpacing: 0.5, flexShrink: 0,
+        boxShadow: "0 0 16px rgba(255,180,0,0.5)",
+        textTransform: "uppercase",
+      }}>
+        INSTALAR
+      </button>
+    </div>
   );
 }
