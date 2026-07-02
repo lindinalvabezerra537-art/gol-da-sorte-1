@@ -12,7 +12,7 @@ export const usersTable = pgTable("users", {
   ipAddress: text("ip_address"),
   referralCode: text("referral_code").notNull().unique(),
   referredById: integer("referred_by_id"),
-  playsRemaining: integer("plays_remaining").notNull().default(5),
+  playsRemaining: integer("plays_remaining").notNull().default(10),
   freePlaysTotalUsed: integer("free_plays_total_used").notNull().default(0),
   hasPaid: boolean("has_paid").notNull().default(false),
   paidPlaysUsed: integer("paid_plays_used").notNull().default(0),

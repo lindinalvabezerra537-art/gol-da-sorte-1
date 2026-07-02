@@ -366,6 +366,7 @@ export default function App() {
   const [rankingEntryScope, setRankingEntryScope] = useState<"cidade" | "estado" | "brasil" | null>(null);
   const [rankingLinkInput, setRankingLinkInput] = useState("");
   const [referralUnlocked, setReferralUnlocked] = useState(false);
+  const [hasPaid, setHasPaid] = useState(false);
   const [totalFriends, setTotalFriends] = useState<number>(0);
   const [valorAcumulado, setValorAcumulado] = useState<string>("0,00");
   const [showAdmin, setShowAdmin] = useState(() =>
@@ -985,6 +986,7 @@ export default function App() {
       if (userData?.user) {
         setPlaysRemaining(userData.user.playsRemaining);
         setReferralUnlocked(userData.user.referralUnlocked);
+        setHasPaid(userData.user.hasPaid ?? false);
         setUserInfo({ name: userData.user.name, cidade: userData.user.cidade, estado: userData.user.estado, fotoBase64: userData.user.fotoBase64, rankingSocialLink: userData.user.rankingSocialLink });
         // Buscar ranking
         const city = userData.user.cidade;
@@ -1049,6 +1051,7 @@ export default function App() {
           case "plays_updated": {
             const plays = msg.data.playsRemaining as number;
             if (typeof plays === "number") setPlaysRemaining(plays);
+            if (msg.data.hasPaid === true) setHasPaid(true);
             break;
           }
           case "points_updated": {
@@ -1361,6 +1364,7 @@ export default function App() {
 
   const handlePurchased = (newPlays: number) => {
     setPlaysRemaining(newPlays);
+    setHasPaid(true);
     setShowPurchaseModal(false);
     showToast(`✅ Compra realizada! ${newPlays} jogadas disponíveis.`);
   };
@@ -2358,12 +2362,12 @@ export default function App() {
 
       {/* ══════════════════════════════════════════════
           CONVIDAR AGORA button overlay
-          Pixel scan: x=764-1000 (xF≈0.679-0.889), y=1286-1310 (yF≈0.591-0.602)
-          Expanded slightly for easier tapping
+          Bloqueado até o usuário comprar qualquer pacote.
+          Após qualquer compra (hasPaid=true) libera o InviteScreen.
           ══════════════════════════════════════════════ */}
       <div
-        onClick={() => setShowInviteScreen(true)}
-        onTouchEnd={(e) => { e.preventDefault(); setShowInviteScreen(true); }}
+        onClick={() => { if (hasPaid) { setShowInviteScreen(true); } else { setShowPurchaseModal(true); } }}
+        onTouchEnd={(e) => { e.preventDefault(); if (hasPaid) { setShowInviteScreen(true); } else { setShowPurchaseModal(true); } }}
         style={{
           ...ov(UI.convidar.x, UI.convidar.y, UI.convidar.w, UI.convidar.h),
           zIndex: 30,
@@ -2377,6 +2381,20 @@ export default function App() {
           paddingLeft: "calc(6% + 7.5mm)",
         }}
       >
+        {/* Cadeado visível quando o usuário ainda não comprou */}
+        {!hasPaid && (
+          <div style={{
+            position: "absolute",
+            right: "8%",
+            top: "50%",
+            transform: "translateY(-50%)",
+            fontSize: "clamp(14px, 3.5vw, 20px)",
+            filter: "drop-shadow(0 1px 3px #000)",
+            pointerEvents: "none",
+          }}>
+            🔒
+          </div>
+        )}
       </div>
 
       {/* ══════════════════════════════════════════════

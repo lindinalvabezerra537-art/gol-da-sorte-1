@@ -192,7 +192,7 @@ async function confirmPayment(txId: string) {
       })
       .where(eq(usersTable.id, payment.userId));
 
-    sendEvent(payment.userId, { type: "plays_updated", data: { playsRemaining: user.playsRemaining + payment.plays } });
+    sendEvent(payment.userId, { type: "plays_updated", data: { playsRemaining: user.playsRemaining + payment.plays, hasPaid: true } });
 
     if (isFirstPayment && user.referredById) {
       const [referrer] = await db
